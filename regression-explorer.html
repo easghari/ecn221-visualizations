@@ -22,6 +22,8 @@
   h2 .step { display: inline-block; background: var(--maroon); color: #fff; border-radius: 50%; width: 28px; height: 28px; line-height: 28px; text-align: center; font-size: 0.95rem; margin-right: 8px; }
   h3.sub { font-size: 1.05rem; margin: 18px 0 8px; color: var(--maroon); border-top: 1px dashed var(--line); padding-top: 14px; }
   p { margin: 0 0 10px; }
+  a { color: var(--maroon); }
+  html { scroll-behavior: smooth; }
   .formula { font-family: Georgia, "Times New Roman", serif; font-size: 1.05rem; }
   .callout { background: var(--panel); border-left: 4px solid var(--maroon); padding: 12px 16px; border-radius: 4px; margin: 10px 0; }
   .callout ol, .callout ul { margin: 6px 0 0; padding-left: 22px; }
@@ -89,7 +91,7 @@
   <!-- 1. Theory -->
   <section aria-labelledby="h-idea">
     <h2 id="h-idea"><span class="step">1</span>Where the regression line comes from</h2>
-    <p>Simple regression describes how the <em>average</em> of one variable <em>Y</em> changes with another variable <em>X</em>. To see where the line comes from, start with the population. Suppose <em>X</em> and <em>Y</em> together follow a <strong>bivariate normal distribution</strong>, which is fully described by five numbers: the two means <em>μ<sub>X</sub></em>, <em>μ<sub>Y</sub></em>, the two standard deviations <em>σ<sub>X</sub></em>, <em>σ<sub>Y</sub></em>, and the correlation <em>ρ</em>. Its joint density is a hill over the (<em>x</em>, <em>y</em>) plane: round if <em>ρ</em> = 0, stretched into a ridge along a diagonal as <em>ρ</em> moves toward ±1.</p>
+    <p>Simple regression describes how the <em>average</em> of one variable <em>Y</em> changes with another variable <em>X</em>. To see where the line comes from, start with the population. Suppose <em>X</em> and <em>Y</em> together follow a <strong>bivariate normal distribution</strong>, which is fully described by five numbers: the two means <em>μ<sub>X</sub></em>, <em>μ<sub>Y</sub></em>, the two standard deviations <em>σ<sub>X</sub></em>, <em>σ<sub>Y</sub></em>, and the correlation <em>ρ</em>. Its joint density is a hill over the (<em>x</em>, <em>y</em>) plane: round if <em>ρ</em> = 0, stretched into a ridge along a diagonal as <em>ρ</em> moves toward ±1. (You can see this for yourself: jump to <a href="#panelA">panel A in step 3</a>, slide ρ back and forth, and watch the hill change shape.)</p>
     <div class="callout">
       <p style="margin:0 0 6px">Slice the hill at any value <em>X</em> = <em>x</em>. The slice is a normal curve, and its center, the <strong>conditional expectation</strong> <em>E</em>[<em>Y</em> | <em>X</em> = <em>x</em>], is a straight line in <em>x</em>:</p>
       <p class="formula" style="margin:0 0 6px">E[Y | X = x] = β₀ + β₁ x, &nbsp;&nbsp; where &nbsp; β₁ = ρ · σ<sub>Y</sub> / σ<sub>X</sub> &nbsp; and &nbsp; β₀ = μ<sub>Y</sub> − β₁ μ<sub>X</sub></p>
@@ -123,7 +125,7 @@
   <section aria-labelledby="h-run">
     <h2 id="h-run"><span class="step">3</span>Run the simulation</h2>
 
-    <h3 class="sub">A. The population: joint density and the population regression line</h3>
+    <h3 class="sub" id="panelA">A. The population: joint density and the population regression line</h3>
     <div class="twocol">
       <div>
         <fieldset>
