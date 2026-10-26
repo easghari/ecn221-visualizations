@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Comparing Two Means: Is the Gap Real? – ECN 221</title>
+<style>
+  :root {
+    --maroon: #8C1D40; --gold: #FFC627; --asu-gray: #5C6670; --asu-black: #191919;
+    --text: #191919; --muted: #5C6670; --line: #d9dee5; --panel: #f7f7f7;
+    --g1: #5C6670; --g2: #8C1D40;
+    --keep: #8C1D40; --reject: #FFC627;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--text); background: #fff; line-height: 1.55; font-size: 16px; }
+  header { padding: 18px 24px 14px; background: var(--maroon); color: #fff; border-bottom: 6px solid var(--gold); }
+  header h1 { margin: 0 0 4px; font-size: 1.5rem; }
+  header p { margin: 0; color: #f3e6ea; font-size: 0.95rem; }
+  main { max-width: 1100px; margin: 0 auto; padding: 8px 24px 32px; }
+  section { padding: 22px 0; border-bottom: 1px solid var(--line); }
+  section:last-of-type { border-bottom: none; }
+  h2 { font-size: 1.25rem; margin: 0 0 10px; color: var(--maroon); }
+  h2 .step { display: inline-block; background: var(--maroon); color: #fff; border-radius: 50%; width: 28px; height: 28px; line-height: 28px; text-align: center; font-size: 0.95rem; margin-right: 8px; }
+  p { margin: 0 0 10px; }
+  .formula { font-family: Georgia, "Times New Roman", serif; font-size: 1.05rem; }
+  .callout { background: var(--panel); border-left: 4px solid var(--maroon); padding: 12px 16px; border-radius: 4px; margin: 10px 0; }
+  .callout ol, .callout ul { margin: 6px 0 0; padding-left: 22px; }
+  .callout li { margin-bottom: 8px; }
+  .warn { background: #fff8e0; border-left: 4px solid var(--gold); padding: 12px 16px; border-radius: 4px; margin: 10px 0; }
+  table.cases { border-collapse: collapse; margin: 8px 0 12px; font-size: 0.93rem; }
+  table.cases th, table.cases td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top; }
+  table.cases th { background: var(--panel); }
+  .twocol { display: grid; grid-template-columns: 350px 1fr; gap: 24px; align-items: start; }
+  @media (max-width: 860px) { .twocol { grid-template-columns: 1fr; } }
+  fieldset { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; margin: 0; background: var(--panel); }
+  legend { font-weight: 600; padding: 0 6px; color: var(--maroon); }
+  label { display: block; margin: 8px 0 4px; font-weight: 600; font-size: 0.95rem; }
+  select, input[type=range] { width: 100%; }
+  select { padding: 6px; font-size: 1rem; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+  input[type=range] { accent-color: var(--maroon); }
+  .grp { border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px 10px; margin-top: 10px; background: #fff; }
+  .grp.g1 { border-left: 5px solid var(--g1); } .grp.g2 { border-left: 5px solid var(--g2); }
+  .grp label:first-child { margin-top: 0; }
+  .note { font-size: 0.88rem; color: var(--muted); margin: 4px 0 0; }
+  .btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  button { font-size: 0.95rem; padding: 8px 12px; border-radius: 6px; cursor: pointer; border: 1px solid var(--maroon); background: var(--maroon); color: #fff; font-weight: 600; }
+  button.primary { font-size: 1.05rem; padding: 12px 16px; box-shadow: 0 3px 0 var(--gold); width: 100%; }
+  button.secondary { background: #fff; color: var(--maroon); }
+  button:hover { filter: brightness(1.08); }
+  button:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid var(--maroon); outline-offset: 2px; }
+  .anim-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: end; margin-top: 14px; }
+  .anim-row select { width: 110px; }
+  .chart { margin-bottom: 14px; }
+  .chart h3 { margin: 0 0 4px; font-size: 1rem; }
+  .legend { font-size: 0.85rem; color: var(--muted); display: flex; gap: 14px; flex-wrap: wrap; margin: 4px 0 8px; }
+  .legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .swatch { display: inline-block; width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(0,0,0,.15); }
+  canvas { width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+  .latest { border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; background: #fff; }
+  .latest h3 { margin: 0 0 6px; font-size: 1rem; color: var(--maroon); }
+  .latest .kv { grid-template-columns: repeat(2, 1fr auto); }
+  .decision { font-weight: 700; padding: 2px 8px; border-radius: 4px; display: inline-block; }
+  .decision.reject { background: var(--gold); color: var(--asu-black); }
+  .decision.keep { background: var(--maroon); color: #fff; }
+  .tally { font-size: 1.15rem; font-weight: 700; margin: 8px 0; }
+  .tally b { color: var(--maroon); font-variant-numeric: tabular-nums; }
+  .results { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 860px) { .results { grid-template-columns: 1fr; } .latest .kv { grid-template-columns: 1fr auto; } }
+  .box { border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+  .box h3 { margin: 0 0 8px; font-size: 1rem; color: var(--maroon); }
+  .box.theory { border-top: 4px solid var(--asu-black); }
+  .box.observed { border-top: 4px solid var(--maroon); }
+  .kv { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; font-size: 0.95rem; }
+  .kv span { color: var(--muted); }
+  .kv b { font-variant-numeric: tabular-nums; text-align: right; }
+  .verdict { margin-top: 14px; }
+  ol.explore { padding-left: 20px; }
+  ol.explore li { margin-bottom: 8px; }
+  .tip { background: #fff8e0; border-left: 4px solid var(--gold); padding: 10px 12px; border-radius: 4px; }
+  footer { padding: 10px 24px 20px; color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--line); text-align: center; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Comparing Two Means: Is the Gap Real?</h1>
+  <p>ECN 221 Business Statistics · Instructor: Ehsan Asghari-Ghara</p>
+</header>
+
+<main>
+
+  <!-- 1. Theory -->
+  <section aria-labelledby="h-idea">
+    <h2 id="h-idea"><span class="step">1</span>Testing whether two populations have the same mean</h2>
+    <p>Do customers at store A spend more than customers at store B? Does the new training program raise productivity compared with the old one? Questions like these compare <strong>two population means</strong>, <em>μ₁</em> and <em>μ₂</em>, using one independent sample from each. The null hypothesis says there is no difference:</p>
+    <div class="callout">
+      <p class="formula" style="margin:0">H₀: μ₁ − μ₂ = 0 &nbsp;&nbsp;&nbsp; test statistic = (x̄₁ − x̄₂ − 0) / SE(x̄₁ − x̄₂)</p>
+      <p style="margin:8px 0 0">The new ingredient is the <strong>standard error of the difference</strong>. Two sample means each have their own sampling variability, and when we subtract them the variabilities <em>add</em>:</p>
+      <p class="formula" style="margin:6px 0 0">SE(x̄₁ − x̄₂) = √( σ₁²/n₁ + σ₂²/n₂ )</p>
+    </div>
+    <p>Which version of the formula we use depends on what we know about the population standard deviations:</p>
+    <table class="cases">
+      <tr><th>Case</th><th>Standard error</th><th>Statistic</th></tr>
+      <tr><td>σ₁ and σ₂ known</td><td>√(σ₁²/n₁ + σ₂²/n₂)</td><td><em>z</em>, standard normal</td></tr>
+      <tr><td>σ unknown, assumed equal (pooled)</td><td>s<sub>p</sub>·√(1/n₁ + 1/n₂), where s<sub>p</sub>² pools the two sample variances</td><td><em>t</em>, n₁ + n₂ − 2 df</td></tr>
+      <tr><td>σ unknown, not assumed equal (Welch)</td><td>√(s₁²/n₁ + s₂²/n₂)</td><td><em>t</em>, df from the Welch formula</td></tr>
+    </table>
+    <div class="warn">
+      <p style="margin:0"><strong>The key intuition:</strong> even when two populations are <em>identical</em>, two samples from them will never have exactly the same mean. The question is never "are x̄₁ and x̄₂ different?" (they always are) but "is the gap between them larger than the gap we would expect from sampling variability alone?" The standard error of the difference is the yardstick for that.</p>
+    </div>
+  </section>
+
+  <!-- 2. How -->
+  <section aria-labelledby="h-how">
+    <h2 id="h-how"><span class="step">2</span>How the simulation works</h2>
+    <p>We set both true population means ourselves, so we know whether <em>H₀</em> is right. Start with the two populations identical to see how much x̄₁ − x̄₂ bounces around on its own; then pull them apart and see how often the test notices. The text below updates with the settings in step 3.</p>
+    <div class="callout" aria-live="polite">
+      <ol>
+        <li><strong>The claim.</strong> <span id="how0"></span></li>
+        <li><strong>Two samples.</strong> <span id="how1"></span></li>
+        <li><strong>The gap and its yardstick.</strong> <span id="how2"></span></li>
+        <li><strong>Decide.</strong> <span id="how3"></span> Tests that reject are drawn in <strong style="color:#a67c00">gold</strong>; tests that fail to reject are in <strong style="color:var(--keep)">maroon</strong>.</li>
+        <li><strong>Repeat and count.</strong> <span id="how4"></span></li>
+      </ol>
+    </div>
+    <p id="howQuestion"></p>
+  </section>
+
+  <!-- 3. Simulation -->
+  <section aria-labelledby="h-run">
+    <h2 id="h-run"><span class="step">3</span>Run the simulation</h2>
+    <div class="twocol">
+      <div>
+        <fieldset>
+          <legend>Settings</legend>
+          <label for="shape">Shape of both populations</label>
+          <select id="shape">
+            <option value="normal" selected>Normal (bell-shaped)</option>
+            <option value="skewed">Right-skewed (e.g., spending)</option>
+            <option value="uniform">Uniform (flat)</option>
+          </select>
+
+          <div class="grp g1">
+            <label for="mu1">Group 1 true mean μ₁ = <output id="mu1Out" for="mu1">50</output></label>
+            <input type="range" id="mu1" min="40" max="60" value="50" step="0.5">
+            <label for="sd1">Group 1 SD σ₁ = <output id="sd1Out" for="sd1">10</output></label>
+            <input type="range" id="sd1" min="2" max="20" value="10" step="1">
+            <label for="n1">Group 1 sample size n₁ = <output id="n1Out" for="n1">30</output></label>
+            <input type="range" id="n1" min="3" max="200" value="30" step="1">
+          </div>
+          <div class="grp g2">
+            <label for="mu2">Group 2 true mean μ₂ = <output id="mu2Out" for="mu2">50</output></label>
+            <input type="range" id="mu2" min="40" max="60" value="50" step="0.5">
+            <label for="sd2">Group 2 SD σ₂ = <output id="sd2Out" for="sd2">10</output></label>
+            <input type="range" id="sd2" min="2" max="20" value="10" step="1">
+            <label for="n2">Group 2 sample size n₂ = <output id="n2Out" for="n2">30</output></label>
+            <input type="range" id="n2" min="3" max="200" value="30" step="1">
+          </div>
+          <p class="note" id="gapDesc"></p>
+
+          <label for="method">Standard error / test</label>
+          <select id="method">
+            <option value="z">σ₁, σ₂ known (z)</option>
+            <option value="pooled" selected>σ unknown, assumed equal (pooled t)</option>
+            <option value="welch">σ unknown, not assumed equal (Welch t)</option>
+          </select>
+
+          <label for="alpha">Significance level α</label>
+          <select id="alpha">
+            <option value="0.01">0.01</option>
+            <option value="0.05" selected>0.05</option>
+            <option value="0.10">0.10</option>
+          </select>
+
+          <label for="tail">Alternative hypothesis</label>
+          <select id="tail">
+            <option value="two" selected>Two-tailed: μ₁ − μ₂ ≠ 0</option>
+            <option value="right">Right-tailed: μ₁ − μ₂ &gt; 0</option>
+            <option value="left">Left-tailed: μ₁ − μ₂ &lt; 0</option>
+          </select>
+
+          <label for="reps">Number of tests to run</label>
+          <select id="reps">
+            <option value="20">20</option>
+            <option value="100">100</option>
+            <option value="500">500</option>
+            <option value="1000" selected>1,000</option>
+            <option value="5000">5,000</option>
+          </select>
+
+          <div class="anim-row">
+            <button id="anim" type="button" class="primary" aria-pressed="false">▶ Animate one test at a time</button>
+            <div>
+              <label for="speed" style="margin-top:0">Speed</label>
+              <select id="speed">
+                <option value="700">Slow</option>
+                <option value="250" selected>Medium</option>
+                <option value="60">Fast</option>
+              </select>
+            </div>
+          </div>
+          <div class="btns">
+            <button id="draw" type="button" class="secondary">Run all at once (no animation)</button>
+            <button id="reset" type="button" class="secondary">Clear</button>
+          </div>
+        </fieldset>
+      </div>
+
+      <div>
+        <div class="chart">
+          <h3>The two populations (dashed lines = true means)</h3>
+          <div class="legend">
+            <span><span class="swatch" style="background:var(--g1)"></span>Group 1</span>
+            <span><span class="swatch" style="background:var(--g2)"></span>Group 2</span>
+          </div>
+          <canvas id="cPop" width="900" height="170" role="img" aria-label="The two population distributions with their means marked"></canvas>
+        </div>
+
+        <div class="latest" aria-live="polite">
+          <h3>Latest test</h3>
+          <div class="kv">
+            <span>x̄₁</span><b id="lM1">–</b>
+            <span>x̄₂</span><b id="lM2">–</b>
+            <span>Gap x̄₁ − x̄₂</span><b id="lGap">–</b>
+            <span>SE of the gap</span><b id="lSE">–</b>
+            <span id="lStatLbl">Statistic</span><b id="lStat">–</b>
+            <span>p-value</span><b id="lP">–</b>
+          </div>
+          <p style="margin:8px 0 0">Decision: <span id="lDec" class="decision">run a test</span> <span class="note" id="lWhy" style="display:inline"></span></p>
+        </div>
+
+        <div class="chart">
+          <h3>Observed gaps x̄₁ − x̄₂ from all the tests, and what H₀ predicts for them</h3>
+          <div class="legend">
+            <span><span class="swatch" style="background:var(--keep)"></span>fail to reject H₀</span>
+            <span><span class="swatch" style="background:var(--reject)"></span>reject H₀</span>
+            <span>black curve = gaps expected if μ₁ = μ₂</span>
+            <span>dashed = true μ₁ − μ₂</span>
+          </div>
+          <canvas id="cGap" width="900" height="330" role="img" aria-label="Histogram of observed differences in sample means with the null distribution and rejection region"></canvas>
+          <p class="tally" id="tally" aria-live="polite">No tests yet.</p>
+        </div>
+        <p id="chartDesc" class="sr-only"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Results -->
+  <section aria-labelledby="h-results">
+    <h2 id="h-results"><span class="step">4</span>Reading the results</h2>
+    <p id="resultsIntro"></p>
+    <div class="results" aria-live="polite">
+      <div class="box theory">
+        <h3>What the theory predicts</h3>
+        <div class="kv">
+          <span>True difference μ₁ − μ₂</span><b id="tDiff">–</b>
+          <span>Is H₀ true?</span><b id="h0true">–</b>
+          <span>σ₁²/n₁</span><b id="v1">–</b>
+          <span>σ₂²/n₂</span><b id="v2">–</b>
+          <span>SE of the gap = √(sum)</span><b id="se">–</b>
+          <span>Critical value(s)</span><b id="crit">–</b>
+          <span id="expLbl">Expected rejection rate</span><b id="expRate">–</b>
+        </div>
+        <p class="note" id="theoryNote" style="margin-top:8px"></p>
+      </div>
+      <div class="box observed">
+        <h3>What the simulation produced</h3>
+        <div class="kv">
+          <span>Tests run</span><b id="count">0</b>
+          <span>Rejected H₀</span><b id="rejects">–</b>
+          <span>Failed to reject H₀</span><b id="keeps">–</b>
+          <span>Observed rejection rate</span><b id="obsRate">–</b>
+          <span>Average gap x̄₁ − x̄₂</span><b id="avgGap">–</b>
+          <span>SD of the observed gaps</span><b id="sdGap">–</b>
+        </div>
+        <p class="note" style="margin-top:8px">The SD of the observed gaps is the simulation's version of the standard error of the difference.</p>
+      </div>
+    </div>
+    <p class="verdict" id="verdict"></p>
+    <p>Look at the two variance pieces, σ₁²/n₁ and σ₂²/n₂. The standard error is driven by the <em>larger</em> of the two. If one group is small or noisy, making the other group huge barely helps: the yardstick stays wide, and so the test stays weak. Balanced samples are the efficient way to spend a data-collection budget.</p>
+  </section>
+
+  <!-- 5. Explore -->
+  <section aria-labelledby="h-explore">
+    <h2 id="h-explore"><span class="step">5</span>Explore further</h2>
+    <ol class="explore">
+      <li>Run the default: identical populations (μ₁ = μ₂ = 50, σ = 10, n = 30 each). Watch the first few tests. The two sample means are never equal, yet most tests correctly fail to reject. How wide is the band of "ordinary" gaps?</li>
+      <li>Still with identical populations, is the rejection rate near α = 0.05? Every rejection here is a Type I error; find one in the animation and look at how big its gap was.</li>
+      <li>Set μ₂ = 52 (a real 2-unit gap) with n = 30 each. The power will be low, around 12%. The test misses a true difference most of the time. Raise both n to 150. What is the power now?</li>
+      <li>Set μ₂ = 52 and n₁ = 10, n₂ = 10. Then raise n₁ to 200 while leaving n₂ = 10. Compare the SE of the gap and the power. Why did adding 190 observations to group 1 help so little?</li>
+      <li>Set σ₁ = 18 with n₁ = 10 and σ₂ = 4 with n₂ = 60, means equal (the noisy group is the small one). Run the pooled t test, then the Welch t test. The pooled test's false-alarm rate explodes to around 40%, while Welch stays near 5%. Why does pooling go so wrong when the small sample is the noisy one? Now swap the σ values: the pooled test becomes far too conservative instead.</li>
+      <li>Switch the shape to right-skewed with n = 5 each and the pooled t test, means equal. Does the false-alarm rate stay near α? Try n = 40 each.</li>
+    </ol>
+    <p class="tip"><strong>Key point:</strong> a difference between two sample means is not evidence of a difference between the populations until it is measured against the standard error of the difference. That standard error combines <em>both</em> groups' variability, which is why it is wider than either group's own standard error, and why the weaker group sets the limit on what the test can detect.</p>
+  </section>
+
+</main>
+
+<footer>ECN 221 Business Statistics · W. P. Carey School of Business, Arizona State University</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------- Math ----------
+  function randNormal() { let u = 0, v = 0; while (u === 0) u = Math.random(); while (v === 0) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+  function normPdf(x, m, s) { return Math.exp(-0.5 * ((x - m) / s) ** 2) / (s * Math.sqrt(2 * Math.PI)); }
+  function normCdf(x) { const t = 1 / (1 + 0.2316419 * Math.abs(x)); const d = 0.3989422804014327 * Math.exp(-x * x / 2); const p = d * t * (0.319381530 + t * (-0.356563782 + t * (1.781477937 + t * (-1.821255978 + t * 1.330274429)))); return x >= 0 ? 1 - p : p; }
+  function lgamma(z) { const g = 7, c = [0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313, -176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7]; if (z < 0.5) return Math.log(Math.PI / Math.sin(Math.PI * z)) - lgamma(1 - z); z -= 1; let x = c[0]; for (let i = 1; i < g + 2; i++) x += c[i] / (z + i); const t = z + g + 0.5; return 0.5 * Math.log(2 * Math.PI) + (z + 0.5) * Math.log(t) - t + Math.log(x); }
+  function betacf(a, b, x) { const MAXIT = 200, EPS = 3e-12, FPMIN = 1e-300; let qab = a + b, qap = a + 1, qam = a - 1, c = 1, d = 1 - qab * x / qap; if (Math.abs(d) < FPMIN) d = FPMIN; d = 1 / d; let h = d; for (let m = 1; m <= MAXIT; m++) { const m2 = 2 * m; let aa = m * (b - m) * x / ((qam + m2) * (a + m2)); d = 1 + aa * d; if (Math.abs(d) < FPMIN) d = FPMIN; c = 1 + aa / c; if (Math.abs(c) < FPMIN) c = FPMIN; d = 1 / d; h *= d * c; aa = -(a + m) * (qab + m) * x / ((a + m2) * (qap + m2)); d = 1 + aa * d; if (Math.abs(d) < FPMIN) d = FPMIN; c = 1 + aa / c; if (Math.abs(c) < FPMIN) c = FPMIN; d = 1 / d; const del = d * c; h *= del; if (Math.abs(del - 1) < EPS) break; } return h; }
+  function ibeta(a, b, x) { if (x <= 0) return 0; if (x >= 1) return 1; const bt = Math.exp(lgamma(a + b) - lgamma(a) - lgamma(b) + a * Math.log(x) + b * Math.log(1 - x)); return x < (a + 1) / (a + b + 2) ? bt * betacf(a, b, x) / a : 1 - bt * betacf(b, a, 1 - x) / b; }
+  function tCdf(t, df) { const p = 0.5 * ibeta(df / 2, 0.5, df / (df + t * t)); return t >= 0 ? 1 - p : p; }
+  function invCdf(cdf, p) { let lo = 0, hi = 50; for (let i = 0; i < 80; i++) { const mid = (lo + hi) / 2; if (cdf(mid) < p) lo = mid; else hi = mid; } return (lo + hi) / 2; }
+
+  // Population shapes, parameterized by mean and sd
+  const SHAPES = {
+    normal:  { name: "normal", pdf: (x, m, s) => normPdf(x, m, s), draw: (m, s) => m + s * randNormal() },
+    uniform: { name: "uniform", pdf: (x, m, s) => { const a = s * Math.sqrt(3); return Math.abs(x - m) <= a ? 1 / (2 * a) : 0; }, draw: (m, s) => m + (Math.random() * 2 - 1) * s * Math.sqrt(3) },
+    skewed:  { name: "right-skewed", pdf: (x, m, s) => x >= m - s ? Math.exp(-(x - m + s) / s) / s : 0, draw: (m, s) => m - s - s * Math.log(1 - Math.random()) }
+  };
+
+  // ---------- State ----------
+  let shape = SHAPES.normal, mu1 = 50, sd1 = 10, n1 = 30, mu2 = 50, sd2 = 10, n2 = 30;
+  let method = "pooled", alpha = 0.05, tail = "two";
+  let gaps = [], rejects = 0, gapSum = 0, gapSq = 0, latest = null;
+  let timer = null, ticks = 0;
+
+  // ---------- DOM ----------
+  const $ = id => document.getElementById(id);
+  const cPop = $("cPop"), cGap = $("cGap");
+  const fmt = v => v.toFixed(3);
+  const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const reps = () => +$("reps").value;
+  const pct = v => (100 * v).toFixed(1) + "%";
+  const trueDiff = () => mu1 - mu2;
+  const h0true = () => Math.abs(trueDiff()) < 1e-9;
+  const seTrue = () => Math.sqrt(sd1 * sd1 / n1 + sd2 * sd2 / n2);
+  // Reference df for critical values when no sample is in hand (theory box, shading)
+  function refDf() {
+    if (method === "z") return Infinity;
+    if (method === "pooled") return n1 + n2 - 2;
+    const a = sd1 * sd1 / n1, b = sd2 * sd2 / n2;
+    return (a + b) ** 2 / (a * a / (n1 - 1) + b * b / (n2 - 1));
+  }
+  const cdfFor = df => (df === Infinity ? normCdf : (x => tCdf(x, df)));
+  function critVal(df) { const p = tail === "two" ? 1 - alpha / 2 : 1 - alpha; return invCdf(cdfFor(df), p); }
+  function pValue(stat, df) { const F = cdfFor(df); if (tail === "two") return 2 * (1 - F(Math.abs(stat))); if (tail === "right") return 1 - F(stat); return F(stat); }
+  function theoryRate() {
+    const c = critVal(refDf()), delta = trueDiff() / seTrue();
+    if (tail === "two") return normCdf(-c - delta) + 1 - normCdf(c - delta);
+    if (tail === "right") return 1 - normCdf(c - delta);
+    return normCdf(-c - delta);
+  }
+
+  // ---------- Drawing ----------
+  const PAD = { l: 44, r: 16, t: 14, b: 30 };
+  function frame(cv, xmin, xmax, tick) {
+    const ctx = cv.getContext("2d"); ctx.clearRect(0, 0, cv.width, cv.height);
+    const w = cv.width - PAD.l - PAD.r, h = cv.height - PAD.t - PAD.b;
+    const x = v => PAD.l + ((v - xmin) / (xmax - xmin)) * w;
+    ctx.strokeStyle = "#8a94a0"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(PAD.l, PAD.t + h); ctx.lineTo(PAD.l + w, PAD.t + h); ctx.stroke();
+    ctx.fillStyle = css("--muted"); ctx.font = "13px sans-serif"; ctx.textAlign = "center";
+    for (let t = Math.ceil(xmin / tick) * tick; t <= xmax + 1e-9; t += tick) { ctx.beginPath(); ctx.moveTo(x(t), PAD.t + h); ctx.lineTo(x(t), PAD.t + h + 4); ctx.stroke(); ctx.fillText(Math.round(t * 100) / 100, x(t), PAD.t + h + 18); }
+    return { ctx, w, h, x };
+  }
+  function vline(f, v, color, label, dy) {
+    const { ctx, h, x, w } = f; if (v < -1e9) return;
+    ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.moveTo(x(v), PAD.t); ctx.lineTo(x(v), PAD.t + h); ctx.stroke(); ctx.restore();
+    if (label) { ctx.fillStyle = color; ctx.font = "bold 13px sans-serif"; ctx.textAlign = "left"; ctx.fillText(label, Math.min(x(v) + 5, PAD.l + w - 100), PAD.t + (dy || 14)); }
+  }
+  function drawPop() {
+    const XMIN = 0, XMAX = 100;
+    const f = frame(cPop, XMIN, XMAX, 10), { ctx, w, h, x } = f;
+    let maxP = 0;
+    for (let i = 0; i <= 500; i++) { const v = XMIN + i / 500 * (XMAX - XMIN); maxP = Math.max(maxP, shape.pdf(v, mu1, sd1), shape.pdf(v, mu2, sd2)); }
+    const curve = (m, s, color) => {
+      ctx.fillStyle = color; ctx.strokeStyle = color; ctx.beginPath(); ctx.moveTo(PAD.l, PAD.t + h);
+      for (let i = 0; i <= 500; i++) { const v = XMIN + i / 500 * (XMAX - XMIN); ctx.lineTo(x(v), PAD.t + h - (shape.pdf(v, m, s) / maxP) * h * 0.95); }
+      ctx.lineTo(PAD.l + w, PAD.t + h); ctx.closePath(); ctx.globalAlpha = 0.3; ctx.fill(); ctx.globalAlpha = 1; ctx.lineWidth = 2; ctx.stroke();
+    };
+    curve(mu1, sd1, css("--g1")); curve(mu2, sd2, css("--g2"));
+    vline(f, mu1, css("--g1"), "μ₁ = " + mu1, 14);
+    vline(f, mu2, css("--g2"), "μ₂ = " + mu2, h0true() ? 30 : 14);
+  }
+  function drawGap() {
+    const se = seTrue(), LIM = Math.max(5 * se, Math.abs(trueDiff()) + 4 * se), BINS = 120, bw = 2 * LIM / BINS;
+    const tick = LIM > 20 ? 10 : LIM > 8 ? 5 : LIM > 3 ? 2 : LIM > 1.5 ? 1 : 0.5;
+    const f = frame(cGap, -LIM, LIM, tick), { ctx, w, h, x } = f;
+    const df = refDf(), c = critVal(df);
+    const counts = new Array(BINS).fill(0);
+    for (const g of gaps) { let i = Math.floor((g + LIM) / bw); if (i < 0) i = 0; if (i >= BINS) i = BINS - 1; counts[i]++; }
+    const N = gaps.length;
+    const nullPdf = v => normPdf(v, 0, se);   // gaps under H0 (normal approximation to the t-based null)
+    const peak = N * bw * nullPdf(0);
+    const scaleMax = Math.max(Math.max(...counts, 0), peak, 1) / 0.95;
+    const curveY = v => PAD.t + h - (Math.max(N, 1) * bw * nullPdf(v) / scaleMax) * h;
+    ctx.fillStyle = css("--reject"); ctx.globalAlpha = 0.35;
+    const shade = (a, b) => { ctx.beginPath(); ctx.moveTo(x(a), PAD.t + h); for (let i = 0; i <= 200; i++) { const v = a + i / 200 * (b - a); ctx.lineTo(x(v), curveY(v)); } ctx.lineTo(x(b), PAD.t + h); ctx.closePath(); ctx.fill(); };
+    if (tail !== "left") shade(c * se, LIM); if (tail !== "right") shade(-LIM, -c * se);
+    ctx.globalAlpha = 1;
+    const pxw = x(bw) - x(0);
+    // color bars by the reference rejection boundary (approximate when SE varies with the sample)
+    for (let i = 0; i < BINS; i++) {
+      if (!counts[i]) continue;
+      const mid = -LIM + (i + 0.5) * bw, z = mid / se;
+      const rej = tail === "two" ? Math.abs(z) >= c : tail === "right" ? z >= c : z <= -c;
+      ctx.fillStyle = rej ? css("--reject") : css("--keep");
+      const bh = (counts[i] / scaleMax) * h;
+      ctx.fillRect(x(-LIM + i * bw) + 0.5, PAD.t + h - bh, pxw - 1, bh);
+      if (rej) { ctx.strokeStyle = css("--asu-black"); ctx.lineWidth = 0.6; ctx.strokeRect(x(-LIM + i * bw) + 0.5, PAD.t + h - bh, pxw - 1, bh); }
+    }
+    ctx.strokeStyle = css("--asu-black"); ctx.lineWidth = 2.5; ctx.beginPath();
+    for (let i = 0; i <= 400; i++) { const v = -LIM + i / 400 * 2 * LIM; i ? ctx.lineTo(x(v), curveY(v)) : ctx.moveTo(x(v), curveY(v)); }
+    ctx.stroke();
+    const cl = v => { ctx.save(); ctx.strokeStyle = "#a67c00"; ctx.lineWidth = 1.5; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(x(v), PAD.t); ctx.lineTo(x(v), PAD.t + h); ctx.stroke(); ctx.restore(); };
+    ctx.fillStyle = "#a67c00"; ctx.font = "bold 12px sans-serif"; ctx.textAlign = "center";
+    if (tail !== "left") { cl(c * se); ctx.fillText("reject beyond " + (c * se).toFixed(2), x(c * se), PAD.t + 12); }
+    if (tail !== "right") { cl(-c * se); ctx.fillText("reject beyond −" + (c * se).toFixed(2), x(-c * se), PAD.t + 12); }
+    ctx.fillStyle = css("--asu-black"); ctx.font = "13px sans-serif"; ctx.textAlign = "right";
+    ctx.fillText("Gaps expected if μ₁ = μ₂: centered at 0, SD = " + fmt(se), PAD.l + w - 4, PAD.t + 28);
+    if (!h0true()) vline(f, trueDiff(), css("--maroon"), "true μ₁ − μ₂ = " + trueDiff().toFixed(1), 44);
+    if (!N) { ctx.fillStyle = css("--muted"); ctx.textAlign = "center"; ctx.font = "14px sans-serif"; ctx.fillText("Click ▶ Animate to start running tests.", PAD.l + w / 2, PAD.t + h * 0.55); }
+    if (latest) {
+      const v = Math.max(-LIM, Math.min(LIM, latest.gap));
+      ctx.fillStyle = latest.reject ? css("--reject") : css("--keep"); ctx.strokeStyle = css("--asu-black"); ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(x(v), PAD.t + h - 1); ctx.lineTo(x(v) - 7, PAD.t + h + 11); ctx.lineTo(x(v) + 7, PAD.t + h + 11); ctx.closePath(); ctx.fill(); ctx.stroke();
+    }
+  }
+
+  // ---------- Text ----------
+  const tailWord = () => tail === "two" ? "two-tailed" : tail === "right" ? "right-tailed" : "left-tailed";
+  const altText = () => tail === "two" ? "μ₁ − μ₂ ≠ 0" : tail === "right" ? "μ₁ − μ₂ > 0" : "μ₁ − μ₂ < 0";
+  const methodName = () => method === "z" ? "z test with known σ₁ and σ₂" : method === "pooled" ? "pooled t test" : "Welch t test";
+  function updateExplain() {
+    const d = trueDiff();
+    for (const [id, v] of [["mu1Out", mu1], ["sd1Out", sd1], ["n1Out", n1], ["mu2Out", mu2], ["sd2Out", sd2], ["n2Out", n2]]) $(id).textContent = v;
+    $("gapDesc").textContent = h0true()
+      ? "The two population means are equal, so H₀ is TRUE. Every rejection is a Type I error."
+      : `The true difference is μ₁ − μ₂ = ${d.toFixed(1)}, so H₀ is FALSE. Every rejection is a correct detection; every failure to reject is a Type II error.`;
+    $("how0").textContent = `Someone asks whether the two groups have the same mean. We test H₀: μ₁ − μ₂ = 0 against the ${tailWord()} alternative H₁: ${altText()} at α = ${alpha}. We know the truth: μ₁ = ${mu1} and μ₂ = ${mu2}, so H₀ is ${h0true() ? "true" : "false"}.`;
+    $("how1").textContent = `We draw ${n1} observations from group 1 (${shape.name}, σ₁ = ${sd1}) and, independently, ${n2} from group 2 (${shape.name}, σ₂ = ${sd2}), and compute the two sample means x̄₁ and x̄₂.`;
+    const seText = method === "z"
+      ? `the known population SDs: SE = √(${sd1}²/${n1} + ${sd2}²/${n2}) = ${fmt(seTrue())}. The statistic is z = (x̄₁ − x̄₂) / SE.`
+      : method === "pooled"
+        ? `the pooled sample variance s_p² = [(n₁−1)s₁² + (n₂−1)s₂²] / (n₁+n₂−2): SE = s_p·√(1/${n1} + 1/${n2}). The statistic is t with ${n1 + n2 - 2} degrees of freedom.`
+        : `each sample's own variance: SE = √(s₁²/${n1} + s₂²/${n2}). The statistic is t with degrees of freedom from the Welch formula (about ${refDf().toFixed(1)} here).`;
+    $("how2").textContent = `We take the gap x̄₁ − x̄₂ and divide it by the standard error of the gap, computed from ${seText}`;
+    $("how3").textContent = `We reject H₀ if the p-value is below ${alpha}` + (tail === "two" ? `, i.e. if |statistic| ≥ ${critVal(refDf()).toFixed(3)}.` : `, i.e. if the statistic is ${tail === "right" ? "≥ " : "≤ −"}${critVal(refDf()).toFixed(3)}.`);
+    $("how4").textContent = `We repeat this ${reps().toLocaleString()} times, with fresh samples from both groups each time, and count how often H₀ is rejected.`;
+    $("howQuestion").textContent = h0true()
+      ? `The question we are testing: the populations are identical, so any gap between x̄₁ and x̄₂ is pure sampling noise. How large do those gaps get, and does the test wrongly call them "real" only about ${pct(alpha)} of the time?`
+      : `The question we are testing: there is a real difference of ${d.toFixed(1)}. How often does the ${methodName()} actually detect it? That rate is the power.`;
+    $("resultsIntro").textContent = h0true()
+      ? "H₀ is true, so the rejection rate you observe is the Type I error rate, which should match α."
+      : "H₀ is false, so the rejection rate you observe is the power, and 1 minus that is the Type II error rate β.";
+  }
+  function updateLatest() {
+    $("lStatLbl").textContent = method === "z" ? "Statistic z" : "Statistic t";
+    if (!latest) { for (const id of ["lM1", "lM2", "lGap", "lSE", "lStat", "lP"]) $(id).textContent = "–"; $("lDec").textContent = "run a test"; $("lDec").className = "decision"; $("lWhy").textContent = ""; return; }
+    $("lM1").textContent = fmt(latest.m1); $("lM2").textContent = fmt(latest.m2); $("lGap").textContent = fmt(latest.gap); $("lSE").textContent = fmt(latest.se);
+    $("lStat").textContent = fmt(latest.stat) + (method === "z" ? "" : ` (${latest.df.toFixed(method === "pooled" ? 0 : 1)} df)`);
+    $("lP").textContent = latest.p < 0.0005 ? "< 0.001" : fmt(latest.p);
+    $("lDec").textContent = latest.reject ? "Reject H₀" : "Fail to reject H₀"; $("lDec").className = "decision " + (latest.reject ? "reject" : "keep");
+    let why = `The gap is ${Math.abs(latest.stat).toFixed(2)} standard errors from 0; p ${latest.reject ? "<" : "≥"} α = ${alpha}.`;
+    if (h0true()) why += latest.reject ? " The populations are identical, so this is a Type I error." : " The populations are identical, so this is the right call.";
+    else why += latest.reject ? " There is a real difference, so this is correct." : " There is a real difference, so this is a Type II error.";
+    $("lWhy").textContent = " " + why;
+  }
+  function updateStats() {
+    const se = seTrue(), df = refDf(), c = critVal(df), tr = theoryRate();
+    $("tDiff").textContent = trueDiff().toFixed(1); $("h0true").textContent = h0true() ? "Yes" : "No";
+    $("v1").textContent = fmt(sd1 * sd1 / n1); $("v2").textContent = fmt(sd2 * sd2 / n2); $("se").textContent = fmt(se);
+    $("crit").textContent = (tail === "two" ? "±" : tail === "right" ? "+" : "−") + c.toFixed(3) + (method === "z" ? " (z)" : ` (t, ${df.toFixed(method === "pooled" ? 0 : 1)} df)`);
+    $("expLbl").textContent = h0true() ? "Expected rejection rate (= α)" : "Expected rejection rate (= power)";
+    $("expRate").textContent = pct(tr) + (method !== "z" ? " (approx.)" : "");
+    $("theoryNote").textContent = h0true()
+      ? `With equal means the gaps are centered at 0 with SD ${fmt(se)}, and the shaded tails hold ${pct(alpha)} of them.`
+      : `The true gap of ${trueDiff().toFixed(1)} is ${fmt(Math.abs(trueDiff()) / se)} standard errors wide. That pushes about ${pct(tr)} of tests into the rejection region; β ≈ ${pct(1 - tr)}.`;
+    const N = gaps.length; $("count").textContent = N.toLocaleString();
+    if (N) {
+      const rate = rejects / N, mean = gapSum / N, sd = N > 1 ? Math.sqrt(Math.max(0, (gapSq - N * mean * mean) / (N - 1))) : 0;
+      $("rejects").textContent = rejects.toLocaleString(); $("keeps").textContent = (N - rejects).toLocaleString(); $("obsRate").textContent = pct(rate);
+      $("avgGap").textContent = fmt(mean); $("sdGap").textContent = N > 1 ? fmt(sd) : "–";
+      $("tally").innerHTML = h0true()
+        ? `Rejected H₀ in <b>${rejects.toLocaleString()}</b> of <b>${N.toLocaleString()}</b> tests = <b>${pct(rate)}</b> &nbsp;(α = ${pct(alpha)}; the populations are identical, so these are false alarms)`
+        : `Rejected H₀ in <b>${rejects.toLocaleString()}</b> of <b>${N.toLocaleString()}</b> tests = <b>${pct(rate)}</b> &nbsp;(power; theory ≈ ${pct(tr)})`;
+      let msg = `After ${N.toLocaleString()} tests: rejected ${rejects.toLocaleString()} times, an observed rate of ${pct(rate)} against a predicted ${pct(tr)}. The observed gaps have SD ${N > 1 ? fmt(sd) : "–"} versus the theoretical standard error ${fmt(se)}. `;
+      if (N < 100) msg += "With fewer than 100 tests the rate is still noisy; keep going.";
+      else if (Math.abs(rate - tr) < 0.03) msg += h0true() ? "The false-alarm rate matches α." : "The power matches the prediction.";
+      else if (h0true() && rate > tr + 0.03) msg += "The false-alarm rate is above α: the test's assumptions are strained here (unequal variances with unequal sample sizes under the pooled test, or skewed data with tiny samples), so it rejects too often.";
+      else if (h0true()) msg += "The false-alarm rate is below α: the test is conservative in this setting.";
+      else msg += "The observed rate differs from the prediction; run more tests, or note that the theory line is a normal approximation for t tests.";
+      $("verdict").textContent = msg; $("chartDesc").textContent = msg;
+    } else {
+      for (const id of ["rejects", "keeps", "obsRate", "avgGap", "sdGap"]) $(id).textContent = "–";
+      $("tally").textContent = "No tests yet."; $("verdict").textContent = "Run the simulation in step 3 to fill in the observed column."; $("chartDesc").textContent = "";
+    }
+  }
+
+  // ---------- Actions ----------
+  function sample(m, s, n) { let sum = 0, sq = 0; for (let i = 0; i < n; i++) { const v = shape.draw(m, s); sum += v; sq += v * v; } const mean = sum / n; return { mean, var: Math.max(0, (sq - n * mean * mean) / (n - 1)) }; }
+  function runOne() {
+    const a = sample(mu1, sd1, n1), b = sample(mu2, sd2, n2);
+    const gap = a.mean - b.mean;
+    let se, df;
+    if (method === "z") { se = seTrue(); df = Infinity; }
+    else if (method === "pooled") { const sp2 = ((n1 - 1) * a.var + (n2 - 1) * b.var) / (n1 + n2 - 2); se = Math.sqrt(sp2 * (1 / n1 + 1 / n2)); df = n1 + n2 - 2; }
+    else { const v1 = a.var / n1, v2 = b.var / n2; se = Math.sqrt(v1 + v2); df = (v1 + v2) ** 2 / (v1 * v1 / (n1 - 1) + v2 * v2 / (n2 - 1)); }
+    const stat = se > 0 ? gap / se : 0, p = pValue(stat, df), reject = p < alpha;
+    latest = { m1: a.mean, m2: b.mean, gap, se, stat, df, p, reject };
+    gaps.push(gap); gapSum += gap; gapSq += gap * gap; if (reject) rejects++;
+  }
+  function runMany(k) { for (let i = 0; i < k; i++) runOne(); drawGap(); updateLatest(); updateStats(); }
+  function stopAnim() { if (timer) { clearInterval(timer); timer = null; } const b = $("anim"); b.textContent = "▶ Animate one test at a time"; b.setAttribute("aria-pressed", "false"); }
+  function perTick(t) { return t < 30 ? 1 : t < 60 ? 3 : t < 100 ? 10 : 25; }
+  function startAnim() {
+    const b = $("anim"); b.textContent = "⏹ Stop animation"; b.setAttribute("aria-pressed", "true");
+    const target = reps();
+    timer = setInterval(() => { const k = Math.min(perTick(ticks++), target - gaps.length); if (k > 0) runMany(k); if (gaps.length >= target) stopAnim(); }, +$("speed").value);
+  }
+  function clearAll() { stopAnim(); gaps = []; rejects = 0; gapSum = 0; gapSq = 0; latest = null; ticks = 0; drawPop(); drawGap(); updateExplain(); updateLatest(); updateStats(); }
+  function runAll() { clearAll(); runMany(reps()); }
+
+  $("draw").addEventListener("click", runAll);
+  $("reset").addEventListener("click", clearAll);
+  $("anim").addEventListener("click", () => { if (timer) stopAnim(); else { clearAll(); startAnim(); } });
+  $("speed").addEventListener("change", () => { if (timer) { clearInterval(timer); timer = null; const t = ticks; startAnim(); ticks = t; } });
+  $("reps").addEventListener("change", clearAll);
+  $("shape").addEventListener("change", e => { shape = SHAPES[e.target.value]; clearAll(); });
+  $("method").addEventListener("change", e => { method = e.target.value; clearAll(); });
+  $("alpha").addEventListener("change", e => { alpha = +e.target.value; clearAll(); });
+  $("tail").addEventListener("change", e => { tail = e.target.value; clearAll(); });
+  $("mu1").addEventListener("input", e => { mu1 = +e.target.value; clearAll(); });
+  $("mu2").addEventListener("input", e => { mu2 = +e.target.value; clearAll(); });
+  $("sd1").addEventListener("input", e => { sd1 = +e.target.value; clearAll(); });
+  $("sd2").addEventListener("input", e => { sd2 = +e.target.value; clearAll(); });
+  $("n1").addEventListener("input", e => { n1 = +e.target.value; clearAll(); });
+  $("n2").addEventListener("input", e => { n2 = +e.target.value; clearAll(); });
+
+  clearAll();
+})();
+</script>
+</body>
+</html>

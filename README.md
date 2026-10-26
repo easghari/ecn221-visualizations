@@ -6,5 +6,7 @@ Self-contained HTML visualizations for ECN 221 Business Statistics (Arizona Stat
 - `clt-explorer.html` — Central Limit Theorem
 - `ci-explorer.html` — Confidence Intervals
 - `ht-explorer.html` — Hypothesis Tests: Interpreting α and Power
+- `two-means-explorer.html` — Comparing Two Means: Is the Gap Real?
+- `paired-explorer.html` — Paired vs. Independent Samples
 
 Each file is standalone (no external dependencies). Published with GitHub Pages.

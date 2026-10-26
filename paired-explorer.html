@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paired vs. Independent Samples – ECN 221</title>
+<style>
+  :root {
+    --maroon: #8C1D40; --gold: #FFC627; --asu-gray: #5C6670; --asu-black: #191919;
+    --text: #191919; --muted: #5C6670; --line: #d9dee5; --panel: #f7f7f7;
+    --before: #5C6670; --after: #8C1D40;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--text); background: #fff; line-height: 1.55; font-size: 16px; }
+  header { padding: 18px 24px 14px; background: var(--maroon); color: #fff; border-bottom: 6px solid var(--gold); }
+  header h1 { margin: 0 0 4px; font-size: 1.5rem; }
+  header p { margin: 0; color: #f3e6ea; font-size: 0.95rem; }
+  main { max-width: 1100px; margin: 0 auto; padding: 8px 24px 32px; }
+  section { padding: 22px 0; border-bottom: 1px solid var(--line); }
+  section:last-of-type { border-bottom: none; }
+  h2 { font-size: 1.25rem; margin: 0 0 10px; color: var(--maroon); }
+  h2 .step { display: inline-block; background: var(--maroon); color: #fff; border-radius: 50%; width: 28px; height: 28px; line-height: 28px; text-align: center; font-size: 0.95rem; margin-right: 8px; }
+  p { margin: 0 0 10px; }
+  .formula { font-family: Georgia, "Times New Roman", serif; font-size: 1.05rem; }
+  .callout { background: var(--panel); border-left: 4px solid var(--maroon); padding: 12px 16px; border-radius: 4px; margin: 10px 0; }
+  .callout ol, .callout ul { margin: 6px 0 0; padding-left: 22px; }
+  .callout li { margin-bottom: 8px; }
+  .warn { background: #fff8e0; border-left: 4px solid var(--gold); padding: 12px 16px; border-radius: 4px; margin: 10px 0; }
+  .twocol { display: grid; grid-template-columns: 340px 1fr; gap: 24px; align-items: start; }
+  @media (max-width: 860px) { .twocol { grid-template-columns: 1fr; } }
+  fieldset { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; margin: 0; background: var(--panel); }
+  legend { font-weight: 600; padding: 0 6px; color: var(--maroon); }
+  label { display: block; margin: 8px 0 4px; font-weight: 600; font-size: 0.95rem; }
+  select, input[type=range] { width: 100%; }
+  select { padding: 6px; font-size: 1rem; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+  input[type=range] { accent-color: var(--maroon); }
+  .note { font-size: 0.88rem; color: var(--muted); margin: 4px 0 0; }
+  .btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  button { font-size: 0.95rem; padding: 8px 12px; border-radius: 6px; cursor: pointer; border: 1px solid var(--maroon); background: var(--maroon); color: #fff; font-weight: 600; }
+  button.primary { font-size: 1.05rem; padding: 12px 16px; box-shadow: 0 3px 0 var(--gold); width: 100%; margin-top: 14px; }
+  button.secondary { background: #fff; color: var(--maroon); }
+  button:hover { filter: brightness(1.08); }
+  button:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid var(--maroon); outline-offset: 2px; }
+  .chart { margin-bottom: 14px; }
+  .chart h3 { margin: 0 0 4px; font-size: 1rem; }
+  .legend { font-size: 0.85rem; color: var(--muted); display: flex; gap: 14px; flex-wrap: wrap; margin: 4px 0 8px; }
+  .legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .swatch { display: inline-block; width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(0,0,0,.15); }
+  canvas { width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 6px; }
+  @media (max-width: 860px) { .compare { grid-template-columns: 1fr; } }
+  .box { border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+  .box h3 { margin: 0 0 8px; font-size: 1rem; color: var(--maroon); }
+  .box.ind { border-top: 4px solid var(--asu-gray); }
+  .box.pair { border-top: 4px solid var(--maroon); }
+  .kv { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; font-size: 0.95rem; }
+  .kv span { color: var(--muted); }
+  .kv b { font-variant-numeric: tabular-nums; text-align: right; }
+  .decision { font-weight: 700; padding: 2px 8px; border-radius: 4px; display: inline-block; margin-top: 8px; }
+  .decision.reject { background: var(--gold); color: var(--asu-black); }
+  .decision.keep { background: var(--maroon); color: #fff; }
+  .tally { font-size: 1.05rem; font-weight: 700; margin: 10px 0 0; }
+  .tally b { color: var(--maroon); font-variant-numeric: tabular-nums; }
+  .results { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 860px) { .results { grid-template-columns: 1fr; } }
+  .box.theory { border-top: 4px solid var(--asu-black); }
+  .box.observed { border-top: 4px solid var(--maroon); }
+  .verdict { margin-top: 14px; }
+  ol.explore { padding-left: 20px; }
+  ol.explore li { margin-bottom: 8px; }
+  .tip { background: #fff8e0; border-left: 4px solid var(--gold); padding: 10px 12px; border-radius: 4px; }
+  footer { padding: 10px 24px 20px; color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--line); text-align: center; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Paired vs. Independent Samples</h1>
+  <p>ECN 221 Business Statistics · Instructor: Ehsan Asghari-Ghara</p>
+</header>
+
+<main>
+
+  <!-- 1 -->
+  <section aria-labelledby="h-idea">
+    <h2 id="h-idea"><span class="step">1</span>Two ways to compare "before" and "after", and why one of them is much sharper</h2>
+    <p>Suppose a company measures each of <em>n</em> employees' output before a training program and again after it. There are two ways to test whether training helped:</p>
+    <div class="callout">
+      <ol>
+        <li><strong>Independent-samples test.</strong> Treat the "before" numbers and the "after" numbers as two separate groups and compare their means, as in the previous chapter: <span class="formula">t = (x̄_after − x̄_before) / √(s²_after/n + s²_before/n)</span>. This throws away the fact that each before number and each after number belong to the <em>same person</em>.</li>
+        <li><strong>Paired-samples test.</strong> For each employee compute the change <span class="formula">d = after − before</span>, then run a one-sample test on the <em>n</em> differences: <span class="formula">t = d̄ / (s_d/√n)</span>, with <em>n</em> − 1 degrees of freedom.</li>
+      </ol>
+    </div>
+    <p>Why does it matter? Employees differ a lot from one another: some are fast, some are slow, before <em>and</em> after. That person-to-person spread inflates <em>s</em><sub>before</sub> and <em>s</em><sub>after</sub>, so the independent test's standard error is huge and a modest training effect drowns in it. Taking differences cancels each person's own baseline out. What is left, <em>s</em><sub><em>d</em></sub>, measures only how much the <em>change</em> varies between people, which is usually far smaller.</p>
+    <div class="warn">
+      <p style="margin:0"><strong>The rule:</strong> when each observation in one sample is naturally linked to one observation in the other (same person, same store, same matched pair), use the paired test. Pairing does not change the sample means or the estimated effect at all; it changes the <em>standard error</em>, which is what decides whether the effect is detectable.</p>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section aria-labelledby="h-how">
+    <h2 id="h-how"><span class="step">2</span>How the simulation works</h2>
+    <p>We build a population where every person has their own baseline, training adds a true effect, and a little noise is added to each measurement. Then we run <em>both</em> tests on the <em>same</em> data, over and over, and count how often each one detects the effect. The text below updates with the settings in step 3.</p>
+    <div class="callout" aria-live="polite">
+      <ol>
+        <li><strong>One employee.</strong> <span id="how1"></span></li>
+        <li><strong>One study.</strong> <span id="how2"></span></li>
+        <li><strong>Two tests on the same numbers.</strong> <span id="how3"></span></li>
+        <li><strong>Repeat and compare.</strong> <span id="how4"></span></li>
+      </ol>
+    </div>
+    <p id="howQuestion"></p>
+  </section>
+
+  <!-- 3 -->
+  <section aria-labelledby="h-run">
+    <h2 id="h-run"><span class="step">3</span>Run the simulation</h2>
+    <div class="twocol">
+      <div>
+        <fieldset>
+          <legend>Settings</legend>
+          <label for="effect">True training effect (average change) = <output id="effectOut" for="effect">3</output> units</label>
+          <input type="range" id="effect" min="0" max="10" value="3" step="0.5">
+          <p class="note">Set to 0 to make H₀ true.</p>
+
+          <label for="sdPerson">Person-to-person spread in baseline σ<sub>person</sub> = <output id="sdPersonOut" for="sdPerson">15</output></label>
+          <input type="range" id="sdPerson" min="0" max="30" value="15" step="1">
+          <p class="note">How different employees are from each other. This is what pairing cancels.</p>
+
+          <label for="sdNoise">Spread in each person's change σ<sub>noise</sub> = <output id="sdNoiseOut" for="sdNoise">4</output></label>
+          <input type="range" id="sdNoise" min="1" max="15" value="4" step="1">
+          <p class="note">Measurement noise and individual variation in how much training helps. This is what pairing cannot cancel.</p>
+
+          <label for="n">Number of employees n = <output id="nOut" for="n">15</output></label>
+          <input type="range" id="n" min="3" max="100" value="15" step="1">
+
+          <label for="alpha">Significance level α (two-tailed)</label>
+          <select id="alpha">
+            <option value="0.01">0.01</option>
+            <option value="0.05" selected>0.05</option>
+            <option value="0.10">0.10</option>
+          </select>
+
+          <label for="reps">Number of studies to run</label>
+          <select id="reps">
+            <option value="20">20</option>
+            <option value="100">100</option>
+            <option value="500">500</option>
+            <option value="1000" selected>1,000</option>
+          </select>
+
+          <button id="one" type="button" class="primary">▶ Run one study and show the data</button>
+          <div class="btns">
+            <button id="draw" type="button" class="secondary">Run all studies at once</button>
+            <button id="reset" type="button" class="secondary">Clear</button>
+          </div>
+        </fieldset>
+      </div>
+
+      <div>
+        <div class="chart">
+          <h3>One study: each employee before and after (lines connect the same person)</h3>
+          <div class="legend">
+            <span><span class="swatch" style="background:var(--before)"></span>before</span>
+            <span><span class="swatch" style="background:var(--after)"></span>after</span>
+            <span>▲ = group mean</span>
+          </div>
+          <canvas id="cData" width="900" height="300" role="img" aria-label="Before and after values for each employee, connected by lines"></canvas>
+        </div>
+        <div class="compare" aria-live="polite">
+          <div class="box ind">
+            <h3>Independent-samples test on this study</h3>
+            <div class="kv">
+              <span>x̄_after − x̄_before</span><b id="iGap">–</b>
+              <span>s_before, s_after</span><b id="iSds">–</b>
+              <span>Standard error</span><b id="iSE">–</b>
+              <span>t statistic</span><b id="iT">–</b>
+              <span>p-value</span><b id="iP">–</b>
+            </div>
+            <span id="iDec" class="decision">–</span>
+          </div>
+          <div class="box pair">
+            <h3>Paired-samples test on this study</h3>
+            <div class="kv">
+              <span>d̄ (mean change)</span><b id="pGap">–</b>
+              <span>s_d (SD of the changes)</span><b id="pSd">–</b>
+              <span>Standard error s_d/√n</span><b id="pSE">–</b>
+              <span>t statistic</span><b id="pT">–</b>
+              <span>p-value</span><b id="pP">–</b>
+            </div>
+            <span id="pDec" class="decision">–</span>
+          </div>
+        </div>
+        <p class="tally" id="tally">No studies yet.</p>
+        <p id="chartDesc" class="sr-only"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section aria-labelledby="h-results">
+    <h2 id="h-results"><span class="step">4</span>Reading the results</h2>
+    <p>Both tests see exactly the same estimated effect. They differ only in the standard error they measure it against.</p>
+    <div class="results" aria-live="polite">
+      <div class="box theory">
+        <h3>What the theory predicts</h3>
+        <div class="kv">
+          <span>True effect</span><b id="tEff">–</b>
+          <span>SD of a before (or after) value</span><b id="tSdGroup">–</b>
+          <span>Independent SE ≈ √(2·σ²_group / n)</span><b id="tSEi">–</b>
+          <span>SD of a person's change</span><b id="tSdDiff">–</b>
+          <span>Paired SE = σ_d / √n</span><b id="tSEp">–</b>
+          <span>Independent test: expected rejection rate</span><b id="tPowI">–</b>
+          <span>Paired test: expected rejection rate</span><b id="tPowP">–</b>
+        </div>
+        <p class="note" id="theoryNote" style="margin-top:8px"></p>
+      </div>
+      <div class="box observed">
+        <h3>What the simulation produced</h3>
+        <div class="kv">
+          <span>Studies run</span><b id="count">0</b>
+          <span>Independent test rejected H₀</span><b id="oRejI">–</b>
+          <span>Paired test rejected H₀</span><b id="oRejP">–</b>
+          <span>Studies where only the paired test rejected</span><b id="oOnlyP">–</b>
+          <span>Studies where only the independent test rejected</span><b id="oOnlyI">–</b>
+        </div>
+        <p class="note" id="obsNote" style="margin-top:8px"></p>
+      </div>
+    </div>
+    <p class="verdict" id="verdict"></p>
+    <p>The paired standard error depends on σ<sub>noise</sub> only; the independent one depends on both σ<sub>person</sub> and σ<sub>noise</sub>. When people differ a lot from each other (large σ<sub>person</sub>) but respond to training in a similar way (small σ<sub>noise</sub>), pairing is a huge win. When σ<sub>person</sub> is near zero, the two tests are nearly the same, and the paired test even gives up a little because it has only <em>n</em> − 1 degrees of freedom instead of 2<em>n</em> − 2.</p>
+  </section>
+
+  <!-- 5 -->
+  <section aria-labelledby="h-explore">
+    <h2 id="h-explore"><span class="step">5</span>Explore further</h2>
+    <ol class="explore">
+      <li>Click <strong>Run one study</strong> a few times with the default settings. Look at the lines: nearly every one slopes upward, yet the before and after clouds overlap heavily. Which test notices the slope, and which only sees the clouds?</li>
+      <li>Run all 1,000 studies. Compare the two rejection rates. The effect is real, so these are the two tests' power. How many studies did the paired test catch that the independent test missed?</li>
+      <li>Slide σ<sub>person</sub> down to 0 and rerun. Now the two tests agree almost perfectly. Why? Slide it to 30: what happens to the independent test?</li>
+      <li>Set the true effect to 0 (H₀ true). The paired test should reject about 5% of the time. What about the independent test? It rejects far <em>less</em> often than α. Is that "safe", or is it a sign that the test is using the wrong yardstick for these data?</li>
+      <li>Keep σ<sub>person</sub> = 15 and ask: how large would n have to be for the <em>independent</em> test to reach the power the <em>paired</em> test has at n = 15? Slide n up until the independent power matches.</li>
+      <li>Raise σ<sub>noise</sub> to 15 so that training helps some people a lot and others not at all. Does pairing still help as much? What does s<sub>d</sub> measure now?</li>
+    </ol>
+    <p class="tip"><strong>Key point:</strong> pairing is a design choice, not a statistical trick. It works because it removes a source of variation that has nothing to do with the question. If the data were collected in pairs, analyzing them as independent groups is not "conservative"; it is simply a weaker analysis of the same information, and it can miss effects that are plainly visible in the data.</p>
+  </section>
+
+</main>
+
+<footer>ECN 221 Business Statistics · W. P. Carey School of Business, Arizona State University</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------- Math ----------
+  function randNormal() { let u = 0, v = 0; while (u === 0) u = Math.random(); while (v === 0) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+  function normCdf(x) { const t = 1 / (1 + 0.2316419 * Math.abs(x)); const d = 0.3989422804014327 * Math.exp(-x * x / 2); const p = d * t * (0.319381530 + t * (-0.356563782 + t * (1.781477937 + t * (-1.821255978 + t * 1.330274429)))); return x >= 0 ? 1 - p : p; }
+  function lgamma(z) { const g = 7, c = [0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313, -176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7]; if (z < 0.5) return Math.log(Math.PI / Math.sin(Math.PI * z)) - lgamma(1 - z); z -= 1; let x = c[0]; for (let i = 1; i < g + 2; i++) x += c[i] / (z + i); const t = z + g + 0.5; return 0.5 * Math.log(2 * Math.PI) + (z + 0.5) * Math.log(t) - t + Math.log(x); }
+  function betacf(a, b, x) { const MAXIT = 200, EPS = 3e-12, FPMIN = 1e-300; let qab = a + b, qap = a + 1, qam = a - 1, c = 1, d = 1 - qab * x / qap; if (Math.abs(d) < FPMIN) d = FPMIN; d = 1 / d; let h = d; for (let m = 1; m <= MAXIT; m++) { const m2 = 2 * m; let aa = m * (b - m) * x / ((qam + m2) * (a + m2)); d = 1 + aa * d; if (Math.abs(d) < FPMIN) d = FPMIN; c = 1 + aa / c; if (Math.abs(c) < FPMIN) c = FPMIN; d = 1 / d; h *= d * c; aa = -(a + m) * (qab + m) * x / ((a + m2) * (qap + m2)); d = 1 + aa * d; if (Math.abs(d) < FPMIN) d = FPMIN; c = 1 + aa / c; if (Math.abs(c) < FPMIN) c = FPMIN; d = 1 / d; const del = d * c; h *= del; if (Math.abs(del - 1) < EPS) break; } return h; }
+  function ibeta(a, b, x) { if (x <= 0) return 0; if (x >= 1) return 1; const bt = Math.exp(lgamma(a + b) - lgamma(a) - lgamma(b) + a * Math.log(x) + b * Math.log(1 - x)); return x < (a + 1) / (a + b + 2) ? bt * betacf(a, b, x) / a : 1 - bt * betacf(b, a, 1 - x) / b; }
+  function tCdf(t, df) { const p = 0.5 * ibeta(df / 2, 0.5, df / (df + t * t)); return t >= 0 ? 1 - p : p; }
+  function invCdf(cdf, p) { let lo = 0, hi = 50; for (let i = 0; i < 80; i++) { const mid = (lo + hi) / 2; if (cdf(mid) < p) lo = mid; else hi = mid; } return (lo + hi) / 2; }
+  const tCrit = (alpha, df) => invCdf(t => tCdf(t, df), 1 - alpha / 2);
+  const twoP = (t, df) => 2 * (1 - tCdf(Math.abs(t), df));
+
+  // ---------- State ----------
+  const BASE = 50;
+  let effect = 3, sdPerson = 15, sdNoise = 4, n = 15, alpha = 0.05;
+  let study = null;                 // latest study data
+  let N = 0, rejI = 0, rejP = 0, onlyP = 0, onlyI = 0;
+
+  // ---------- DOM ----------
+  const $ = id => document.getElementById(id);
+  const cData = $("cData");
+  const fmt = v => v.toFixed(3);
+  const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const reps = () => +$("reps").value;
+  const pct = v => (100 * v).toFixed(1) + "%";
+  const pStr = p => p < 0.0005 ? "< 0.001" : fmt(p);
+
+  // ---------- Theory ----------
+  const sdGroup = () => Math.sqrt(sdPerson * sdPerson + sdNoise * sdNoise / 2);   // each measurement = person + noise/√2 ... see model
+  // Model: before = BASE + person + e1, after = BASE + person + effect + e2, with e1,e2 ~ N(0, sdNoise/√2) so that d = after − before has SD sdNoise.
+  const seInd = () => Math.sqrt(2 * sdGroup() ** 2 / n);
+  const seP = () => sdNoise / Math.sqrt(n);
+  // The gap x̄_after − x̄_before is the same number for both tests, and on paired data it varies by the PAIRED SE
+  // (person effects cancel in the gap). Each test rejects when |gap| exceeds its own critical distance c × SE.
+  function power(seUsed, df) { const c = tCrit(alpha, df), dist = c * seUsed / seP(), d = effect / seP(); return normCdf(-dist - d) + 1 - normCdf(dist - d); }
+
+  // ---------- Simulation ----------
+  function runStudy() {
+    const e = sdNoise / Math.SQRT2;
+    const before = [], after = [];
+    for (let i = 0; i < n; i++) { const p = sdPerson * randNormal(); before.push(BASE + p + e * randNormal()); after.push(BASE + p + effect + e * randNormal()); }
+    const mean = a => a.reduce((s, v) => s + v, 0) / a.length;
+    const variance = (a, m) => a.reduce((s, v) => s + (v - m) ** 2, 0) / (a.length - 1);
+    const mb = mean(before), ma = mean(after), vb = variance(before, mb), va = variance(after, ma);
+    const d = after.map((v, i) => v - before[i]); const md = mean(d), vd = variance(d, md);
+    const seI = Math.sqrt(va / n + vb / n), tI = seI > 0 ? (ma - mb) / seI : 0, dfI = 2 * n - 2, pI = twoP(tI, dfI);
+    const sePair = Math.sqrt(vd / n), tP = sePair > 0 ? md / sePair : 0, dfP = n - 1, pP = twoP(tP, dfP);
+    const rI = pI < alpha, rP = pP < alpha;
+    N++; if (rI) rejI++; if (rP) rejP++; if (rP && !rI) onlyP++; if (rI && !rP) onlyI++;
+    return { before, after, mb, ma, sb: Math.sqrt(vb), sa: Math.sqrt(va), md, sd: Math.sqrt(vd), seI, tI, pI, rI, sePair, tP, pP, rP, dfI, dfP };
+  }
+
+  // ---------- Drawing ----------
+  const PAD = { l: 44, r: 16, t: 14, b: 30 };
+  function drawData() {
+    const ctx = cData.getContext("2d"); ctx.clearRect(0, 0, cData.width, cData.height);
+    const w = cData.width - PAD.l - PAD.r, h = cData.height - PAD.t - PAD.b;
+    const xB = PAD.l + w * 0.3, xA = PAD.l + w * 0.7;
+    if (!study) { ctx.fillStyle = css("--muted"); ctx.textAlign = "center"; ctx.font = "14px sans-serif"; ctx.fillText("Click ▶ Run one study to draw a sample of employees.", PAD.l + w / 2, PAD.t + h / 2); return; }
+    const all = study.before.concat(study.after); let lo = Math.min(...all), hi = Math.max(...all); const pad = (hi - lo) * 0.1 + 1; lo -= pad; hi += pad;
+    const y = v => PAD.t + h - ((v - lo) / (hi - lo)) * h;
+    // axis
+    ctx.strokeStyle = "#8a94a0"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(PAD.l, PAD.t); ctx.lineTo(PAD.l, PAD.t + h); ctx.stroke();
+    ctx.fillStyle = css("--muted"); ctx.font = "12px sans-serif"; ctx.textAlign = "right";
+    const step = (hi - lo) > 80 ? 20 : (hi - lo) > 40 ? 10 : 5;
+    for (let t = Math.ceil(lo / step) * step; t <= hi; t += step) { ctx.fillText(t, PAD.l - 6, y(t) + 4); ctx.beginPath(); ctx.moveTo(PAD.l - 3, y(t)); ctx.lineTo(PAD.l, y(t)); ctx.stroke(); }
+    ctx.textAlign = "center"; ctx.font = "13px sans-serif"; ctx.fillStyle = css("--text");
+    ctx.fillText("before", xB, PAD.t + h + 18); ctx.fillText("after", xA, PAD.t + h + 18);
+    // lines
+    for (let i = 0; i < n; i++) {
+      const up = study.after[i] > study.before[i];
+      ctx.strokeStyle = up ? "rgba(140,29,64,0.45)" : "rgba(92,102,112,0.45)"; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.moveTo(xB, y(study.before[i])); ctx.lineTo(xA, y(study.after[i])); ctx.stroke();
+    }
+    for (let i = 0; i < n; i++) {
+      ctx.fillStyle = css("--before"); ctx.beginPath(); ctx.arc(xB, y(study.before[i]), 4, 0, 2 * Math.PI); ctx.fill();
+      ctx.fillStyle = css("--after"); ctx.beginPath(); ctx.arc(xA, y(study.after[i]), 4, 0, 2 * Math.PI); ctx.fill();
+    }
+    // group means
+    const tri = (x, v, color) => { ctx.fillStyle = color; ctx.strokeStyle = css("--asu-black"); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x + 22, y(v)); ctx.lineTo(x + 34, y(v) - 7); ctx.lineTo(x + 34, y(v) + 7); ctx.closePath(); ctx.fill(); ctx.stroke(); };
+    tri(xB, study.mb, css("--before")); tri(xA, study.ma, css("--after"));
+    ctx.fillStyle = css("--text"); ctx.font = "bold 12px sans-serif"; ctx.textAlign = "left";
+    ctx.fillText("x̄ = " + study.mb.toFixed(1), xB + 38, y(study.mb) + 4); ctx.fillText("x̄ = " + study.ma.toFixed(1), xA + 38, y(study.ma) + 4);
+    // bracket for the two SEs
+    ctx.font = "12px sans-serif"; ctx.textAlign = "left"; ctx.fillStyle = css("--muted");
+    ctx.fillText(`${n} employees · ${study.after.filter((v, i) => v > study.before[i]).length} of ${n} improved`, PAD.l + 8, PAD.t + 14);
+  }
+
+  // ---------- Text ----------
+  function updateExplain() {
+    $("effectOut").textContent = effect; $("sdPersonOut").textContent = sdPerson; $("sdNoiseOut").textContent = sdNoise; $("nOut").textContent = n;
+    $("how1").textContent = `Each employee has a personal baseline output of ${BASE} plus their own ability (SD σ_person = ${sdPerson} across employees). Their "before" score is that baseline plus a little noise; their "after" score is the same baseline, plus the true training effect of ${effect}, plus noise. The person's change, after − before, has SD σ_noise = ${sdNoise}.`;
+    $("how2").textContent = `We measure ${n} employees before and after, giving ${n} pairs of numbers.`;
+    $("how3").textContent = `The independent test compares x̄_after with x̄_before using √(s²_after/${n} + s²_before/${n}) as the standard error, with ${2 * n - 2} degrees of freedom. The paired test computes each person's change d, then tests whether d̄ is different from 0 using s_d/√${n}, with ${n - 1} degrees of freedom. Both use α = ${alpha}, two-tailed.`;
+    $("how4").textContent = `We repeat the study ${reps().toLocaleString()} times and count how often each test rejects H₀: no training effect.`;
+    $("howQuestion").textContent = effect === 0
+      ? "The question we are testing: training does nothing. Do both tests keep their false-alarm rate near α?"
+      : `The question we are testing: training really raises output by ${effect} on average. Which test detects it more often, and by how much?`;
+  }
+  function updateLatest() {
+    if (!study) { for (const id of ["iGap", "iSds", "iSE", "iT", "iP", "pGap", "pSd", "pSE", "pT", "pP"]) $(id).textContent = "–"; $("iDec").textContent = $("pDec").textContent = "–"; $("iDec").className = $("pDec").className = "decision"; return; }
+    $("iGap").textContent = fmt(study.ma - study.mb); $("iSds").textContent = `${study.sb.toFixed(2)}, ${study.sa.toFixed(2)}`; $("iSE").textContent = fmt(study.seI);
+    $("iT").textContent = fmt(study.tI) + ` (${study.dfI} df)`; $("iP").textContent = pStr(study.pI);
+    $("iDec").textContent = study.rI ? "Reject H₀" : "Fail to reject H₀"; $("iDec").className = "decision " + (study.rI ? "reject" : "keep");
+    $("pGap").textContent = fmt(study.md); $("pSd").textContent = fmt(study.sd); $("pSE").textContent = fmt(study.sePair);
+    $("pT").textContent = fmt(study.tP) + ` (${study.dfP} df)`; $("pP").textContent = pStr(study.pP);
+    $("pDec").textContent = study.rP ? "Reject H₀" : "Fail to reject H₀"; $("pDec").className = "decision " + (study.rP ? "reject" : "keep");
+  }
+  function updateStats() {
+    const sI = seInd(), sP = seP(), pwI = power(sI, 2 * n - 2), pwP = power(sP, n - 1);
+    $("tEff").textContent = effect; $("tSdGroup").textContent = fmt(sdGroup()); $("tSEi").textContent = fmt(sI); $("tSdDiff").textContent = sdNoise; $("tSEp").textContent = fmt(sP);
+    $("tPowI").textContent = pct(pwI) + (effect === 0 ? " (false-alarm rate)" : ""); $("tPowP").textContent = pct(pwP) + (effect === 0 ? " (= α)" : "");
+    $("theoryNote").textContent = `Same gap, two yardsticks: the independent standard error is ${(sI / sP).toFixed(1)}× larger than the paired one. But on paired data the gap itself only wanders by the paired SE (each person's baseline cancels), so the independent test is measuring a small-but-steady gap against a yardstick that is far too long. It rarely rejects, even when it should.`;
+    $("count").textContent = N.toLocaleString();
+    if (N) {
+      $("oRejI").textContent = `${rejI.toLocaleString()} (${pct(rejI / N)})`; $("oRejP").textContent = `${rejP.toLocaleString()} (${pct(rejP / N)})`;
+      $("oOnlyP").textContent = onlyP.toLocaleString(); $("oOnlyI").textContent = onlyI.toLocaleString();
+      $("obsNote").textContent = effect === 0 ? "Training does nothing, so every rejection is a Type I error." : "Training works, so every rejection is a correct detection and every failure to reject is a Type II error.";
+      $("tally").innerHTML = `Across <b>${N.toLocaleString()}</b> studies: independent test rejected <b>${pct(rejI / N)}</b>, paired test rejected <b>${pct(rejP / N)}</b>` + (effect === 0 ? ` &nbsp;(α = ${pct(alpha)})` : "");
+      let msg = `After ${N.toLocaleString()} studies: the independent test rejected ${pct(rejI / N)} of the time (theory ≈ ${effect === 0 ? pct(alpha) : pct(pwI)}) and the paired test ${pct(rejP / N)} (theory ≈ ${effect === 0 ? pct(alpha) : pct(pwP)}). `;
+      if (N < 100) msg += "With fewer than 100 studies the rates are still noisy; keep going.";
+      else if (effect === 0) msg += "With no real effect the paired test sits near α. The independent test rejects much less often than α: on paired data its standard error overstates how much the gap really varies, so it is not just weaker when there is an effect, it is miscalibrated even when there is none.";
+      else if (rejP / N - rejI / N > 0.1) msg += `In ${onlyP.toLocaleString()} studies the paired test found the effect that the independent test missed on the very same data.`;
+      else msg += "Here the two tests perform similarly, because person-to-person variation is small relative to the noise in each person's change, so there is little for pairing to cancel.";
+      $("verdict").textContent = msg; $("chartDesc").textContent = msg;
+    } else {
+      for (const id of ["oRejI", "oRejP", "oOnlyP", "oOnlyI"]) $(id).textContent = "–";
+      $("obsNote").textContent = ""; $("tally").textContent = "No studies yet."; $("verdict").textContent = "Run the simulation in step 3 to fill in the observed column."; $("chartDesc").textContent = "";
+    }
+  }
+
+  // ---------- Actions ----------
+  function one() { study = runStudy(); drawData(); updateLatest(); updateStats(); }
+  function all() { clearAll(); for (let i = 0; i < reps(); i++) study = runStudy(); drawData(); updateLatest(); updateStats(); }
+  function clearAll() { study = null; N = 0; rejI = 0; rejP = 0; onlyP = 0; onlyI = 0; drawData(); updateExplain(); updateLatest(); updateStats(); }
+
+  $("one").addEventListener("click", one);
+  $("draw").addEventListener("click", all);
+  $("reset").addEventListener("click", clearAll);
+  $("reps").addEventListener("change", clearAll);
+  $("alpha").addEventListener("change", e => { alpha = +e.target.value; clearAll(); });
+  $("effect").addEventListener("input", e => { effect = +e.target.value; clearAll(); });
+  $("sdPerson").addEventListener("input", e => { sdPerson = +e.target.value; clearAll(); });
+  $("sdNoise").addEventListener("input", e => { sdNoise = +e.target.value; clearAll(); });
+  $("n").addEventListener("input", e => { n = +e.target.value; clearAll(); });
+
+  clearAll();
+})();
+</script>
+</body>
+</html>
