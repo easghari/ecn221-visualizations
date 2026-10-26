@@ -8,6 +8,6 @@ Self-contained HTML visualizations for ECN 221 Business Statistics (Arizona Stat
 - `ht-explorer.html` — Hypothesis Tests: Interpreting α and Power
 - `two-means-explorer.html` — Comparing Two Means: Is the Gap Real?
 - `paired-explorer.html` — Paired vs. Independent Samples
-- `regression-explorer.html` — Simple Regression: From the Population to the Sample (3D surface uses Plotly.js from cdnjs)
+- `regression-explorer.html` — Simple Regression: From the Population to the Sample
 
 Each file is standalone (no external dependencies). Published with GitHub Pages.

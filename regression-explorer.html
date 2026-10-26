@@ -4,7 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Simple Regression: From the Population to the Sample – ECN 221</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.35.2/plotly.min.js" crossorigin="anonymous"></script>
 <style>
   :root {
     --maroon: #8C1D40; --gold: #FFC627; --asu-gray: #5C6670; --asu-black: #191919;
@@ -52,8 +51,10 @@
   .swatch { display: inline-block; width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(0,0,0,.15); }
   .sline { display: inline-block; width: 22px; height: 0; border-top: 3px solid; }
   canvas { width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
-  #plot3d { width: 100%; height: 480px; border: 1px solid var(--line); border-radius: 6px; }
-  #plotFallback { display: none; padding: 20px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); }
+  #c3d { cursor: grab; touch-action: none; }
+  #c3d:active { cursor: grabbing; }
+  .viewbtns { display: flex; gap: 8px; margin-top: 6px; align-items: center; font-size: 0.85rem; color: var(--muted); }
+  .viewbtns button { padding: 4px 10px; font-size: 0.85rem; }
   .kvbox { border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; background: #fff; }
   .kvbox h3 { margin: 0 0 6px; font-size: 1rem; color: var(--maroon); }
   .kv { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; font-size: 0.95rem; }
@@ -137,7 +138,7 @@
           <input type="range" id="sdy" min="0.5" max="3" value="2" step="0.1">
           <label for="rho">Correlation ρ = <output id="rhoOut" for="rho">0.6</output></label>
           <input type="range" id="rho" min="-0.95" max="0.95" value="0.6" step="0.05">
-          <p class="note">Drag the 3D plot to rotate it; scroll to zoom. The black line on the floor is the population regression line; the gold line runs along the ridge of the hill, through the peak of every slice.</p>
+          <p class="note">The black line on the floor is the population regression line; the gold line runs along the ridge of the hill, through the peak of every slice. The faint ellipses on the floor are contour lines of the density.</p>
         </fieldset>
         <div class="kvbox" style="margin-top:14px">
           <h3>Population regression line</h3>
@@ -153,8 +154,8 @@
       <div>
         <div class="chart">
           <h3>Joint density of (X, Y)</h3>
-          <div id="plot3d" role="img" aria-label="Three-dimensional surface of the bivariate normal density with the population regression line drawn on the floor"></div>
-          <div id="plotFallback">The 3D plot needs the Plotly library, which could not be loaded on this network. The population regression line is still shown in the panels below.</div>
+          <canvas id="c3d" width="900" height="500" tabindex="0" role="img" aria-label="Three-dimensional surface of the bivariate normal density with the population regression line drawn on the floor. Drag or use the arrow keys to rotate."></canvas>
+          <div class="viewbtns"><span>Drag to rotate · scroll to zoom · arrow keys also rotate</span><button type="button" id="resetView" class="secondary">Reset view</button></div>
         </div>
       </div>
     </div>
@@ -329,48 +330,111 @@
   }
   function newSample() { const xs = new Array(n), ys = new Array(n); for (let i = 0; i < n; i++) { const p = drawPair(); xs[i] = p[0]; ys[i] = p[1]; } return Object.assign({ x: xs, y: ys }, fit(xs, ys)); }
 
-  // ---------- 3D (Plotly) ----------
-  const havePlotly = typeof Plotly !== "undefined";
-  if (!havePlotly) { $("plot3d").style.display = "none"; $("plotFallback").style.display = "block"; }
-  function surface() {
-    const G = 61, [x0, x1] = xr(), [y0, y1] = yr();
-    const xs = [], ys = [], z = [];
-    for (let i = 0; i < G; i++) xs.push(x0 + (x1 - x0) * i / (G - 1));
-    for (let j = 0; j < G; j++) ys.push(y0 + (y1 - y0) * j / (G - 1));
-    const k = 1 / (2 * Math.PI * sdx * sdy * Math.sqrt(1 - rho * rho)), q = -1 / (2 * (1 - rho * rho));
-    for (let j = 0; j < G; j++) { const row = []; const zy = (ys[j] - muy) / sdy; for (let i = 0; i < G; i++) { const zx = (xs[i] - mux) / sdx; row.push(k * Math.exp(q * (zx * zx - 2 * rho * zx * zy + zy * zy))); } z.push(row); }
-    return { xs, ys, z, zmax: k };
+  // ---------- 3D surface (plain canvas, no library) ----------
+  const c3d = $("c3d");
+  const view = { yaw: -0.65, pitch: 0.55, zoom: 1 };
+  const VIEW0 = { ...view };
+  function pdf2(x, y) {
+    const zx = (x - mux) / sdx, zy = (y - muy) / sdy, r2 = 1 - rho * rho;
+    return Math.exp(-(zx * zx - 2 * rho * zx * zy + zy * zy) / (2 * r2)) / (2 * Math.PI * sdx * sdy * Math.sqrt(r2));
   }
   function draw3D() {
-    if (!havePlotly) return;
-    const s = surface(), [x0, x1] = xr(), b1 = beta1(), b0 = beta0();
-    const cefX = [], cefY = [], cefZ0 = [], cefZtop = [];
-    const k = 1 / (2 * Math.PI * sdx * sdy * Math.sqrt(1 - rho * rho));
-    for (let i = 0; i <= 80; i++) {
-      const x = x0 + (x1 - x0) * i / 80, y = b0 + b1 * x; cefX.push(x); cefY.push(y); cefZ0.push(0);
-      const zx = (x - mux) / sdx; cefZtop.push(k * Math.exp(-0.5 * zx * zx) + s.zmax * 0.01);   // density along the ridge
+    const ctx = c3d.getContext("2d"), W = c3d.width, H = c3d.height;
+    ctx.clearRect(0, 0, W, H);
+    const [x0, x1] = xr(), [y0, y1] = yr();
+    const zmax = pdf2(mux, muy), ZS = 0.6;   // height of the peak in box units
+    // normalized box coords: X,Y in [-1,1], Z in [0, ZS]
+    const nx = x => (x - mux) / (3.5 * sdx), ny = y => (y - muy) / (3.5 * sdy), nz = z => (z / zmax) * ZS;
+    const cy = Math.cos(view.yaw), sy = Math.sin(view.yaw), cp = Math.cos(view.pitch), sp = Math.sin(view.pitch);
+    const S = Math.min(W, H) * 0.42 * view.zoom, CX = W / 2, CY = H * 0.58;
+    // rotate about vertical axis, then tilt; orthographic projection with depth
+    const proj = (x, y, z) => { const rx = x * cy - y * sy, ry = x * sy + y * cy; return { px: CX + rx * S, py: CY - (z * cp - ry * sp) * S, d: ry * cp + z * sp }; };
+    const P = (x, y, z) => proj(nx(x), ny(y), nz(z));
+    const line = (pts, color, width, dash, alpha) => { ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = width; ctx.globalAlpha = alpha === undefined ? 1 : alpha; if (dash) ctx.setLineDash(dash); ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p.px, p.py) : ctx.moveTo(p.px, p.py)); ctx.stroke(); ctx.restore(); };
+
+    // ----- floor: box, ticks, contour ellipses, CEF, sample points -----
+    const corners = [P(x0, y0, 0), P(x1, y0, 0), P(x1, y1, 0), P(x0, y1, 0)];
+    ctx.fillStyle = "#fafafa"; ctx.beginPath(); corners.forEach((p, i) => i ? ctx.lineTo(p.px, p.py) : ctx.moveTo(p.px, p.py)); ctx.closePath(); ctx.fill();
+    line([...corners, corners[0]], "#b8c0c8", 1);
+    // grid lines
+    const tick = s => s > 2 ? 2 : s > 1 ? 1 : 0.5;
+    const tx = tick(sdx), ty = tick(sdy);
+    ctx.font = "12px sans-serif"; ctx.fillStyle = css("--muted"); ctx.textAlign = "center";
+    // put tick labels on whichever floor edges are nearest the viewer (larger depth = nearer)
+    const yEdge = P(mux, y0, 0).d > P(mux, y1, 0).d ? y0 : y1, xEdge = P(x0, muy, 0).d > P(x1, muy, 0).d ? x0 : x1;
+    const off = (a, bpt) => { const dx = a.px - bpt.px, dy = a.py - bpt.py, l = Math.hypot(dx, dy) || 1; return [dx / l, dy / l]; };   // unit vector pointing outward
+    const [oxX, oyX] = off(P(mux, yEdge, 0), P(mux, yEdge === y0 ? y1 : y0, 0)), [oxY, oyY] = off(P(xEdge, muy, 0), P(xEdge === x0 ? x1 : x0, muy, 0));
+    for (let t = Math.ceil(x0 / tx) * tx; t <= x1 + 1e-9; t += tx) { line([P(t, y0, 0), P(t, y1, 0)], "#e3e7ec", 1); const q = P(t, yEdge, 0); ctx.fillText(Math.round(t * 10) / 10, q.px + oxX * 14, q.py + oyX * 14 + 4); }
+    for (let t = Math.ceil(y0 / ty) * ty; t <= y1 + 1e-9; t += ty) { line([P(x0, t, 0), P(x1, t, 0)], "#e3e7ec", 1); const q = P(xEdge, t, 0); ctx.fillText(Math.round(t * 10) / 10, q.px + oxY * 14, q.py + oyY * 14 + 4); }
+    ctx.font = "bold 13px sans-serif"; ctx.fillStyle = css("--text");
+    { const q = P(mux, yEdge, 0); ctx.fillText("X", q.px + oxX * 34, q.py + oyX * 34 + 4); const r = P(xEdge, muy, 0); ctx.fillText("Y", r.px + oxY * 34, r.py + oyY * 34 + 4); }
+    // contour ellipses of the density (level sets of a bivariate normal are ellipses)
+    for (const c of [0.3, 1.2, 2.8, 5.5]) {
+      const pts = []; for (let i = 0; i <= 90; i++) { const t = i / 90 * 2 * Math.PI; pts.push(P(mux + sdx * Math.sqrt(c) * Math.cos(t), muy + sdy * Math.sqrt(c) * (rho * Math.cos(t) + Math.sqrt(1 - rho * rho) * Math.sin(t)), 0)); }
+      line(pts, css("--maroon"), 1, null, 0.35);
     }
-    const traces = [
-      { type: "surface", x: s.xs, y: s.ys, z: s.z, opacity: 0.92, showscale: false,
-        colorscale: [[0, "#f7f7f7"], [0.25, "#e6c9d2"], [0.6, "#8C1D40"], [1, "#4a0f22"]],
-        contours: { z: { show: true, usecolormap: true, project: { z: true }, highlight: false, start: s.zmax * 0.05, end: s.zmax * 0.95, size: s.zmax * 0.15 } },
-        hovertemplate: "x = %{x:.2f}<br>y = %{y:.2f}<br>density = %{z:.4f}<extra></extra>" },
-      { type: "scatter3d", mode: "lines", x: cefX, y: cefY, z: cefZ0, line: { color: "#191919", width: 7 }, name: "population regression line", hoverinfo: "name" },
-      { type: "scatter3d", mode: "lines", x: cefX, y: cefY, z: cefZtop, line: { color: "#FFC627", width: 6 }, name: "ridge: E[Y | X = x]", hoverinfo: "name" }
-    ];
-    if (sample) traces.push({ type: "scatter3d", mode: "markers", x: sample.x, y: sample.y, z: sample.x.map(() => 0), marker: { color: "#8C1D40", size: 3, opacity: 0.8 }, name: "sample (panel B)", hoverinfo: "name" });
-    const layout = {
-      margin: { l: 0, r: 0, t: 0, b: 0 }, showlegend: false, uirevision: "keep",
-      scene: {
-        xaxis: { title: "X", range: xr(), backgroundcolor: "#fff", gridcolor: "#d9dee5" },
-        yaxis: { title: "Y", range: yr(), backgroundcolor: "#fff", gridcolor: "#d9dee5" },
-        zaxis: { title: "density", range: [0, s.zmax * 1.1], backgroundcolor: "#fff", gridcolor: "#d9dee5" },
-        aspectmode: "manual", aspectratio: { x: 1, y: 1, z: 0.55 },
-        camera: { eye: { x: 1.5, y: -1.6, z: 0.9 } }
-      }
+    // population regression line on the floor
+    const b1 = beta1(), b0 = beta0();
+    const cefFloor = [], cefTop = [];
+    for (let i = 0; i <= 60; i++) { const x = x0 + (x1 - x0) * i / 60, y = b0 + b1 * x; if (y >= y0 && y <= y1) { cefFloor.push(P(x, y, 0)); cefTop.push(P(x, y, pdf2(x, y) + zmax * 0.012)); } }
+    line(cefFloor, css("--cef"), 3.5);
+    if (sample) { ctx.fillStyle = css("--pts"); ctx.globalAlpha = 0.8; for (let i = 0; i < n; i++) { const q = P(sample.x[i], sample.y[i], 0); ctx.beginPath(); ctx.arc(q.px, q.py, 2.5, 0, 2 * Math.PI); ctx.fill(); } ctx.globalAlpha = 1; }
+
+    // ----- surface: shaded quads, painter's algorithm -----
+    const G = 44, quads = [];
+    const grid = [];
+    for (let i = 0; i <= G; i++) { const row = []; for (let j = 0; j <= G; j++) { const x = x0 + (x1 - x0) * i / G, y = y0 + (y1 - y0) * j / G, z = pdf2(x, y); row.push({ x, y, z, p: P(x, y, z) }); } grid.push(row); }
+    const lightDir = [0.4, -0.5, 0.75];
+    for (let i = 0; i < G; i++) for (let j = 0; j < G; j++) {
+      const a = grid[i][j], b = grid[i + 1][j], c = grid[i + 1][j + 1], d = grid[i][j + 1];
+      const zq = (a.z + b.z + c.z + d.z) / 4;
+      // normal in normalized units
+      const ux = nx(b.x) - nx(a.x), uz = nz(b.z) - nz(a.z), vy = ny(d.y) - ny(a.y), vz = nz(d.z) - nz(a.z);
+      let N = [-uz * vy, -ux * vz, ux * vy]; const nl = Math.hypot(...N) || 1; N = N.map(v => v / nl);
+      const shade = 0.55 + 0.45 * Math.max(0, N[0] * lightDir[0] + N[1] * lightDir[1] + N[2] * lightDir[2]);
+      quads.push({ pts: [a.p, b.p, c.p, d.p], depth: (a.p.d + b.p.d + c.p.d + d.p.d) / 4, t: zq / zmax, shade });
+    }
+    quads.sort((q1, q2) => q1.depth - q2.depth);
+    const col = (t, sh) => { // light gray -> maroon -> deep maroon by height, then lit
+      const stops = [[0, [240, 236, 238]], [0.35, [214, 160, 178]], [0.75, [140, 29, 64]], [1, [92, 15, 36]]];
+      let k = 0; while (k < stops.length - 2 && t > stops[k + 1][0]) k++;
+      const [t0, c0] = stops[k], [t1, c1] = stops[k + 1], f = Math.min(1, Math.max(0, (t - t0) / (t1 - t0)));
+      return `rgb(${c0.map((v, i) => Math.round((v + (c1[i] - v) * f) * sh)).join(",")})`;
     };
-    Plotly.react("plot3d", traces, layout, { displayModeBar: false, responsive: true });
+    for (const q of quads) { ctx.globalAlpha = Math.min(1, 0.12 + q.t * 2.2); ctx.fillStyle = col(q.t, q.shade); ctx.strokeStyle = ctx.fillStyle; ctx.lineWidth = 0.6; ctx.beginPath(); q.pts.forEach((p, i) => i ? ctx.lineTo(p.px, p.py) : ctx.moveTo(p.px, p.py)); ctx.closePath(); ctx.fill(); ctx.stroke(); }
+    ctx.globalAlpha = 1;
+    // the part of the floor line hidden under the hill, shown dashed
+    line(cefFloor, css("--cef"), 2, [6, 5], 0.55);
+    // ridge line E[Y|X=x] lifted onto the surface
+    line(cefTop, css("--gold"), 3.5);
+    // vertical axis label
+    const zt = P(x0, y0, zmax); ctx.font = "12px sans-serif"; ctx.fillStyle = css("--muted"); ctx.textAlign = "center"; ctx.fillText("density", zt.px, zt.py - 8);
+    line([P(x0, y0, 0), zt], "#b8c0c8", 1);
+    ctx.font = "12px sans-serif"; ctx.textAlign = "left"; ctx.fillStyle = css("--muted");
+    ctx.fillText(`μX = ${mux}, μY = ${muy}, σX = ${sdx}, σY = ${sdy}, ρ = ${rho}`, 10, 16);
   }
+  // interaction: drag / touch / wheel / keyboard
+  (function () {
+    let dragging = false, lx = 0, ly = 0;
+    const down = (x, y) => { dragging = true; lx = x; ly = y; };
+    const move = (x, y) => { if (!dragging) return; view.yaw += (x - lx) * 0.01; view.pitch = Math.max(0.05, Math.min(1.5, view.pitch + (y - ly) * 0.01)); lx = x; ly = y; draw3D(); };
+    c3d.addEventListener("mousedown", e => { down(e.clientX, e.clientY); e.preventDefault(); });
+    window.addEventListener("mousemove", e => move(e.clientX, e.clientY));
+    window.addEventListener("mouseup", () => { dragging = false; });
+    c3d.addEventListener("touchstart", e => { const t = e.touches[0]; down(t.clientX, t.clientY); }, { passive: true });
+    c3d.addEventListener("touchmove", e => { const t = e.touches[0]; move(t.clientX, t.clientY); e.preventDefault(); }, { passive: false });
+    c3d.addEventListener("touchend", () => { dragging = false; });
+    c3d.addEventListener("wheel", e => { view.zoom = Math.max(0.5, Math.min(2.5, view.zoom * (e.deltaY < 0 ? 1.08 : 0.93))); draw3D(); e.preventDefault(); }, { passive: false });
+    c3d.addEventListener("keydown", e => {
+      const k = e.key; let used = true;
+      if (k === "ArrowLeft") view.yaw -= 0.1; else if (k === "ArrowRight") view.yaw += 0.1;
+      else if (k === "ArrowUp") view.pitch = Math.min(1.5, view.pitch + 0.08); else if (k === "ArrowDown") view.pitch = Math.max(0.05, view.pitch - 0.08);
+      else if (k === "+" || k === "=") view.zoom = Math.min(2.5, view.zoom * 1.1); else if (k === "-") view.zoom = Math.max(0.5, view.zoom / 1.1);
+      else used = false;
+      if (used) { draw3D(); e.preventDefault(); }
+    });
+    $("resetView").addEventListener("click", () => { Object.assign(view, VIEW0); draw3D(); });
+  })();
 
   // ---------- 2D drawing ----------
   const PAD = { l: 48, r: 16, t: 14, b: 32 };
