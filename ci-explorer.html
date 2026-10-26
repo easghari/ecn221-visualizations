@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Confidence Interval Explorer – ECN 221</title>
+<title>Confidence Intervals – ECN 221</title>
 <style>
   :root {
     --maroon: #8C1D40;
@@ -78,7 +78,7 @@
 </head>
 <body>
 <header>
-  <h1>Confidence Interval Explorer</h1>
+  <h1>Confidence Intervals</h1>
   <p>ECN 221 Business Statistics · Instructor: Ehsan Asghari-Ghara</p>
 </header>
 
@@ -86,7 +86,7 @@
 
   <!-- 1. Theory -->
   <section aria-labelledby="h-idea">
-    <h2 id="h-idea"><span class="step">1</span>What a confidence interval is, and what "95% confident" means</h2>
+    <h2 id="h-idea"><span class="step">1</span>What a confidence interval is, and what a 95% confidence level means</h2>
     <p>We want to know a population mean <em>μ</em>, but we only get to see one sample of <em>n</em> observations. The sample mean <em>x̄</em> is our best single guess, but it will not equal <em>μ</em> exactly. A <strong>confidence interval</strong> turns that single guess into a range:</p>
     <div class="callout">
       <p class="formula" style="margin:0">x̄ ± (critical value) × σ/√n &nbsp;&nbsp; i.e. &nbsp;&nbsp; x̄ ± margin of error</p>
@@ -94,7 +94,7 @@
     </div>
     <p>Here is the part students most often get wrong. The population mean <em>μ</em> is a fixed number; it does not move. The <em>interval</em> is what is random, because it is built from a random sample. Take a different sample and you get a different <em>x̄</em> and a different interval. Some of those intervals will contain <em>μ</em>; some will miss it.</p>
     <div class="warn">
-      <p style="margin:0"><strong>The correct interpretation of "95% confidence":</strong> if we repeated the sampling process many times and built an interval from each sample, about <strong>95% of those intervals would contain <em>μ</em></strong> and about 5% would miss it. The 95% describes the long-run success rate of the <em>method</em>, not the chance that one particular interval is right. Any single interval either contains <em>μ</em> or it does not; we just do not know which.</p>
+      <p style="margin:0"><strong>The correct interpretation of a 95% confidence level:</strong> if we repeated the sampling process many times and built an interval from each sample, about <strong>95% of those intervals would contain <em>μ</em></strong> and about 5% would miss it. The 95% describes the long-run success rate of the <em>method</em>, not the chance that one particular interval is right. Any single interval either contains <em>μ</em> or it does not; we just do not know which.</p>
     </div>
     <p>That is a statement about repeating the process many times, which is exactly what a computer can do. This page lets you watch it happen.</p>
   </section>
@@ -246,7 +246,7 @@
       <li>Pick one gold (missed) interval and look at where its x̄ is. Could the researcher who drew that sample have known their interval was wrong?</li>
       <li>Switch to the right-skewed population, the <em>t</em> interval, and <em>n</em> = 5. Does the method still deliver 95%? Try <em>n</em> = 30. This is why we want large samples when the population is far from normal.</li>
     </ol>
-    <p class="tip"><strong>Key point:</strong> "95% confident" is a property of the <em>procedure</em>, verified by repeating it. It does not mean "there is a 95% chance μ is in my interval." In practice you get one sample and one interval, and you never find out whether it was one of the maroon ones or one of the gold ones. The confidence level tells you how good the method is in the long run, which is the best anyone can say from a single sample.</p>
+    <p class="tip"><strong>Key point:</strong> a 95% confidence level is a property of the <em>procedure</em>, verified by repeating it. It does not mean "there is a 95% chance μ is in my interval." In practice you get one sample and one interval, and you never find out whether it was one of the maroon ones or one of the gold ones. The confidence level tells you how good the method is in the long run, which is the best anyone can say from a single sample.</p>
   </section>
 
 </main>
