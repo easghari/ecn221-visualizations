@@ -91,7 +91,7 @@
         <li><strong>Paired-samples test.</strong> For each employee compute the change <span class="formula">d = after − before</span>, then run a one-sample test on the <em>n</em> differences: <span class="formula">t = d̄ / (s_d/√n)</span>, with <em>n</em> − 1 degrees of freedom.</li>
       </ol>
     </div>
-    <p>Why does it matter? Employees differ a lot from one another: some are fast, some are slow, before <em>and</em> after. That person-to-person spread inflates <em>s</em><sub>before</sub> and <em>s</em><sub>after</sub>, so the independent test's standard error is huge and a modest training effect drowns in it. Taking differences cancels each person's own baseline out. What is left, <em>s</em><sub><em>d</em></sub>, measures only how much the <em>change</em> varies between people, which is usually far smaller.</p>
+    <p>Why does it matter? Output numbers vary for two very different reasons. First, employees differ from one another: some are fast, some are slow, before <em>and</em> after. Call the size of that spread <strong>σ<sub>person</sub></strong>. Second, the same person's numbers wobble from one measurement to the next, and training helps some people more than others. Call that <strong>σ<sub>noise</sub></strong>. The independent test lumps both together: the person-to-person spread inflates <em>s</em><sub>before</sub> and <em>s</em><sub>after</sub>, so its standard error is large and a modest training effect drowns in it. Taking differences cancels each person's own baseline out, removing σ<sub>person</sub> entirely. What is left, <em>s</em><sub><em>d</em></sub>, measures only σ<sub>noise</sub>, how much the <em>change</em> varies between people, which is usually far smaller. Step 2 spells both quantities out.</p>
     <div class="warn">
       <p style="margin:0"><strong>The rule:</strong> when each observation in one sample is naturally linked to one observation in the other (same person, same store, same matched pair), use the paired test. Pairing does not change the sample means or the estimated effect at all; it changes the <em>standard error</em>, which is what decides whether the effect is detectable.</p>
     </div>
@@ -100,7 +100,18 @@
   <!-- 2 -->
   <section aria-labelledby="h-how">
     <h2 id="h-how"><span class="step">2</span>How the simulation works</h2>
-    <p>We build a population where every person has their own baseline, training adds a true effect, and a little noise is added to each measurement. Then we run <em>both</em> tests on the <em>same</em> data, over and over, and count how often each one detects the effect. The text below updates with the settings in step 3.</p>
+    <p>To see why pairing works, we need a population in which we can separate the two reasons that output numbers vary. Every employee's score is built from three pieces:</p>
+    <div class="callout">
+      <p class="formula" style="margin:0 0 6px">before = 50 + (person's ability) + (noise)</p>
+      <p class="formula" style="margin:0 0 10px">after &nbsp;= 50 + (person's ability) + (training effect) + (noise)</p>
+      <ul>
+        <li><strong>σ<sub>person</sub> — person-to-person spread.</strong> Employees are not identical: some are naturally fast, some slow. σ<sub>person</sub> measures how spread out these abilities are across the workforce. A large value means the "before" scores (and the "after" scores) are widely scattered, but it says nothing about the training, because each person's ability is the <em>same</em> in both of their measurements. This is the part pairing cancels: when we compute after − before for one person, their ability appears in both numbers and subtracts out.</li>
+        <li><strong>σ<sub>noise</sub> — spread in each person's change.</strong> Even with no training at all, measuring the same person twice would not give identical numbers (a good day, a bad day, measurement error). And training does not help everyone by exactly the same amount. σ<sub>noise</sub> measures how much a person's observed change, after − before, varies around the true average effect. This part does <em>not</em> cancel, because it is different in the two measurements. It is the only variation the paired test has to contend with, and <em>s</em><sub><em>d</em></sub> is its estimate.</li>
+        <li><strong>Training effect.</strong> The true average change caused by training. This is what both tests are trying to detect.</li>
+      </ul>
+      <p style="margin:8px 0 0">The independent test sees the total spread of a before (or after) score, which combines both sources: <span class="formula">σ<sub>group</sub> = √(σ²<sub>person</sub> + σ²<sub>noise</sub>/2)</span>. The paired test only sees σ<sub>noise</sub>. At the default settings, σ<sub>person</sub> = 15 and σ<sub>noise</sub> = 4, so a before score has SD ≈ 15.3 but a person's change has SD 4. The paired test's yardstick is almost four times shorter, so the same training effect looks almost four times bigger to it.</p>
+    </div>
+    <p>With that population in hand we run <em>both</em> tests on the <em>same</em> data, over and over, and count how often each one detects the effect. The text below updates with the settings in step 3.</p>
     <div class="callout" aria-live="polite">
       <ol>
         <li><strong>One employee.</strong> <span id="how1"></span></li>
