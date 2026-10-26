@@ -156,6 +156,7 @@
       <div>
         <div class="chart">
           <h3>Joint density of (X, Y)</h3>
+          <p class="warn" style="margin:0 0 8px;padding:8px 12px;font-size:0.92rem"><strong>This plot is interactive:</strong> click and drag it to rotate and change the viewing angle, scroll (or pinch) to zoom, and use the arrow keys when it has focus. Try looking straight down from above to see the contour ellipses, and from the side to see each slice's normal curve.</p>
           <canvas id="c3d" width="900" height="500" tabindex="0" role="img" aria-label="Three-dimensional surface of the bivariate normal density with the population regression line drawn on the floor. Drag or use the arrow keys to rotate."></canvas>
           <div class="viewbtns"><span>Drag to rotate · scroll to zoom · arrow keys also rotate</span><button type="button" id="resetView" class="secondary">Reset view</button></div>
         </div>
@@ -206,8 +207,8 @@
           <select id="reps">
             <option value="20">20</option>
             <option value="100">100</option>
-            <option value="500">500</option>
-            <option value="1000" selected>1,000</option>
+            <option value="500" selected>500</option>
+            <option value="1000">1,000</option>
             <option value="5000">5,000</option>
           </select>
           <div class="anim-row">
@@ -281,10 +282,10 @@
       <li>In panel A, slide ρ from −0.95 to 0.95 and watch the hill and the black line. Then set ρ = 0: the line is flat, but is Y unrelated to X in every sense, or only on average?</li>
       <li>Keep ρ = 0.6 and change σ<sub>Y</sub> from 1 to 3. The hill stretches vertically and the slope steepens, even though the correlation is unchanged. Why is β₁ not the same thing as ρ?</li>
       <li>In panel B, click "Draw a new sample" ten times with n = 50. The population line never moves; the gold line swings around it. Then set n = 10 and repeat. How much wilder are the swings?</li>
-      <li>In panel C, animate 1,000 samples with n = 50. Is the histogram centered at β₁? Compare the SD of the b₁ values with the predicted SD.</li>
+      <li>In panel C, animate 500 samples with n = 50. Is the histogram centered at β₁? Compare the SD of the b₁ values with the predicted SD.</li>
       <li>Set n = 200 and rerun. Then set n = 50 but σ<sub>X</sub> = 3. Both tighten the histogram. Which lever is cheaper in practice: collecting four times as many observations, or finding a sample where X varies more?</li>
       <li>Set ρ = 0.95 and compare the histogram with ρ = 0.3 (same n). Explain why the slope is estimated more precisely when the points hug the line.</li>
-      <li>Set ρ = 0 and n = 20, then run 1,000 samples. How often would a researcher looking at a single sample have seen a slope as large as 0.3 or more, even though the true slope is zero? This is why we test H₀: β₁ = 0 instead of trusting the sign of b₁.</li>
+      <li>Set ρ = 0 and n = 20, then run 500 samples. How often would a researcher looking at a single sample have seen a slope as large as 0.3 or more, even though the true slope is zero? This is why we test H₀: β₁ = 0 instead of trusting the sign of b₁.</li>
     </ol>
     <p class="tip"><strong>Key point:</strong> the population regression line is a fixed feature of the population; the sample regression line is a random estimate of it. The estimate is unbiased, so it is right on average, but any single sample's slope can be off by a predictable amount, the standard error. Everything in regression inference, from the standard error printed next to the coefficient to the <em>t</em> statistic and the confidence interval, is a description of the histogram in panel C.</p>
   </section>
