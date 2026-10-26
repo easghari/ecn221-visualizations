@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Central Limit Theorem Explorer – ECN 221</title>
+<style>
+  :root {
+    /* ASU palette */
+    --maroon: #8C1D40;
+    --gold: #FFC627;
+    --asu-gray: #5C6670;
+    --asu-black: #191919;
+    --text: #191919;
+    --muted: #5C6670;
+    --line: #d9dee5;
+    --panel: #f7f7f7;
+    --pop: #5C6670;      /* population: gray */
+    --means: #8C1D40;    /* sampling distribution: maroon */
+    --normal: #191919;   /* CLT normal curve: black */
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--text); background: #fff; line-height: 1.55; font-size: 16px;
+  }
+  header { padding: 18px 24px 14px; background: var(--maroon); color: #fff; border-bottom: 6px solid var(--gold); }
+  header h1 { margin: 0 0 4px; font-size: 1.5rem; }
+  header p { margin: 0; color: #f3e6ea; font-size: 0.95rem; }
+  main { max-width: 1100px; margin: 0 auto; padding: 8px 24px 32px; }
+  section { padding: 22px 0; border-bottom: 1px solid var(--line); }
+  section:last-of-type { border-bottom: none; }
+  h2 { font-size: 1.25rem; margin: 0 0 10px; color: var(--maroon); }
+  h2 .step { display: inline-block; background: var(--maroon); color: #fff; border-radius: 50%; width: 28px; height: 28px; line-height: 28px; text-align: center; font-size: 0.95rem; margin-right: 8px; }
+  p { margin: 0 0 10px; }
+  .formula { font-family: Georgia, "Times New Roman", serif; font-size: 1.05rem; }
+  .callout { background: var(--panel); border-left: 4px solid var(--maroon); padding: 12px 16px; border-radius: 4px; margin: 10px 0; }
+  .callout ol { margin: 6px 0 0; padding-left: 22px; }
+  .callout li { margin-bottom: 8px; }
+  .dyn { font-weight: 700; color: var(--maroon); }
+  .twocol { display: grid; grid-template-columns: 340px 1fr; gap: 24px; align-items: start; }
+  @media (max-width: 860px) { .twocol { grid-template-columns: 1fr; } }
+  fieldset { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; margin: 0; background: var(--panel); }
+  legend { font-weight: 600; padding: 0 6px; color: var(--maroon); }
+  label { display: block; margin: 8px 0 4px; font-weight: 600; font-size: 0.95rem; }
+  select, input[type=range] { width: 100%; }
+  select { padding: 6px; font-size: 1rem; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+  input[type=range] { accent-color: var(--maroon); }
+  .note { font-size: 0.88rem; color: var(--muted); margin: 4px 0 0; }
+  .btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  button {
+    font-size: 0.95rem; padding: 8px 12px; border-radius: 6px; cursor: pointer;
+    border: 1px solid var(--maroon); background: var(--maroon); color: #fff; font-weight: 600;
+  }
+  button.primary { font-size: 1.05rem; padding: 12px 16px; box-shadow: 0 3px 0 var(--gold); width: 100%; }
+  button.secondary { background: #fff; color: var(--maroon); }
+  button:hover { filter: brightness(1.08); }
+  button:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid var(--maroon); outline-offset: 2px; }
+  .anim-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: end; margin-top: 14px; }
+  .anim-row select { width: 110px; }
+  .chart { margin-bottom: 14px; }
+  .chart h3 { margin: 0 0 4px; font-size: 1rem; display: flex; align-items: center; gap: 8px; }
+  .swatch { display: inline-block; width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(0,0,0,.15); }
+  canvas { width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+  .results { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 860px) { .results { grid-template-columns: 1fr; } }
+  .box { border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+  .box h3 { margin: 0 0 8px; font-size: 1rem; color: var(--maroon); }
+  .box.theory { border-top: 4px solid var(--asu-black); }
+  .box.observed { border-top: 4px solid var(--maroon); }
+  .kv { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; font-size: 0.95rem; }
+  .kv span { color: var(--muted); }
+  .kv b { font-variant-numeric: tabular-nums; text-align: right; }
+  .verdict { margin-top: 14px; }
+  ol.explore { padding-left: 20px; }
+  ol.explore li { margin-bottom: 8px; }
+  .tip { background: #fff8e0; border-left: 4px solid var(--gold); padding: 10px 12px; border-radius: 4px; }
+  footer { padding: 10px 24px 20px; color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--line); text-align: center; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Central Limit Theorem Explorer</h1>
+  <p>ECN 221 Business Statistics · Instructor: Ehsan Asghari-Ghara</p>
+</header>
+
+<main>
+
+  <!-- 1. Theory -->
+  <section aria-labelledby="h-idea">
+    <h2 id="h-idea"><span class="step">1</span>The idea behind the Central Limit Theorem</h2>
+    <p>Suppose we take a random sample of <em>n</em> observations from some population and compute the sample mean <em>x̄</em>. If we took a <em>different</em> random sample, we would get a slightly different <em>x̄</em>. So the sample mean is itself a random variable, and it has its own distribution, called the <strong>sampling distribution of the sample mean</strong>.</p>
+    <p>The Central Limit Theorem (CLT) tells us three things about that distribution, for <em>any</em> population with mean <em>μ</em> and standard deviation <em>σ</em>, as long as the sample size <em>n</em> is large enough:</p>
+    <div class="callout">
+      <ol>
+        <li><strong>Center:</strong> the sample means are centered at the population mean, <span class="formula">E(x̄) = μ</span>.</li>
+        <li><strong>Spread:</strong> their standard deviation, called the <strong>standard error</strong>, is <span class="formula">SE = σ / √n</span>. Larger samples give less variable sample means.</li>
+        <li><strong>Shape:</strong> the distribution of <em>x̄</em> is approximately <strong>normal</strong>, even when the population is not.</li>
+      </ol>
+    </div>
+    <p>That last point is the surprising one, and it is why the normal distribution shows up everywhere in statistics. This page lets you check it by actually running the experiment.</p>
+  </section>
+
+  <!-- 2. How the simulation works (dynamic) -->
+  <section aria-labelledby="h-how">
+    <h2 id="h-how"><span class="step">2</span>How the simulation works</h2>
+    <p>Rather than taking one sample, we will let the computer take many samples and watch where the sample means land. The text below updates as you change the settings in step 3.</p>
+    <div class="callout" id="howBox" aria-live="polite">
+      <ol>
+        <li><strong>One observation.</strong> <span id="how1"></span></li>
+        <li><strong>One sample.</strong> <span id="how2"></span> That gives us <em>one</em> value of <em>x̄</em>, and that is one round of sampling.</li>
+        <li><strong>Repeat.</strong> <span id="how3"></span> Each round gives a new <em>x̄</em>.</li>
+        <li><strong>Plot.</strong> We put all of those <em>x̄</em> values in a histogram. That histogram <em>is</em> the sampling distribution of the sample mean. We then compare it with the normal curve the CLT predicts, which has mean <em>μ</em> and standard deviation <em>σ/√n</em>.</li>
+      </ol>
+    </div>
+    <p>The question we are testing: does the histogram of sample means look normal, centered at <em>μ</em>, with spread <em>σ/√n</em>, even if the population we started from looks nothing like a normal curve?</p>
+  </section>
+
+  <!-- 3. Simulation -->
+  <section aria-labelledby="h-run">
+    <h2 id="h-run"><span class="step">3</span>Run the simulation</h2>
+    <div class="twocol">
+      <div>
+        <fieldset>
+          <legend>Settings</legend>
+          <label for="pop">Population we sample from</label>
+          <select id="pop">
+            <option value="coin" selected>Fair coin flip (1 = heads, 0 = tails)</option>
+            <option value="uniform">Uniform (flat, 0 to 10)</option>
+            <option value="skewed">Right-skewed (e.g., wait times)</option>
+            <option value="bimodal">Bimodal (two groups)</option>
+            <option value="twopoint">Two-point (0 or 10, 20% chance of 10)</option>
+          </select>
+          <p class="note" id="popDesc"></p>
+
+          <label for="n">Sample size n = <output id="nOut" for="n">50</output> <span id="nUnit">flips per sample</span></label>
+          <input type="range" id="n" min="1" max="200" value="50" step="1">
+          <p class="note">How many observations go into each sample mean.</p>
+
+          <label for="reps">Number of samples (rounds of sampling)</label>
+          <select id="reps">
+            <option value="10">10</option>
+            <option value="100">100</option>
+            <option value="500">500</option>
+            <option value="1000" selected>1,000</option>
+            <option value="5000">5,000</option>
+            <option value="10000">10,000</option>
+          </select>
+          <p class="note">How many values of x̄ we collect. More rounds give a smoother histogram.</p>
+
+          <div class="anim-row">
+            <button id="anim" type="button" class="primary" aria-pressed="false">▶ Animate one sample at a time</button>
+            <div>
+              <label for="speed" style="margin-top:0">Speed</label>
+              <select id="speed">
+                <option value="700">Slow</option>
+                <option value="250" selected>Medium</option>
+                <option value="60">Fast</option>
+              </select>
+            </div>
+          </div>
+          <p class="note">Each gold flash is one new sample mean. The animation starts one sample at a time, then speeds up after the first 30 so the full set finishes in about half a minute.</p>
+
+          <div class="btns">
+            <button id="draw" type="button" class="secondary">Draw all at once (no animation)</button>
+            <button id="reset" type="button" class="secondary">Clear</button>
+          </div>
+        </fieldset>
+      </div>
+
+      <div>
+        <div class="chart">
+          <h3><span class="swatch" style="background:var(--pop)"></span>Population (what each observation is drawn from)</h3>
+          <canvas id="cPop" width="900" height="190" role="img" aria-label="Distribution of the chosen population"></canvas>
+        </div>
+        <div class="chart">
+          <h3><span class="swatch" style="background:var(--means)"></span>Sampling distribution of x̄ — with the normal curve predicted by the CLT</h3>
+          <canvas id="cMeans" width="900" height="340" role="img" aria-label="Histogram of all sample means with the normal curve predicted by the Central Limit Theorem"></canvas>
+        </div>
+        <p class="note">Both charts share the same horizontal axis, so you can see how much narrower the sampling distribution is than the population.</p>
+        <p id="chartDesc" class="sr-only"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Results -->
+  <section aria-labelledby="h-results">
+    <h2 id="h-results"><span class="step">4</span>Reading the results</h2>
+    <p>The CLT makes a prediction before we draw a single sample. The simulation then gives us the observed numbers. Compare the two columns.</p>
+    <div class="results" aria-live="polite">
+      <div class="box theory">
+        <h3>What the theory predicts</h3>
+        <div class="kv">
+          <span>Population mean μ</span><b id="mu">–</b>
+          <span>Population SD σ</span><b id="sigma">–</b>
+          <span>Sample size n</span><b id="nShow">–</b>
+          <span>Predicted center of x̄ (= μ)</span><b id="muShow">–</b>
+          <span>Predicted standard error σ/√n</span><b id="se">–</b>
+        </div>
+        <p class="note" id="seCalc" style="margin-top:8px"></p>
+      </div>
+      <div class="box observed">
+        <h3>What the simulation produced</h3>
+        <div class="kv">
+          <span>Samples drawn</span><b id="count">0</b>
+          <span>Average of all the x̄ values</span><b id="meanOfMeans">–</b>
+          <span>Standard deviation of the x̄ values</span><b id="sdOfMeans">–</b>
+        </div>
+        <p class="note" style="margin-top:8px">The standard deviation of the collected sample means is the <em>observed</em> standard error.</p>
+      </div>
+    </div>
+    <p class="verdict" id="verdict"></p>
+    <p>Notice the √n in the standard error. Going from <em>n</em> = 50 to <em>n</em> = 100 doubles the sample size but only shrinks the standard error by a factor of √2 ≈ 1.41, about 30%. To cut the standard error in half, you need <em>four</em> times as many observations.</p>
+  </section>
+
+  <!-- 5. Explore -->
+  <section aria-labelledby="h-explore">
+    <h2 id="h-explore"><span class="step">5</span>Explore further</h2>
+    <ol class="explore">
+      <li>With the coin and <em>n</em> = 50, run the animation. Where do the sample means pile up? Then check: is the observed standard error close to 0.5/√50 ≈ 0.071?</li>
+      <li>Set <em>n</em> = 5 flips and run it again. How many distinct values can the proportion of heads take? Does the normal curve still fit well? What does this say about "large enough" <em>n</em>?</li>
+      <li>Set <em>n</em> = 100. Compare the predicted standard error with the <em>n</em> = 50 case. Why is it not half as large?</li>
+      <li>Switch to the <strong>right-skewed</strong> population (think customer wait times) with <em>n</em> = 5, then <em>n</em> = 30. Does the sampling distribution inherit the skew? At what <em>n</em> does it look normal?</li>
+      <li>Try the <strong>bimodal</strong> population. The population has two humps and almost nothing in the middle, yet where do the sample means land?</li>
+      <li>Change the number of samples from 1,000 to 100. The shape gets rougher, but does the predicted standard error change? Why not?</li>
+    </ol>
+    <p class="tip"><strong>Key point:</strong> the CLT describes the distribution of the <em>sample mean</em> across many samples, not the population and not the data in any one sample. The top chart keeps its shape no matter what; the bottom chart becomes normal as <em>n</em> grows. That is what lets us use normal-based confidence intervals and hypothesis tests for means even when the underlying data are not normal.</p>
+  </section>
+
+</main>
+
+<footer>ECN 221 Business Statistics · W. P. Carey School of Business, Arizona State University</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------- Populations ----------
+  function randNormal() {
+    let u = 0, v = 0;
+    while (u === 0) u = Math.random();
+    while (v === 0) v = Math.random();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+  }
+  function normPdf(x, m, s) {
+    return Math.exp(-0.5 * ((x - m) / s) ** 2) / (s * Math.sqrt(2 * Math.PI));
+  }
+  const POPS = {
+    coin: {
+      mean: 0.5, sd: 0.5, xmax: 1, tick: 0.1, discrete: true, unit: "flips per sample",
+      desc: "Each observation is one flip: 1 = heads, 0 = tails. The sample mean x̄ is the proportion of heads in n flips.",
+      one: "We flip a fair coin once and record 1 if it lands heads and 0 if it lands tails. The population mean is μ = 0.5 (half the flips are heads in the long run) and the population standard deviation is σ = 0.5.",
+      sample: n => `We flip the coin ${n} times and compute x̄, the proportion of heads out of those ${n} flips.`,
+      repeat: (n, r) => `We repeat the whole thing ${r.toLocaleString()} times: ${r.toLocaleString()} rounds of ${n} flips each, giving ${r.toLocaleString()} proportions of heads.`,
+      pmf: [[0, 0.5], [1, 0.5]],
+      draw: () => Math.random() < 0.5 ? 1 : 0
+    },
+    uniform: {
+      mean: 5, sd: 10 / Math.sqrt(12), xmax: 10, tick: 2, discrete: false, unit: "observations per sample",
+      desc: "Every value between 0 and 10 is equally likely.",
+      one: "We draw one number between 0 and 10, with every value equally likely (a flat, uniform population). Its mean is μ = 5 and its standard deviation is σ ≈ 2.887.",
+      sample: n => `We draw ${n} such numbers and compute their average, x̄.`,
+      repeat: (n, r) => `We repeat this ${r.toLocaleString()} times: ${r.toLocaleString()} rounds of ${n} draws each, giving ${r.toLocaleString()} sample averages.`,
+      pdf: x => (x >= 0 && x <= 10) ? 0.1 : 0,
+      draw: () => Math.random() * 10
+    },
+    skewed: {
+      mean: 3, sd: 3, xmax: 15, tick: 3, discrete: false, unit: "observations per sample",
+      desc: "Exponential with mean 3: many small values, a long right tail (think customer wait times).",
+      one: "We observe one customer's wait time from a population where most waits are short but a few are very long (an exponential distribution with mean μ = 3 minutes and standard deviation σ = 3). This population is strongly right-skewed.",
+      sample: n => `We observe ${n} customers and compute their average wait time, x̄.`,
+      repeat: (n, r) => `We repeat this ${r.toLocaleString()} times: ${r.toLocaleString()} groups of ${n} customers each, giving ${r.toLocaleString()} average wait times.`,
+      pdf: x => x >= 0 ? Math.exp(-x / 3) / 3 : 0,
+      draw: () => -3 * Math.log(1 - Math.random())
+    },
+    bimodal: {
+      mean: 5, sd: Math.sqrt(10), xmax: 10, tick: 2, discrete: false, unit: "observations per sample",
+      desc: "Half the population is centered near 2, half near 8.",
+      one: "We draw one value from a population made of two equal groups, one centered near 2 and one near 8, with almost nothing in between. Its mean is μ = 5 and its standard deviation is σ ≈ 3.162.",
+      sample: n => `We draw ${n} values and compute their average, x̄.`,
+      repeat: (n, r) => `We repeat this ${r.toLocaleString()} times: ${r.toLocaleString()} rounds of ${n} draws each, giving ${r.toLocaleString()} sample averages.`,
+      pdf: x => 0.5 * normPdf(x, 2, 1) + 0.5 * normPdf(x, 8, 1),
+      draw: () => (Math.random() < 0.5 ? 2 : 8) + randNormal()
+    },
+    twopoint: {
+      mean: 2, sd: 4, xmax: 10, tick: 2, discrete: true, unit: "observations per sample",
+      desc: "Each observation is 0 with probability 0.8 and 10 with probability 0.2.",
+      one: "We draw one value that is 0 with probability 0.8 and 10 with probability 0.2 (for example, a customer who either buys nothing or spends $10). Its mean is μ = 2 and its standard deviation is σ = 4.",
+      sample: n => `We draw ${n} such values and compute their average, x̄.`,
+      repeat: (n, r) => `We repeat this ${r.toLocaleString()} times: ${r.toLocaleString()} rounds of ${n} draws each, giving ${r.toLocaleString()} sample averages.`,
+      pmf: [[0, 0.8], [10, 0.2]],
+      draw: () => Math.random() < 0.2 ? 10 : 0
+    }
+  };
+
+  // ---------- State ----------
+  let pop = POPS.coin, n = 50;
+  let means = [], latest = null;
+  let timer = null, ticks = 0;
+
+  // ---------- DOM ----------
+  const $ = id => document.getElementById(id);
+  const cPop = $("cPop"), cMeans = $("cMeans");
+  const fmt = v => v.toFixed(3);
+  const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const reps = () => +$("reps").value;
+
+  // ---------- Drawing helpers ----------
+  const PAD = { l: 44, r: 16, t: 14, b: 30 };
+  function frame(cv) {
+    const ctx = cv.getContext("2d");
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    const w = cv.width - PAD.l - PAD.r, h = cv.height - PAD.t - PAD.b;
+    const x = v => PAD.l + (v / pop.xmax) * w;
+    ctx.strokeStyle = "#8a94a0"; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(PAD.l, PAD.t + h); ctx.lineTo(PAD.l + w, PAD.t + h); ctx.stroke();
+    ctx.fillStyle = css("--muted"); ctx.font = "13px sans-serif"; ctx.textAlign = "center";
+    for (let t = 0; t <= pop.xmax + 1e-9; t += pop.tick) {
+      ctx.beginPath(); ctx.moveTo(x(t), PAD.t + h); ctx.lineTo(x(t), PAD.t + h + 4); ctx.stroke();
+      ctx.fillText(pop.xmax <= 1 ? t.toFixed(1) : t, x(t), PAD.t + h + 18);
+    }
+    return { ctx, w, h, x };
+  }
+  function vline(f, v, color, label) {
+    const { ctx, h, x, w } = f;
+    ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.setLineDash([5, 4]);
+    ctx.beginPath(); ctx.moveTo(x(v), PAD.t); ctx.lineTo(x(v), PAD.t + h); ctx.stroke();
+    ctx.restore();
+    if (label) {
+      ctx.fillStyle = color; ctx.font = "bold 13px sans-serif"; ctx.textAlign = "left";
+      ctx.fillText(label, Math.min(x(v) + 5, PAD.l + w - 90), PAD.t + 14);
+    }
+  }
+  function histogram(values, bins) {
+    const counts = new Array(bins).fill(0), bw = pop.xmax / bins;
+    for (const v of values) {
+      let i = Math.floor(v / bw); if (i >= bins) i = bins - 1; if (i < 0) i = 0;
+      counts[i]++;
+    }
+    return { counts, bw, lattice: false };
+  }
+  function latticeHist(values, step) {
+    const k = Math.round(pop.xmax / step), counts = new Array(k + 1).fill(0);
+    for (const v of values) {
+      let i = Math.round(v / step); if (i > k) i = k; if (i < 0) i = 0;
+      counts[i]++;
+    }
+    return { counts, bw: step, lattice: true };
+  }
+  function bars(f, hist, color, scaleMax, highlightIdx) {
+    const { ctx, h, x } = f;
+    const pxw = x(hist.bw) - x(0);
+    for (let i = 0; i < hist.counts.length; i++) {
+      const c = hist.counts[i]; if (!c) continue;
+      const bh = (c / scaleMax) * h;
+      ctx.fillStyle = (i === highlightIdx) ? css("--gold") : color;
+      if (hist.lattice) {
+        const bw = Math.max(3, pxw * 0.8);
+        ctx.fillRect(x(i * hist.bw) - bw / 2, PAD.t + h - bh, bw, bh);
+      } else {
+        ctx.fillRect(x(i * hist.bw) + 0.5, PAD.t + h - bh, pxw - 1, bh);
+      }
+    }
+  }
+
+  // ---------- Charts ----------
+  function drawPop() {
+    const f = frame(cPop), { ctx, w, h, x } = f;
+    ctx.fillStyle = css("--pop");
+    if (pop.discrete) {
+      for (const [v, p] of pop.pmf) {
+        const bh = p * h * 0.95;
+        ctx.fillRect(x(v) - 12, PAD.t + h - bh, 24, bh);
+        ctx.fillStyle = css("--text"); ctx.font = "13px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText((p * 100) + "%", x(v) + (v === 0 ? 28 : -28), PAD.t + h - bh + 14);
+        ctx.fillStyle = css("--pop");
+      }
+    } else {
+      let maxP = 0;
+      for (let i = 0; i <= 300; i++) maxP = Math.max(maxP, pop.pdf(i / 300 * pop.xmax));
+      ctx.beginPath(); ctx.moveTo(PAD.l, PAD.t + h);
+      for (let i = 0; i <= 300; i++) {
+        const v = i / 300 * pop.xmax;
+        ctx.lineTo(x(v), PAD.t + h - (pop.pdf(v) / maxP) * h * 0.95);
+      }
+      ctx.lineTo(PAD.l + w, PAD.t + h); ctx.closePath();
+      ctx.globalAlpha = 0.35; ctx.fill(); ctx.globalAlpha = 1;
+      ctx.strokeStyle = css("--pop"); ctx.lineWidth = 2; ctx.stroke();
+    }
+    vline(f, pop.mean, css("--maroon"), "μ = " + fmt(pop.mean));
+  }
+
+  function drawMeans() {
+    const f = frame(cMeans), { ctx, h, x, w } = f;
+    const se = pop.sd / Math.sqrt(n);
+    const hist = pop.discrete ? latticeHist(means, pop.xmax / n) : histogram(means, 90);
+    const peak = means.length * hist.bw * normPdf(pop.mean, pop.mean, se);
+    const scaleMax = Math.max(Math.max(...hist.counts, 0), peak, 1) / 0.95;
+    const hi = (latest !== null && timer) ? (hist.lattice ? Math.round(latest / hist.bw) : Math.min(hist.counts.length - 1, Math.floor(latest / hist.bw))) : -1;
+    bars(f, hist, css("--means"), scaleMax, hi);
+    if (means.length) {
+      ctx.strokeStyle = css("--normal"); ctx.lineWidth = 2.5; ctx.beginPath();
+      for (let i = 0; i <= 400; i++) {
+        const v = i / 400 * pop.xmax;
+        const y = PAD.t + h - (means.length * hist.bw * normPdf(v, pop.mean, se) / scaleMax) * h;
+        i ? ctx.lineTo(x(v), y) : ctx.moveTo(x(v), y);
+      }
+      ctx.stroke();
+      ctx.fillStyle = css("--normal"); ctx.font = "13px sans-serif"; ctx.textAlign = "right";
+      ctx.fillText("Normal(μ, σ/√n) predicted by CLT", PAD.l + w - 4, PAD.t + 14);
+      if (latest !== null) {
+        ctx.fillStyle = css("--gold"); ctx.strokeStyle = css("--asu-black"); ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(x(latest), PAD.t + h - 1); ctx.lineTo(x(latest) - 7, PAD.t + h + 11); ctx.lineTo(x(latest) + 7, PAD.t + h + 11); ctx.closePath();
+        ctx.fill(); ctx.stroke();
+      }
+    } else {
+      ctx.fillStyle = css("--muted"); ctx.textAlign = "center"; ctx.font = "14px sans-serif";
+      ctx.fillText("Click ▶ Animate to start drawing samples. Each sample mean x̄ will be added here.", PAD.l + w / 2, PAD.t + h / 2);
+    }
+    vline(f, pop.mean, css("--maroon"), null);
+  }
+
+  // ---------- Text that follows the settings ----------
+  function updateExplain() {
+    $("popDesc").textContent = pop.desc;
+    $("nUnit").textContent = pop.unit;
+    $("how1").textContent = pop.one;
+    $("how2").textContent = pop.sample(n);
+    $("how3").textContent = pop.repeat(n, reps());
+  }
+
+  function updateStats() {
+    const se = pop.sd / Math.sqrt(n);
+    $("mu").textContent = fmt(pop.mean);
+    $("sigma").textContent = fmt(pop.sd);
+    $("nShow").textContent = n;
+    $("muShow").textContent = fmt(pop.mean);
+    $("se").textContent = fmt(se);
+    $("seCalc").textContent = `Standard error = ${fmt(pop.sd)} / √${n} = ${fmt(pop.sd)} / ${Math.sqrt(n).toFixed(3)} = ${fmt(se)}.`;
+    $("count").textContent = means.length.toLocaleString();
+    if (means.length >= 2) {
+      const m = means.reduce((a, b) => a + b, 0) / means.length;
+      const sd = Math.sqrt(means.reduce((a, b) => a + (b - m) ** 2, 0) / (means.length - 1));
+      $("meanOfMeans").textContent = fmt(m);
+      $("sdOfMeans").textContent = fmt(sd);
+      const closeCenter = Math.abs(m - pop.mean) < 0.05 * pop.sd;
+      const ratio = sd / se;
+      const closeSpread = ratio > 0.9 && ratio < 1.1;
+      let msg = `After ${means.length.toLocaleString()} samples of n = ${n}: the sample means average ${fmt(m)} (theory says ${fmt(pop.mean)}) and have standard deviation ${fmt(sd)} (theory says ${fmt(se)}). `;
+      if (means.length < 100) msg += "With fewer than 100 samples the observed numbers are still noisy; keep going.";
+      else if (closeCenter && closeSpread) msg += "Both match the CLT's prediction closely, and the histogram should sit on top of the normal curve.";
+      else msg += "The observed values differ from the prediction more than usual; draw more samples, or check whether n is large enough for this population.";
+      $("verdict").textContent = msg;
+      $("chartDesc").textContent = msg;
+    } else {
+      $("meanOfMeans").textContent = means.length ? fmt(means[0]) : "–";
+      $("sdOfMeans").textContent = "–";
+      $("verdict").textContent = "Run the simulation in step 3 to fill in the observed column.";
+      $("chartDesc").textContent = "";
+    }
+  }
+
+  // ---------- Actions ----------
+  function drawSamples(k) {
+    for (let s = 0; s < k; s++) {
+      let sum = 0;
+      for (let i = 0; i < n; i++) sum += pop.draw();
+      latest = sum / n;
+      means.push(latest);
+    }
+    drawMeans(); updateStats();
+  }
+  function stopAnim() {
+    if (timer) { clearInterval(timer); timer = null; }
+    const b = $("anim"); b.textContent = "▶ Animate one sample at a time"; b.setAttribute("aria-pressed", "false");
+    drawMeans();
+  }
+  // One sample per tick for the first 30 ticks, then progressively more per tick.
+  function perTick(t) { return t < 30 ? 1 : t < 60 ? 3 : t < 100 ? 10 : 25; }
+  function startAnim() {
+    const b = $("anim"); b.textContent = "⏹ Stop animation"; b.setAttribute("aria-pressed", "true");
+    const target = reps();
+    timer = setInterval(() => {
+      const k = Math.min(perTick(ticks++), target - means.length);
+      if (k > 0) drawSamples(k);
+      if (means.length >= target) stopAnim();
+    }, +$("speed").value);
+  }
+  function clearAll() { stopAnim(); means = []; latest = null; ticks = 0; drawPop(); drawMeans(); updateExplain(); updateStats(); }
+  function drawAll() { clearAll(); drawSamples(reps()); }
+
+  $("draw").addEventListener("click", drawAll);
+  $("reset").addEventListener("click", clearAll);
+  $("anim").addEventListener("click", () => { if (timer) stopAnim(); else { clearAll(); startAnim(); } });
+  $("speed").addEventListener("change", () => {
+    if (timer) { clearInterval(timer); timer = null; const t = ticks; startAnim(); ticks = t; }
+  });
+  $("reps").addEventListener("change", clearAll);
+  $("pop").addEventListener("change", e => { pop = POPS[e.target.value]; clearAll(); });
+  $("n").addEventListener("input", e => { n = +e.target.value; $("nOut").textContent = n; clearAll(); });
+
+  clearAll();
+})();
+</script>
+</body>
+</html>
