@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Confidence Interval Explorer – ECN 221</title>
+<style>
+  :root {
+    --maroon: #8C1D40;
+    --gold: #FFC627;
+    --asu-gray: #5C6670;
+    --asu-black: #191919;
+    --text: #191919;
+    --muted: #5C6670;
+    --line: #d9dee5;
+    --panel: #f7f7f7;
+    --pop: #5C6670;
+    --hit: #8C1D40;     /* interval contains μ */
+    --miss: #FFC627;    /* interval misses μ */
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--text); background: #fff; line-height: 1.55; font-size: 16px; }
+  header { padding: 18px 24px 14px; background: var(--maroon); color: #fff; border-bottom: 6px solid var(--gold); }
+  header h1 { margin: 0 0 4px; font-size: 1.5rem; }
+  header p { margin: 0; color: #f3e6ea; font-size: 0.95rem; }
+  main { max-width: 1100px; margin: 0 auto; padding: 8px 24px 32px; }
+  section { padding: 22px 0; border-bottom: 1px solid var(--line); }
+  section:last-of-type { border-bottom: none; }
+  h2 { font-size: 1.25rem; margin: 0 0 10px; color: var(--maroon); }
+  h2 .step { display: inline-block; background: var(--maroon); color: #fff; border-radius: 50%; width: 28px; height: 28px; line-height: 28px; text-align: center; font-size: 0.95rem; margin-right: 8px; }
+  p { margin: 0 0 10px; }
+  .formula { font-family: Georgia, "Times New Roman", serif; font-size: 1.05rem; }
+  .callout { background: var(--panel); border-left: 4px solid var(--maroon); padding: 12px 16px; border-radius: 4px; margin: 10px 0; }
+  .callout ol { margin: 6px 0 0; padding-left: 22px; }
+  .callout li { margin-bottom: 8px; }
+  .warn { background: #fff8e0; border-left: 4px solid var(--gold); padding: 12px 16px; border-radius: 4px; margin: 10px 0; }
+  .twocol { display: grid; grid-template-columns: 340px 1fr; gap: 24px; align-items: start; }
+  @media (max-width: 860px) { .twocol { grid-template-columns: 1fr; } }
+  fieldset { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; margin: 0; background: var(--panel); }
+  legend { font-weight: 600; padding: 0 6px; color: var(--maroon); }
+  label { display: block; margin: 8px 0 4px; font-weight: 600; font-size: 0.95rem; }
+  select, input[type=range] { width: 100%; }
+  select { padding: 6px; font-size: 1rem; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+  input[type=range] { accent-color: var(--maroon); }
+  .note { font-size: 0.88rem; color: var(--muted); margin: 4px 0 0; }
+  .btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  button { font-size: 0.95rem; padding: 8px 12px; border-radius: 6px; cursor: pointer; border: 1px solid var(--maroon); background: var(--maroon); color: #fff; font-weight: 600; }
+  button.primary { font-size: 1.05rem; padding: 12px 16px; box-shadow: 0 3px 0 var(--gold); width: 100%; }
+  button.secondary { background: #fff; color: var(--maroon); }
+  button:hover { filter: brightness(1.08); }
+  button:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid var(--maroon); outline-offset: 2px; }
+  .anim-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: end; margin-top: 14px; }
+  .anim-row select { width: 110px; }
+  .chart { margin-bottom: 14px; }
+  .chart h3 { margin: 0 0 4px; font-size: 1rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .swatch { display: inline-block; width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(0,0,0,.15); }
+  .legend { font-size: 0.85rem; color: var(--muted); display: flex; gap: 14px; flex-wrap: wrap; margin: 4px 0 8px; }
+  .legend span { display: inline-flex; align-items: center; gap: 5px; }
+  canvas { width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+  .tally { font-size: 1.15rem; font-weight: 700; margin: 8px 0; }
+  .tally b { color: var(--maroon); font-variant-numeric: tabular-nums; }
+  .results { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 860px) { .results { grid-template-columns: 1fr; } }
+  .box { border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+  .box h3 { margin: 0 0 8px; font-size: 1rem; color: var(--maroon); }
+  .box.theory { border-top: 4px solid var(--asu-black); }
+  .box.observed { border-top: 4px solid var(--maroon); }
+  .kv { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; font-size: 0.95rem; }
+  .kv span { color: var(--muted); }
+  .kv b { font-variant-numeric: tabular-nums; text-align: right; }
+  .verdict { margin-top: 14px; }
+  ol.explore { padding-left: 20px; }
+  ol.explore li { margin-bottom: 8px; }
+  .tip { background: #fff8e0; border-left: 4px solid var(--gold); padding: 10px 12px; border-radius: 4px; }
+  footer { padding: 10px 24px 20px; color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--line); text-align: center; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Confidence Interval Explorer</h1>
+  <p>ECN 221 Business Statistics · Instructor: Ehsan Asghari-Ghara</p>
+</header>
+
+<main>
+
+  <!-- 1. Theory -->
+  <section aria-labelledby="h-idea">
+    <h2 id="h-idea"><span class="step">1</span>What a confidence interval is, and what "95% confident" means</h2>
+    <p>We want to know a population mean <em>μ</em>, but we only get to see one sample of <em>n</em> observations. The sample mean <em>x̄</em> is our best single guess, but it will not equal <em>μ</em> exactly. A <strong>confidence interval</strong> turns that single guess into a range:</p>
+    <div class="callout">
+      <p class="formula" style="margin:0">x̄ ± (critical value) × σ/√n &nbsp;&nbsp; i.e. &nbsp;&nbsp; x̄ ± margin of error</p>
+      <p style="margin:8px 0 0">For a 95% interval with σ known, the critical value is <em>z</em> = 1.96; for 90% it is 1.645 and for 99% it is 2.576. When σ is unknown we use the sample standard deviation <em>s</em> and a <em>t</em> critical value instead.</p>
+    </div>
+    <p>Here is the part students most often get wrong. The population mean <em>μ</em> is a fixed number; it does not move. The <em>interval</em> is what is random, because it is built from a random sample. Take a different sample and you get a different <em>x̄</em> and a different interval. Some of those intervals will contain <em>μ</em>; some will miss it.</p>
+    <div class="warn">
+      <p style="margin:0"><strong>The correct interpretation of "95% confidence":</strong> if we repeated the sampling process many times and built an interval from each sample, about <strong>95% of those intervals would contain <em>μ</em></strong> and about 5% would miss it. The 95% describes the long-run success rate of the <em>method</em>, not the chance that one particular interval is right. Any single interval either contains <em>μ</em> or it does not; we just do not know which.</p>
+    </div>
+    <p>That is a statement about repeating the process many times, which is exactly what a computer can do. This page lets you watch it happen.</p>
+  </section>
+
+  <!-- 2. How the simulation works -->
+  <section aria-labelledby="h-how">
+    <h2 id="h-how"><span class="step">2</span>How the simulation works</h2>
+    <p>We play the role of someone who knows the truth. We pick a population, so we know <em>μ</em> exactly, then pretend we do not and let the computer sample from it over and over. The text below updates as you change the settings in step 3.</p>
+    <div class="callout" id="howBox" aria-live="polite">
+      <ol>
+        <li><strong>One observation.</strong> <span id="how1"></span></li>
+        <li><strong>One sample and one interval.</strong> <span id="how2"></span> That is what a researcher who only had this one sample would report.</li>
+        <li><strong>Check it.</strong> Because we know the true <em>μ</em>, we can check whether the interval actually contains it. Intervals that contain <em>μ</em> are drawn in <strong style="color:var(--hit)">maroon</strong>; intervals that miss are drawn in <strong style="color:#a67c00">gold</strong>.</li>
+        <li><strong>Repeat and count.</strong> <span id="how3"></span> We keep a running count of how many of the intervals contained <em>μ</em>, and compare that percentage with the confidence level we chose.</li>
+      </ol>
+    </div>
+    <p>The question we are testing: if we build <span id="howLevel"></span> confidence intervals over and over, does roughly <span id="howLevel2"></span> of them really contain <em>μ</em>?</p>
+  </section>
+
+  <!-- 3. Simulation -->
+  <section aria-labelledby="h-run">
+    <h2 id="h-run"><span class="step">3</span>Run the simulation</h2>
+    <div class="twocol">
+      <div>
+        <fieldset>
+          <legend>Settings</legend>
+          <label for="pop">Population we sample from</label>
+          <select id="pop">
+            <option value="uniform" selected>Uniform (flat, 0 to 10)</option>
+            <option value="skewed">Right-skewed (e.g., wait times)</option>
+            <option value="bimodal">Bimodal (two groups)</option>
+            <option value="normal">Normal (bell-shaped)</option>
+          </select>
+          <p class="note" id="popDesc"></p>
+
+          <label for="n">Sample size n = <output id="nOut" for="n">30</output> observations per sample</label>
+          <input type="range" id="n" min="2" max="200" value="30" step="1">
+          <p class="note">How many observations go into each sample, and so into each interval.</p>
+
+          <label for="level">Confidence level</label>
+          <select id="level">
+            <option value="0.80">80%</option>
+            <option value="0.90">90%</option>
+            <option value="0.95" selected>95%</option>
+            <option value="0.99">99%</option>
+          </select>
+
+          <label for="method">Standard deviation used in the interval</label>
+          <select id="method">
+            <option value="z" selected>Population σ is known (z interval)</option>
+            <option value="t">σ unknown, use sample s (t interval)</option>
+          </select>
+          <p class="note" id="methodDesc"></p>
+
+          <label for="reps">Number of samples (intervals to build)</label>
+          <select id="reps">
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100" selected>100</option>
+            <option value="500">500</option>
+            <option value="1000">1,000</option>
+            <option value="5000">5,000</option>
+          </select>
+          <p class="note">The chart shows the 100 most recent intervals; the tally counts all of them.</p>
+
+          <div class="anim-row">
+            <button id="anim" type="button" class="primary" aria-pressed="false">▶ Animate one sample at a time</button>
+            <div>
+              <label for="speed" style="margin-top:0">Speed</label>
+              <select id="speed">
+                <option value="700">Slow</option>
+                <option value="250" selected>Medium</option>
+                <option value="60">Fast</option>
+              </select>
+            </div>
+          </div>
+          <p class="note">Each new interval slides in at the top of the stack. The animation starts one sample at a time and speeds up after the first 30.</p>
+
+          <div class="btns">
+            <button id="draw" type="button" class="secondary">Draw all at once (no animation)</button>
+            <button id="reset" type="button" class="secondary">Clear</button>
+          </div>
+        </fieldset>
+      </div>
+
+      <div>
+        <div class="chart">
+          <h3><span class="swatch" style="background:var(--pop)"></span>Population (we know its mean μ, the dashed line)</h3>
+          <canvas id="cPop" width="900" height="170" role="img" aria-label="Distribution of the chosen population with its mean marked"></canvas>
+        </div>
+        <div class="chart">
+          <h3>Confidence intervals, one per sample (newest at the top)</h3>
+          <div class="legend">
+            <span><span class="swatch" style="background:var(--hit)"></span>contains μ</span>
+            <span><span class="swatch" style="background:var(--miss)"></span>misses μ</span>
+            <span>● = sample mean x̄</span>
+            <span>dashed line = true μ</span>
+          </div>
+          <canvas id="cCI" width="900" height="460" role="img" aria-label="Stack of confidence intervals, colored by whether each contains the population mean"></canvas>
+          <p class="tally" id="tally" aria-live="polite">No intervals yet.</p>
+        </div>
+        <p id="chartDesc" class="sr-only"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Results -->
+  <section aria-labelledby="h-results">
+    <h2 id="h-results"><span class="step">4</span>Reading the results</h2>
+    <p>The confidence level is a promise about the long run. The simulation checks whether the promise holds.</p>
+    <div class="results" aria-live="polite">
+      <div class="box theory">
+        <h3>What the theory predicts</h3>
+        <div class="kv">
+          <span>Population mean μ</span><b id="mu">–</b>
+          <span>Population SD σ</span><b id="sigma">–</b>
+          <span>Sample size n</span><b id="nShow">–</b>
+          <span>Confidence level</span><b id="levelShow">–</b>
+          <span>Critical value</span><b id="crit">–</b>
+          <span>Margin of error (σ known)</span><b id="moe">–</b>
+          <span>Expected share of intervals containing μ</span><b id="expShare">–</b>
+        </div>
+        <p class="note" id="moeCalc" style="margin-top:8px"></p>
+      </div>
+      <div class="box observed">
+        <h3>What the simulation produced</h3>
+        <div class="kv">
+          <span>Intervals built</span><b id="count">0</b>
+          <span>Intervals containing μ</span><b id="hits">–</b>
+          <span>Intervals missing μ</span><b id="misses">–</b>
+          <span>Observed share containing μ</span><b id="obsShare">–</b>
+          <span>Average interval width</span><b id="avgWidth">–</b>
+        </div>
+        <p class="note" style="margin-top:8px">The observed share is the simulation's version of the confidence level.</p>
+      </div>
+    </div>
+    <p class="verdict" id="verdict"></p>
+    <p>Two things trade off here. A higher confidence level means a larger critical value, so a <em>wider</em> interval: you catch <em>μ</em> more often, but you say less about where it is. A larger sample shrinks σ/√n, so the interval gets <em>narrower</em> while keeping the same success rate. Confidence level controls how often you are right; sample size controls how precise you are.</p>
+  </section>
+
+  <!-- 5. Explore -->
+  <section aria-labelledby="h-explore">
+    <h2 id="h-explore"><span class="step">5</span>Explore further</h2>
+    <ol class="explore">
+      <li>Run the default (uniform population, <em>n</em> = 30, 95%, 100 intervals). Count the gold intervals. Is it close to 5? Run it again: the count changes, but what does it hover around?</li>
+      <li>Switch to 1,000 intervals and draw all at once. The observed share should now be very close to 95%. Why does more repetition make the percentage more stable, even though each individual interval is just as uncertain as before?</li>
+      <li>Change the confidence level to 80%, then 99%. Watch two things: the width of the intervals and the number of gold ones. Explain the trade-off in one sentence.</li>
+      <li>Keep 95% and move <em>n</em> from 30 to 120. The intervals get narrower, but does the share containing <em>μ</em> change? What does that tell you about what the confidence level does and does not control?</li>
+      <li>Pick one gold (missed) interval and look at where its x̄ is. Could the researcher who drew that sample have known their interval was wrong?</li>
+      <li>Switch to the right-skewed population, the <em>t</em> interval, and <em>n</em> = 5. Does the method still deliver 95%? Try <em>n</em> = 30. This is why we want large samples when the population is far from normal.</li>
+    </ol>
+    <p class="tip"><strong>Key point:</strong> "95% confident" is a property of the <em>procedure</em>, verified by repeating it. It does not mean "there is a 95% chance μ is in my interval." In practice you get one sample and one interval, and you never find out whether it was one of the maroon ones or one of the gold ones. The confidence level tells you how good the method is in the long run, which is the best anyone can say from a single sample.</p>
+  </section>
+
+</main>
+
+<footer>ECN 221 Business Statistics · W. P. Carey School of Business, Arizona State University</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------- Math ----------
+  function randNormal() {
+    let u = 0, v = 0;
+    while (u === 0) u = Math.random();
+    while (v === 0) v = Math.random();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+  }
+  function normPdf(x, m, s) { return Math.exp(-0.5 * ((x - m) / s) ** 2) / (s * Math.sqrt(2 * Math.PI)); }
+  // Standard normal CDF (Abramowitz–Stegun 26.2.17, |error| < 7.5e-8)
+  function normCdf(x) {
+    const t = 1 / (1 + 0.2316419 * Math.abs(x));
+    const d = 0.3989422804014327 * Math.exp(-x * x / 2);
+    const p = d * t * (0.319381530 + t * (-0.356563782 + t * (1.781477937 + t * (-1.821255978 + t * 1.330274429))));
+    return x >= 0 ? 1 - p : p;
+  }
+  // Regularized incomplete beta via continued fraction (Numerical Recipes)
+  function lgamma(z) {
+    const g = 7, c = [0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313, -176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7];
+    if (z < 0.5) return Math.log(Math.PI / Math.sin(Math.PI * z)) - lgamma(1 - z);
+    z -= 1; let x = c[0];
+    for (let i = 1; i < g + 2; i++) x += c[i] / (z + i);
+    const t = z + g + 0.5;
+    return 0.5 * Math.log(2 * Math.PI) + (z + 0.5) * Math.log(t) - t + Math.log(x);
+  }
+  function betacf(a, b, x) {
+    const MAXIT = 200, EPS = 3e-12, FPMIN = 1e-300;
+    let qab = a + b, qap = a + 1, qam = a - 1, c = 1, d = 1 - qab * x / qap;
+    if (Math.abs(d) < FPMIN) d = FPMIN; d = 1 / d; let h = d;
+    for (let m = 1; m <= MAXIT; m++) {
+      const m2 = 2 * m;
+      let aa = m * (b - m) * x / ((qam + m2) * (a + m2));
+      d = 1 + aa * d; if (Math.abs(d) < FPMIN) d = FPMIN; c = 1 + aa / c; if (Math.abs(c) < FPMIN) c = FPMIN; d = 1 / d; h *= d * c;
+      aa = -(a + m) * (qab + m) * x / ((a + m2) * (qap + m2));
+      d = 1 + aa * d; if (Math.abs(d) < FPMIN) d = FPMIN; c = 1 + aa / c; if (Math.abs(c) < FPMIN) c = FPMIN; d = 1 / d;
+      const del = d * c; h *= del;
+      if (Math.abs(del - 1) < EPS) break;
+    }
+    return h;
+  }
+  function ibeta(a, b, x) {
+    if (x <= 0) return 0; if (x >= 1) return 1;
+    const bt = Math.exp(lgamma(a + b) - lgamma(a) - lgamma(b) + a * Math.log(x) + b * Math.log(1 - x));
+    return x < (a + 1) / (a + b + 2) ? bt * betacf(a, b, x) / a : 1 - bt * betacf(b, a, 1 - x) / b;
+  }
+  function tCdf(t, df) {
+    const x = df / (df + t * t);
+    const p = 0.5 * ibeta(df / 2, 0.5, x);
+    return t >= 0 ? 1 - p : p;
+  }
+  // Inverse CDFs by bisection on [0, 50]
+  function invCdf(cdf, p) {
+    let lo = 0, hi = 50;
+    for (let i = 0; i < 80; i++) { const mid = (lo + hi) / 2; if (cdf(mid) < p) lo = mid; else hi = mid; }
+    return (lo + hi) / 2;
+  }
+  const zCrit = level => invCdf(normCdf, 1 - (1 - level) / 2);
+  const tCrit = (level, df) => invCdf(t => tCdf(t, df), 1 - (1 - level) / 2);
+
+  // ---------- Populations ----------
+  const POPS = {
+    uniform: {
+      mean: 5, sd: 10 / Math.sqrt(12), xmax: 10, tick: 2,
+      desc: "Every value between 0 and 10 is equally likely. μ = 5, σ ≈ 2.887.",
+      one: "We draw one number between 0 and 10, with every value equally likely. We know this population's mean is μ = 5 and its standard deviation is σ ≈ 2.887, but we pretend we only know what the sample tells us.",
+      sample: (n, lvl, m, c, cn) => `We draw ${n} numbers, compute their average x̄, and build the ${lvl} interval x̄ ± ${c} × ${m}/√${n}, where ${c} is the ${cn} and ${m} is ${m === "σ" ? "the population standard deviation" : "the standard deviation of this sample"}.`,
+      pdf: x => (x >= 0 && x <= 10) ? 0.1 : 0,
+      draw: () => Math.random() * 10
+    },
+    skewed: {
+      mean: 3, sd: 3, xmax: 15, tick: 3,
+      desc: "Exponential with mean 3: many small values, a long right tail. μ = 3, σ = 3.",
+      one: "We observe one customer's wait time from a population where most waits are short but a few are very long (exponential, μ = 3 minutes, σ = 3). The population is strongly right-skewed.",
+      sample: (n, lvl, m, c, cn) => `We observe ${n} customers, compute their average wait x̄, and build the ${lvl} interval x̄ ± ${c} × ${m}/√${n}, where ${c} is the ${cn} and ${m} is ${m === "σ" ? "the population standard deviation" : "the standard deviation of this sample"}.`,
+      pdf: x => x >= 0 ? Math.exp(-x / 3) / 3 : 0,
+      draw: () => -3 * Math.log(1 - Math.random())
+    },
+    bimodal: {
+      mean: 5, sd: Math.sqrt(10), xmax: 10, tick: 2,
+      desc: "Half the population is centered near 2, half near 8. μ = 5, σ ≈ 3.162.",
+      one: "We draw one value from a population made of two equal groups, one centered near 2 and one near 8. μ = 5 and σ ≈ 3.162.",
+      sample: (n, lvl, m, c, cn) => `We draw ${n} values, compute their average x̄, and build the ${lvl} interval x̄ ± ${c} × ${m}/√${n}, where ${c} is the ${cn} and ${m} is ${m === "σ" ? "the population standard deviation" : "the standard deviation of this sample"}.`,
+      pdf: x => 0.5 * normPdf(x, 2, 1) + 0.5 * normPdf(x, 8, 1),
+      draw: () => (Math.random() < 0.5 ? 2 : 8) + randNormal()
+    },
+    normal: {
+      mean: 5, sd: 1.5, xmax: 10, tick: 2,
+      desc: "Bell-shaped population. μ = 5, σ = 1.5.",
+      one: "We draw one value from a normal (bell-shaped) population with μ = 5 and σ = 1.5.",
+      sample: (n, lvl, m, c, cn) => `We draw ${n} values, compute their average x̄, and build the ${lvl} interval x̄ ± ${c} × ${m}/√${n}, where ${c} is the ${cn} and ${m} is ${m === "σ" ? "the population standard deviation" : "the standard deviation of this sample"}.`,
+      pdf: x => normPdf(x, 5, 1.5),
+      draw: () => 5 + 1.5 * randNormal()
+    }
+  };
+
+  // ---------- State ----------
+  let pop = POPS.uniform, n = 30, level = 0.95, method = "z";
+  let intervals = [];   // {lo, hi, mean, hit}
+  let hits = 0, widthSum = 0;
+  let timer = null, ticks = 0;
+  const WINDOW = 100;
+
+  // ---------- DOM ----------
+  const $ = id => document.getElementById(id);
+  const cPop = $("cPop"), cCI = $("cCI");
+  const fmt = v => v.toFixed(3);
+  const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const reps = () => +$("reps").value;
+  const pct = v => (100 * v).toFixed(1) + "%";
+  const levelPct = () => Math.round(level * 100) + "%";
+  const crit = () => method === "z" ? zCrit(level) : tCrit(level, n - 1);
+  const critName = () => method === "z" ? "z critical value" : `t critical value with ${n - 1} degrees of freedom`;
+
+  // ---------- Drawing ----------
+  const PAD = { l: 44, r: 16, t: 14, b: 30 };
+  function frame(cv) {
+    const ctx = cv.getContext("2d");
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    const w = cv.width - PAD.l - PAD.r, h = cv.height - PAD.t - PAD.b;
+    const x = v => PAD.l + (v / pop.xmax) * w;
+    ctx.strokeStyle = "#8a94a0"; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(PAD.l, PAD.t + h); ctx.lineTo(PAD.l + w, PAD.t + h); ctx.stroke();
+    ctx.fillStyle = css("--muted"); ctx.font = "13px sans-serif"; ctx.textAlign = "center";
+    for (let t = 0; t <= pop.xmax + 1e-9; t += pop.tick) {
+      ctx.beginPath(); ctx.moveTo(x(t), PAD.t + h); ctx.lineTo(x(t), PAD.t + h + 4); ctx.stroke();
+      ctx.fillText(t, x(t), PAD.t + h + 18);
+    }
+    return { ctx, w, h, x };
+  }
+  function vline(f, v, color, label) {
+    const { ctx, h, x, w } = f;
+    ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.setLineDash([5, 4]);
+    ctx.beginPath(); ctx.moveTo(x(v), PAD.t); ctx.lineTo(x(v), PAD.t + h); ctx.stroke();
+    ctx.restore();
+    if (label) { ctx.fillStyle = color; ctx.font = "bold 13px sans-serif"; ctx.textAlign = "left"; ctx.fillText(label, Math.min(x(v) + 5, PAD.l + w - 90), PAD.t + 14); }
+  }
+
+  function drawPop() {
+    const f = frame(cPop), { ctx, w, h, x } = f;
+    let maxP = 0;
+    for (let i = 0; i <= 300; i++) maxP = Math.max(maxP, pop.pdf(i / 300 * pop.xmax));
+    ctx.fillStyle = css("--pop");
+    ctx.beginPath(); ctx.moveTo(PAD.l, PAD.t + h);
+    for (let i = 0; i <= 300; i++) { const v = i / 300 * pop.xmax; ctx.lineTo(x(v), PAD.t + h - (pop.pdf(v) / maxP) * h * 0.95); }
+    ctx.lineTo(PAD.l + w, PAD.t + h); ctx.closePath();
+    ctx.globalAlpha = 0.35; ctx.fill(); ctx.globalAlpha = 1;
+    ctx.strokeStyle = css("--pop"); ctx.lineWidth = 2; ctx.stroke();
+    vline(f, pop.mean, css("--maroon"), "μ = " + fmt(pop.mean));
+  }
+
+  function drawCI() {
+    const f = frame(cCI), { ctx, w, h, x } = f;
+    const shown = intervals.slice(-WINDOW).reverse();   // newest first
+    if (!shown.length) {
+      ctx.fillStyle = css("--muted"); ctx.textAlign = "center"; ctx.font = "14px sans-serif";
+      ctx.fillText("Click ▶ Animate to start building intervals.", PAD.l + w / 2, PAD.t + h / 2);
+      vline(f, pop.mean, css("--maroon"), null);
+      return;
+    }
+    const rowH = h / WINDOW;
+    const thick = Math.max(2, Math.min(6, rowH * 0.7));
+    shown.forEach((iv, i) => {
+      const y = PAD.t + rowH * (i + 0.5);
+      const x0 = x(Math.max(0, iv.lo)), x1 = x(Math.min(pop.xmax, iv.hi));
+      ctx.strokeStyle = iv.hit ? css("--hit") : css("--miss");
+      ctx.lineWidth = iv.hit ? thick : thick + 1;
+      ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x1, y); ctx.stroke();
+      if (!iv.hit) { ctx.strokeStyle = css("--asu-black"); ctx.lineWidth = 0.8; ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x1, y); ctx.stroke(); }
+      ctx.fillStyle = iv.hit ? css("--hit") : css("--asu-black");
+      ctx.beginPath(); ctx.arc(x(iv.mean), y, Math.max(1.5, thick * 0.6), 0, 2 * Math.PI); ctx.fill();
+    });
+    vline(f, pop.mean, css("--maroon"), null);
+    if (intervals.length > WINDOW) {
+      ctx.fillStyle = css("--muted"); ctx.font = "12px sans-serif"; ctx.textAlign = "right";
+      ctx.fillText(`showing the most recent ${WINDOW} of ${intervals.length.toLocaleString()} intervals`, PAD.l + w - 4, PAD.t + h - 4);
+    }
+  }
+
+  // ---------- Text ----------
+  function updateExplain() {
+    const c = crit().toFixed(3), m = method === "z" ? "σ" : "s";
+    $("popDesc").textContent = pop.desc;
+    $("methodDesc").textContent = method === "z"
+      ? "Uses the true σ and a z critical value, as in the simplest textbook case."
+      : "Uses each sample's own standard deviation s and a t critical value with n − 1 degrees of freedom, as you would in practice.";
+    $("how1").textContent = pop.one;
+    $("how2").textContent = pop.sample(n, levelPct(), m, c, critName());
+    $("how3").textContent = `We repeat this ${reps().toLocaleString()} times, producing ${reps().toLocaleString()} different intervals from ${reps().toLocaleString()} different samples of ${n}.`;
+    $("howLevel").textContent = levelPct();
+    $("howLevel2").textContent = levelPct();
+  }
+
+  function updateStats() {
+    const c = crit(), moe = c * pop.sd / Math.sqrt(n);
+    $("mu").textContent = fmt(pop.mean);
+    $("sigma").textContent = fmt(pop.sd);
+    $("nShow").textContent = n;
+    $("levelShow").textContent = levelPct();
+    $("crit").textContent = (method === "z" ? "z = " : `t(${n - 1}) = `) + c.toFixed(3);
+    $("moe").textContent = fmt(moe);
+    $("expShare").textContent = levelPct();
+    $("moeCalc").textContent = `Margin of error = ${c.toFixed(3)} × ${fmt(pop.sd)} / √${n} = ${fmt(moe)}, so each interval is about ${fmt(2 * moe)} wide` + (method === "t" ? " (a little different for each sample, since s varies)." : ".");
+    const N = intervals.length;
+    $("count").textContent = N.toLocaleString();
+    if (N) {
+      const share = hits / N;
+      $("hits").textContent = hits.toLocaleString();
+      $("misses").textContent = (N - hits).toLocaleString();
+      $("obsShare").textContent = pct(share);
+      $("avgWidth").textContent = fmt(widthSum / N);
+      $("tally").innerHTML = `<b>${hits.toLocaleString()}</b> of <b>${N.toLocaleString()}</b> intervals contain μ &nbsp;=&nbsp; <b>${pct(share)}</b> &nbsp;(target: ${levelPct()})`;
+      let msg = `After ${N.toLocaleString()} intervals at the ${levelPct()} level: ${hits.toLocaleString()} contained μ and ${(N - hits).toLocaleString()} missed, an observed share of ${pct(share)}. `;
+      const gap = Math.abs(share - level);
+      if (N < 50) msg += "With fewer than 50 intervals the share is still noisy; a few more or fewer gold intervals swing the percentage a lot.";
+      else if (gap < 0.03) msg += `That is close to the promised ${levelPct()}: the method is delivering what it claims.`;
+      else if (share < level) msg += `That is noticeably below ${levelPct()}. Either run more intervals to let the share settle, or the method's assumptions are strained (small n with a skewed population, for example), so its intervals are too narrow.`;
+      else msg += `That is above ${levelPct()}; run more intervals and the share should settle down toward the target.`;
+      $("verdict").textContent = msg; $("chartDesc").textContent = msg;
+    } else {
+      $("hits").textContent = "–"; $("misses").textContent = "–"; $("obsShare").textContent = "–"; $("avgWidth").textContent = "–";
+      $("tally").textContent = "No intervals yet.";
+      $("verdict").textContent = "Run the simulation in step 3 to fill in the observed column.";
+      $("chartDesc").textContent = "";
+    }
+  }
+
+  // ---------- Actions ----------
+  function buildOne() {
+    let sum = 0, sumsq = 0;
+    for (let i = 0; i < n; i++) { const v = pop.draw(); sum += v; sumsq += v * v; }
+    const mean = sum / n;
+    const s = Math.sqrt(Math.max(0, (sumsq - n * mean * mean) / (n - 1)));
+    const sdUsed = method === "z" ? pop.sd : s;
+    const moe = crit() * sdUsed / Math.sqrt(n);
+    const lo = mean - moe, hi = mean + moe, hit = lo <= pop.mean && pop.mean <= hi;
+    intervals.push({ lo, hi, mean, hit });
+    if (hit) hits++;
+    widthSum += hi - lo;
+  }
+  function drawSamples(k) { for (let s = 0; s < k; s++) buildOne(); drawCI(); updateStats(); }
+  function stopAnim() {
+    if (timer) { clearInterval(timer); timer = null; }
+    const b = $("anim"); b.textContent = "▶ Animate one sample at a time"; b.setAttribute("aria-pressed", "false");
+  }
+  function perTick(t) { return t < 30 ? 1 : t < 60 ? 3 : t < 100 ? 10 : 25; }
+  function startAnim() {
+    const b = $("anim"); b.textContent = "⏹ Stop animation"; b.setAttribute("aria-pressed", "true");
+    const target = reps();
+    timer = setInterval(() => {
+      const k = Math.min(perTick(ticks++), target - intervals.length);
+      if (k > 0) drawSamples(k);
+      if (intervals.length >= target) stopAnim();
+    }, +$("speed").value);
+  }
+  function clearAll() { stopAnim(); intervals = []; hits = 0; widthSum = 0; ticks = 0; drawPop(); drawCI(); updateExplain(); updateStats(); }
+  function drawAll() { clearAll(); drawSamples(reps()); }
+
+  $("draw").addEventListener("click", drawAll);
+  $("reset").addEventListener("click", clearAll);
+  $("anim").addEventListener("click", () => { if (timer) stopAnim(); else { clearAll(); startAnim(); } });
+  $("speed").addEventListener("change", () => { if (timer) { clearInterval(timer); timer = null; const t = ticks; startAnim(); ticks = t; } });
+  $("reps").addEventListener("change", clearAll);
+  $("pop").addEventListener("change", e => { pop = POPS[e.target.value]; clearAll(); });
+  $("level").addEventListener("change", e => { level = +e.target.value; clearAll(); });
+  $("method").addEventListener("change", e => { method = e.target.value; clearAll(); });
+  $("n").addEventListener("input", e => { n = +e.target.value; $("nOut").textContent = n; clearAll(); });
+
+  clearAll();
+})();
+</script>
+</body>
+</html>
