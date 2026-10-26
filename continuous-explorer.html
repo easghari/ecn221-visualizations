@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Continuous Distributions: Probability as Area – ECN 221</title>
+<style>
+  :root {
+    --maroon: #8C1D40; --gold: #FFC627; --asu-gray: #5C6670; --asu-black: #191919;
+    --text: #191919; --muted: #5C6670; --line: #d9dee5; --panel: #f7f7f7;
+    --curve: #8C1D40; --area: #FFC627;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--text); background: #fff; line-height: 1.55; font-size: 16px; }
+  header { padding: 18px 24px 14px; background: var(--maroon); color: #fff; border-bottom: 6px solid var(--gold); }
+  header h1 { margin: 0 0 4px; font-size: 1.5rem; }
+  header p { margin: 0; color: #f3e6ea; font-size: 0.95rem; }
+  main { max-width: 1100px; margin: 0 auto; padding: 8px 24px 32px; }
+  section { padding: 22px 0; border-bottom: 1px solid var(--line); }
+  section:last-of-type { border-bottom: none; }
+  h2 { font-size: 1.25rem; margin: 0 0 10px; color: var(--maroon); }
+  h2 .step { display: inline-block; background: var(--maroon); color: #fff; border-radius: 50%; width: 28px; height: 28px; line-height: 28px; text-align: center; font-size: 0.95rem; margin-right: 8px; }
+  h3.sub { font-size: 1.05rem; margin: 18px 0 8px; color: var(--maroon); border-top: 1px dashed var(--line); padding-top: 14px; }
+  p { margin: 0 0 10px; }
+  a { color: var(--maroon); }
+  html { scroll-behavior: smooth; }
+  .formula { font-family: Georgia, "Times New Roman", serif; font-size: 1.05rem; }
+  .callout { background: var(--panel); border-left: 4px solid var(--maroon); padding: 12px 16px; border-radius: 4px; margin: 10px 0; }
+  .callout ol, .callout ul { margin: 6px 0 0; padding-left: 22px; }
+  .callout li { margin-bottom: 8px; }
+  .warn { background: #fff8e0; border-left: 4px solid var(--gold); padding: 12px 16px; border-radius: 4px; margin: 10px 0; }
+  .twocol { display: grid; grid-template-columns: 330px 1fr; gap: 24px; align-items: start; }
+  @media (max-width: 860px) { .twocol { grid-template-columns: 1fr; } }
+  fieldset { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; margin: 0; background: var(--panel); }
+  legend { font-weight: 600; padding: 0 6px; color: var(--maroon); }
+  label { display: block; margin: 8px 0 4px; font-weight: 600; font-size: 0.95rem; }
+  select, input[type=range] { width: 100%; }
+  select { padding: 6px; font-size: 1rem; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+  input[type=range] { accent-color: var(--maroon); }
+  .note { font-size: 0.88rem; color: var(--muted); margin: 4px 0 0; }
+  .btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  button { font-size: 0.95rem; padding: 8px 12px; border-radius: 6px; cursor: pointer; border: 1px solid var(--maroon); background: var(--maroon); color: #fff; font-weight: 600; }
+  button.primary { font-size: 1.05rem; padding: 12px 16px; box-shadow: 0 3px 0 var(--gold); width: 100%; margin-top: 12px; }
+  button.secondary { background: #fff; color: var(--maroon); }
+  button:hover { filter: brightness(1.08); }
+  button:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid var(--maroon); outline-offset: 2px; }
+  .chart { margin-bottom: 14px; }
+  .chart h3 { margin: 0 0 4px; font-size: 1rem; }
+  canvas { width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+  canvas.drag { cursor: ew-resize; touch-action: none; }
+  .big { font-size: 1.6rem; font-weight: 700; color: var(--maroon); font-variant-numeric: tabular-nums; margin: 6px 0; }
+  .kvbox { border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; background: #fff; }
+  .kvbox h3 { margin: 0 0 6px; font-size: 1rem; color: var(--maroon); }
+  .kv { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; font-size: 0.95rem; }
+  .kv span { color: var(--muted); }
+  .kv b { font-variant-numeric: tabular-nums; text-align: right; }
+  .calc { font-family: Georgia, "Times New Roman", serif; font-size: 1rem; background: var(--panel); border-radius: 6px; padding: 8px 12px; margin-top: 8px; line-height: 1.7; }
+  table.rule { border-collapse: collapse; width: 100%; font-size: 0.95rem; margin-top: 8px; }
+  table.rule th, table.rule td { border: 1px solid var(--line); padding: 6px 10px; text-align: center; }
+  table.rule th { background: var(--panel); }
+  table.rule td.l { text-align: left; }
+  .sw { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+  ol.explore { padding-left: 20px; }
+  ol.explore li { margin-bottom: 8px; }
+  .tip { background: #fff8e0; border-left: 4px solid var(--gold); padding: 10px 12px; border-radius: 4px; }
+  footer { padding: 10px 24px 20px; color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--line); text-align: center; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Continuous Distributions: Probability as Area</h1>
+  <p>ECN 221 Business Statistics · Instructor: Ehsan Asghari-Ghara</p>
+</header>
+
+<main>
+
+  <!-- 1. Theory -->
+  <section aria-labelledby="h-idea">
+    <h2 id="h-idea"><span class="step">1</span>How probability works when a variable can take any value</h2>
+    <p>A discrete random variable, like the number of heads in 10 flips, has a list of possible values, and each one has a probability. A <strong>continuous</strong> random variable, like a delivery time or a stock return, can take <em>any</em> value in a range. There are infinitely many of them, so no single value can carry any probability: for a continuous <em>X</em>, <strong>P(X = a) = 0</strong> for every <em>a</em>. Probability lives in <em>intervals</em>, and it is measured as <strong>area</strong>:</p>
+    <div class="callout">
+      <p style="margin:0 0 6px">A continuous distribution is described by a <strong>probability density function</strong> <em>f</em>(<em>x</em>), a curve with total area 1 under it. The probability that <em>X</em> lands between <em>a</em> and <em>b</em> is the area under the curve between them:</p>
+      <p class="formula" style="margin:0 0 6px">P(a ≤ X ≤ b) = area under f(x) from a to b = F(b) − F(a)</p>
+      <p style="margin:0">where <em>F</em>(<em>x</em>) = P(<em>X</em> ≤ <em>x</em>) is the <strong>cumulative distribution function</strong>, the area to the left of <em>x</em>. Because single points have zero area, ≤ and &lt; give the same answer: P(a ≤ X ≤ b) = P(a &lt; X &lt; b).</p>
+    </div>
+    <p>Two continuous distributions carry this chapter:</p>
+    <div class="callout">
+      <ul>
+        <li><strong>Uniform on [α, β].</strong> Every value in the range is equally likely, so the density is flat: <span class="formula">f(x) = 1 / (β − α)</span> for α ≤ x ≤ β and 0 elsewhere. Areas are rectangles: <span class="formula">P(a ≤ X ≤ b) = (b − a) / (β − α)</span>. Mean (α + β)/2, standard deviation (β − α)/√12.</li>
+        <li><strong>Normal with mean μ and standard deviation σ.</strong> The bell curve, symmetric about μ, with σ setting how wide it is. There is no simple formula for its areas, so we convert to the <strong>standard normal</strong> <em>Z</em> ~ N(0, 1) using the <strong>z-score</strong> <span class="formula">z = (x − μ) / σ</span>, which says how many standard deviations <em>x</em> is from the mean, and look up or compute <span class="formula">P(X ≤ x) = P(Z ≤ z) = Φ(z)</span>. One table serves every normal distribution.</li>
+      </ul>
+    </div>
+    <div class="warn">
+      <p style="margin:0"><strong>The empirical rule</strong> for any normal distribution: about <strong>68%</strong> of values fall within one standard deviation of the mean, about <strong>95%</strong> within two, and about <strong>99.7%</strong> within three. It is just three areas under the bell curve, and you can check it by simulation in <a href="#panelC">panel C</a>.</p>
+    </div>
+  </section>
+
+  <!-- 2. How -->
+  <section aria-labelledby="h-how">
+    <h2 id="h-how"><span class="step">2</span>How the three panels work</h2>
+    <div class="callout">
+      <ol>
+        <li><strong><a href="#panelA">Panel A</a>: probability as area.</strong> Choose a distribution and set its parameters. Then drag the gold handles on the axis (or use the sliders) to pick an interval. The area under the density between the handles fills in and the probability is printed, along with the calculation that produced it. The chart below it shows the same probability as a <em>rise</em> in the CDF. Switch to "find x for a given probability" to run the calculation backward, from a probability to a cutoff value.</li>
+        <li><strong><a href="#panelB">Panel B</a>: every normal is the standard normal in disguise.</strong> Pick any μ and σ and a value <em>x</em>. The top chart shades the area to the left (or right) of <em>x</em> under N(μ, σ); the bottom chart shades the area to the left (or right) of <em>z</em> = (<em>x</em> − μ)/σ under N(0, 1). The two areas are always identical. That is why one z-table is enough.</li>
+        <li><strong><a href="#panelC">Panel C</a>: the empirical rule, checked.</strong> Draw hundreds of values from a normal distribution, drop them under the curve, and count how many land within 1, 2 and 3 standard deviations of the mean. Compare the counts with 68%, 95% and 99.7%.</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- 3. Panels -->
+  <section aria-labelledby="h-run">
+    <h2 id="h-run"><span class="step">3</span>Explore</h2>
+
+    <h3 class="sub" id="panelA">A. Probability as area under the density</h3>
+    <div class="twocol">
+      <div>
+        <fieldset>
+          <legend>Distribution</legend>
+          <label for="dist">Family</label>
+          <select id="dist">
+            <option value="normal" selected>Normal N(μ, σ)</option>
+            <option value="uniform">Uniform on [α, β]</option>
+          </select>
+          <div id="normParams">
+            <label for="muA">Mean μ = <output id="muAOut" for="muA">50</output></label>
+            <input type="range" id="muA" min="20" max="80" value="50" step="1">
+            <label for="sdA">Standard deviation σ = <output id="sdAOut" for="sdA">10</output></label>
+            <input type="range" id="sdA" min="2" max="25" value="10" step="1">
+          </div>
+          <div id="unifParams" style="display:none">
+            <label for="loA">Lower end α = <output id="loAOut" for="loA">20</output></label>
+            <input type="range" id="loA" min="0" max="90" value="20" step="1">
+            <label for="hiA">Upper end β = <output id="hiAOut" for="hiA">80</output></label>
+            <input type="range" id="hiA" min="10" max="100" value="80" step="1">
+          </div>
+          <p class="note" id="distDesc"></p>
+        </fieldset>
+        <fieldset style="margin-top:14px">
+          <legend>Question</legend>
+          <label for="mode">What do you want to know?</label>
+          <select id="mode">
+            <option value="between" selected>P(a ≤ X ≤ b): between two values</option>
+            <option value="left">P(X ≤ a): below a value</option>
+            <option value="right">P(X ≥ a): above a value</option>
+            <option value="inv">Find x such that P(X ≤ x) = p</option>
+          </select>
+          <div id="handleA"><label for="a">a = <output id="aOut" for="a">40</output></label><input type="range" id="a" min="0" max="100" value="40" step="0.5"></div>
+          <div id="handleB"><label for="b">b = <output id="bOut" for="b">65</output></label><input type="range" id="b" min="0" max="100" value="65" step="0.5"></div>
+          <div id="handleP" style="display:none"><label for="pIn">p = <output id="pOut" for="pIn">0.90</output></label><input type="range" id="pIn" min="0.01" max="0.99" value="0.90" step="0.01"></div>
+          <p class="note">You can also drag the gold handles directly on the chart.</p>
+        </fieldset>
+      </div>
+      <div>
+        <div class="chart">
+          <h3>Density f(x) — the shaded area is the probability</h3>
+          <canvas id="cPdf" class="drag" width="900" height="300" role="img" aria-label="Probability density function with the selected interval shaded"></canvas>
+        </div>
+        <div class="kvbox" aria-live="polite">
+          <div class="big" id="probBig">–</div>
+          <div class="calc" id="probCalc"></div>
+        </div>
+        <div class="chart">
+          <h3>Cumulative distribution F(x) = P(X ≤ x) — the same probability as a rise</h3>
+          <canvas id="cCdf" width="900" height="240" role="img" aria-label="Cumulative distribution function with the selected interval marked"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="sub" id="panelB">B. Every normal distribution is the standard normal in disguise</h3>
+    <div class="twocol">
+      <div>
+        <fieldset>
+          <legend>Settings</legend>
+          <label for="muB">Mean μ = <output id="muBOut" for="muB">100</output></label>
+          <input type="range" id="muB" min="0" max="200" value="100" step="1">
+          <label for="sdB">Standard deviation σ = <output id="sdBOut" for="sdB">15</output></label>
+          <input type="range" id="sdB" min="1" max="40" value="15" step="1">
+          <label for="xB">Value x = <output id="xBOut" for="xB">120</output></label>
+          <input type="range" id="xB" min="0" max="200" value="120" step="1">
+          <label for="tailB">Which area?</label>
+          <select id="tailB">
+            <option value="left" selected>P(X ≤ x), left of x</option>
+            <option value="right">P(X ≥ x), right of x</option>
+          </select>
+          <p class="note">Move x and watch both shaded areas move together. Change μ or σ: the top curve reshapes, the bottom one never changes.</p>
+        </fieldset>
+        <div class="kvbox" style="margin-top:14px" aria-live="polite">
+          <h3>The conversion</h3>
+          <div class="calc" id="zCalc"></div>
+        </div>
+      </div>
+      <div>
+        <div class="chart">
+          <h3 id="hTop">X ~ N(μ, σ)</h3>
+          <canvas id="cTop" width="900" height="230" role="img" aria-label="Normal distribution with mean mu and standard deviation sigma, area shaded at x"></canvas>
+        </div>
+        <div class="chart">
+          <h3>Z ~ N(0, 1), the standard normal</h3>
+          <canvas id="cBot" width="900" height="230" role="img" aria-label="Standard normal distribution with the same area shaded at z"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="sub" id="panelC">C. The empirical rule, checked by simulation</h3>
+    <div class="twocol">
+      <div>
+        <fieldset>
+          <legend>Settings</legend>
+          <label for="muC">Mean μ = <output id="muCOut" for="muC">50</output></label>
+          <input type="range" id="muC" min="20" max="80" value="50" step="1">
+          <label for="sdC">Standard deviation σ = <output id="sdCOut" for="sdC">10</output></label>
+          <input type="range" id="sdC" min="2" max="20" value="10" step="1">
+          <label for="nC">Number of values to draw</label>
+          <select id="nC">
+            <option value="100">100</option>
+            <option value="500" selected>500</option>
+            <option value="2000">2,000</option>
+            <option value="10000">10,000</option>
+          </select>
+          <button id="drawC" type="button" class="primary">▶ Draw values</button>
+          <p class="note">Each dot is one value drawn from N(μ, σ), colored by how many standard deviations it is from the mean.</p>
+        </fieldset>
+      </div>
+      <div>
+        <div class="chart">
+          <h3>Drawn values under the curve, with bands at ±1σ, ±2σ, ±3σ</h3>
+          <canvas id="cEmp" width="900" height="320" role="img" aria-label="Simulated values under a normal curve, colored by distance from the mean in standard deviations"></canvas>
+        </div>
+        <div class="kvbox" aria-live="polite">
+          <h3>Share of values in each band</h3>
+          <table class="rule">
+            <tr><th>Band</th><th>Rule says</th><th>Exact area</th><th>Observed</th><th>Count</th></tr>
+            <tr><td class="l"><span class="sw" style="background:#8C1D40"></span>within ±1σ (μ − σ to μ + σ)</td><td>about 68%</td><td>68.27%</td><td id="o1">–</td><td id="c1">–</td></tr>
+            <tr><td class="l"><span class="sw" style="background:#FFC627"></span>within ±2σ</td><td>about 95%</td><td>95.45%</td><td id="o2">–</td><td id="c2">–</td></tr>
+            <tr><td class="l"><span class="sw" style="background:#5C6670"></span>within ±3σ</td><td>about 99.7%</td><td>99.73%</td><td id="o3">–</td><td id="c3">–</td></tr>
+            <tr><td class="l"><span class="sw" style="background:#191919"></span>beyond ±3σ</td><td>about 0.3%</td><td>0.27%</td><td id="o4">–</td><td id="c4">–</td></tr>
+          </table>
+          <p class="note" id="empNote" style="margin-top:8px"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Reading -->
+  <section aria-labelledby="h-results">
+    <h2 id="h-results"><span class="step">4</span>Reading the results</h2>
+    <p><strong>Panel A.</strong> For the uniform distribution the shaded area is a rectangle, so the probability is just its width divided by the total width, and the CDF is a straight ramp. For the normal distribution there is no formula for the area; the calculation box shows the real procedure: convert the endpoints to z-scores, look up Φ for each, subtract. Try pushing the two handles together: the area, and the probability, go to zero, which is what P(X = a) = 0 means.</p>
+    <p><strong>Panel B.</strong> The z-score is a change of units. It measures distance from the mean in standard deviations, so N(100, 15) at x = 120 and N(0, 1) at z = 1.33 are the same point in the same distribution, described in two different rulers. Any question about any normal distribution becomes a question about the one standard normal.</p>
+    <p><strong>Panel C.</strong> The 68 / 95 / 99.7 numbers are not a separate fact to memorize; they are the areas under the standard normal between ±1, ±2 and ±3. With 500 draws the observed shares wander a couple of percentage points from the exact areas; with 10,000 they settle onto them. That gap between observed and exact is the same sampling variability that the later chapters are built on.</p>
+  </section>
+
+  <!-- 5. Explore -->
+  <section aria-labelledby="h-explore">
+    <h2 id="h-explore"><span class="step">5</span>Explore further</h2>
+    <ol class="explore">
+      <li>Panel A, uniform on [20, 80]: set a = 30 and b = 45. Then move both handles 10 units to the right. Does the probability change? Now try the same thing with the normal distribution. Why does it change there?</li>
+      <li>Panel A, uniform: make the range very narrow, say [48, 52]. Read the height of the density off the axis. It is greater than 1. Why is that not a problem, if probabilities can never exceed 1?</li>
+      <li>Panel A, normal μ = 50, σ = 10: find P(40 ≤ X ≤ 60), P(30 ≤ X ≤ 70) and P(20 ≤ X ≤ 80). You have just rediscovered the empirical rule.</li>
+      <li>Panel A, "find x" mode with μ = 50, σ = 10: find the cutoff for the top 10% (p = 0.90), then the top 1%. How does the answer relate to the z-values 1.28 and 2.33?</li>
+      <li>Panel B: set μ = 100, σ = 15, x = 130, then change σ to 30 while leaving x at 130. The shaded area grows, yet x did not move. Explain in terms of z.</li>
+      <li>Panel C: draw 500 values and note the ±1σ share. Click Draw again several times. How much does the share wander? Switch to 10,000 and repeat.</li>
+      <li>Panel C: change μ and σ to anything you like and redraw. Do the shares depend on μ or σ at all? What does that tell you about the empirical rule?</li>
+    </ol>
+    <p class="tip"><strong>Key point:</strong> for a continuous random variable, probability is area under the density, so it belongs to intervals, never to single points. The normal distribution's areas all come from one curve, the standard normal, through the z-score. Everything later in the course that uses a z-table, a confidence interval, or a p-value is reading an area off that one curve.</p>
+  </section>
+
+</main>
+
+<footer>ECN 221 Business Statistics · W. P. Carey School of Business, Arizona State University</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------- Math ----------
+  function randNormal() { let u = 0, v = 0; while (u === 0) u = Math.random(); while (v === 0) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+  const phi = z => Math.exp(-0.5 * z * z) / Math.sqrt(2 * Math.PI);
+  function Phi(x) { const t = 1 / (1 + 0.2316419 * Math.abs(x)); const d = 0.3989422804014327 * Math.exp(-x * x / 2); const p = d * t * (0.319381530 + t * (-0.356563782 + t * (1.781477937 + t * (-1.821255978 + t * 1.330274429)))); return x >= 0 ? 1 - p : p; }
+  function PhiInv(p) { let lo = -8, hi = 8; for (let i = 0; i < 80; i++) { const m = (lo + hi) / 2; if (Phi(m) < p) lo = m; else hi = m; } return (lo + hi) / 2; }
+
+  const $ = id => document.getElementById(id);
+  const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const f3 = v => v.toFixed(3), f4 = v => v.toFixed(4), f2 = v => v.toFixed(2);
+  const pct = v => (100 * v).toFixed(2) + "%";
+
+  // ---------- generic chart frame ----------
+  const PAD = { l: 44, r: 16, t: 14, b: 32 };
+  function frame(cv, xmin, xmax, ymax, ylabel) {
+    const ctx = cv.getContext("2d"); ctx.clearRect(0, 0, cv.width, cv.height);
+    const w = cv.width - PAD.l - PAD.r, h = cv.height - PAD.t - PAD.b;
+    const x = v => PAD.l + ((v - xmin) / (xmax - xmin)) * w, y = v => PAD.t + h - (v / ymax) * h;
+    ctx.strokeStyle = "#8a94a0"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(PAD.l, PAD.t); ctx.lineTo(PAD.l, PAD.t + h); ctx.lineTo(PAD.l + w, PAD.t + h); ctx.stroke();
+    ctx.fillStyle = css("--muted"); ctx.font = "12px sans-serif"; ctx.textAlign = "center";
+    const r = xmax - xmin, tk = r > 150 ? 25 : r > 60 ? 10 : r > 25 ? 5 : r > 12 ? 2 : r > 5 ? 1 : 0.5;
+    for (let t = Math.ceil(xmin / tk) * tk; t <= xmax + 1e-9; t += tk) ctx.fillText(Math.round(t * 100) / 100, x(t), PAD.t + h + 16);
+    ctx.textAlign = "right";
+    const yt = ymax > 0.5 ? 0.25 : ymax > 0.2 ? 0.1 : ymax > 0.08 ? 0.02 : ymax > 0.03 ? 0.01 : 0.005;
+    for (let t = 0; t <= ymax + 1e-9; t += yt) ctx.fillText(Math.round(t * 1000) / 1000, PAD.l - 5, y(t) + 4);
+    if (ylabel) { ctx.save(); ctx.translate(12, PAD.t + h / 2); ctx.rotate(-Math.PI / 2); ctx.textAlign = "center"; ctx.fillText(ylabel, 0, 0); ctx.restore(); }
+    return { ctx, w, h, x, y };
+  }
+  function curve(f, fn, xmin, xmax, color, width) { const { ctx, x, y } = f; ctx.strokeStyle = color; ctx.lineWidth = width; ctx.beginPath(); for (let i = 0; i <= 400; i++) { const v = xmin + (xmax - xmin) * i / 400; i ? ctx.lineTo(x(v), y(fn(v))) : ctx.moveTo(x(v), y(fn(v))); } ctx.stroke(); }
+  function area(f, fn, a, b, color, alpha) { if (b <= a) return; const { ctx, x, y, h } = f; ctx.save(); ctx.globalAlpha = alpha; ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(x(a), PAD.t + h); for (let i = 0; i <= 200; i++) { const v = a + (b - a) * i / 200; ctx.lineTo(x(v), y(fn(v))); } ctx.lineTo(x(b), PAD.t + h); ctx.closePath(); ctx.fill(); ctx.restore(); }
+  function handle(f, v, label, color) { const { ctx, x, h } = f; ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.moveTo(x(v), PAD.t); ctx.lineTo(x(v), PAD.t + h); ctx.stroke(); ctx.restore(); ctx.fillStyle = color; ctx.strokeStyle = css("--asu-black"); ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(x(v), PAD.t + h, 8, 0, 2 * Math.PI); ctx.fill(); ctx.stroke(); ctx.fillStyle = css("--text"); ctx.font = "bold 13px sans-serif"; ctx.textAlign = "center"; ctx.fillText(label, x(v), PAD.t + 12); }
+
+  // =====================================================================
+  // Panel A
+  // =====================================================================
+  let dist = "normal", muA = 50, sdA = 10, loA = 20, hiA = 80, mode = "between", a = 40, b = 65, pIn = 0.90;
+  const A = {
+    range: () => dist === "normal" ? [muA - 4 * sdA, muA + 4 * sdA] : [loA - 0.15 * (hiA - loA) - 1, hiA + 0.15 * (hiA - loA) + 1],
+    pdf: v => dist === "normal" ? phi((v - muA) / sdA) / sdA : (v >= loA && v <= hiA ? 1 / (hiA - loA) : 0),
+    cdf: v => dist === "normal" ? Phi((v - muA) / sdA) : (v < loA ? 0 : v > hiA ? 1 : (v - loA) / (hiA - loA)),
+    inv: p => dist === "normal" ? muA + sdA * PhiInv(p) : loA + p * (hiA - loA)
+  };
+  function clampHandles() { const [lo, hi] = A.range(); a = Math.min(Math.max(a, lo), hi); b = Math.min(Math.max(b, lo), hi); if (mode === "between" && b < a) { const t = a; a = b; b = t; } }
+  function syncSlidersA() {
+    const [lo, hi] = A.range();
+    for (const id of ["a", "b"]) { const el = $(id); el.min = lo.toFixed(2); el.max = hi.toFixed(2); el.step = ((hi - lo) / 200).toFixed(3); }
+    $("a").value = a; $("b").value = b; $("aOut").textContent = f2(a); $("bOut").textContent = f2(b);
+    $("handleA").style.display = mode === "inv" ? "none" : ""; $("handleB").style.display = mode === "between" ? "" : "none"; $("handleP").style.display = mode === "inv" ? "" : "none";
+    $("normParams").style.display = dist === "normal" ? "" : "none"; $("unifParams").style.display = dist === "uniform" ? "" : "none";
+    $("muAOut").textContent = muA; $("sdAOut").textContent = sdA; $("loAOut").textContent = loA; $("hiAOut").textContent = hiA; $("pOut").textContent = f2(pIn);
+    $("distDesc").textContent = dist === "normal"
+      ? `Bell-shaped, centered at ${muA}, with most values within ${muA - 3 * sdA} to ${muA + 3 * sdA}.`
+      : `Flat between ${loA} and ${hiA}; density height 1/(β − α) = ${f4(1 / (hiA - loA))}. Mean ${(loA + hiA) / 2}, SD ${f3((hiA - loA) / Math.sqrt(12))}.`;
+  }
+  function drawA() {
+    clampHandles(); syncSlidersA();
+    const [lo, hi] = A.range(), ymax = (dist === "normal" ? phi(0) / sdA : 1 / (hiA - loA)) * 1.15;
+    let xa = a, xb = b;
+    if (mode === "inv") { xa = A.inv(pIn); }
+    // ---- pdf
+    const f = frame($("cPdf"), lo, hi, ymax, "f(x)");
+    const gold = css("--area");
+    if (mode === "between") area(f, A.pdf, xa, xb, gold, 0.75);
+    else if (mode === "left" || mode === "inv") area(f, A.pdf, lo, xa, gold, 0.75);
+    else area(f, A.pdf, xa, hi, gold, 0.75);
+    if (dist === "uniform") { const { ctx, x, y, h } = f; ctx.strokeStyle = css("--curve"); ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x(lo), y(0)); ctx.lineTo(x(loA), y(0)); ctx.lineTo(x(loA), y(1 / (hiA - loA))); ctx.lineTo(x(hiA), y(1 / (hiA - loA))); ctx.lineTo(x(hiA), y(0)); ctx.lineTo(x(hi), y(0)); ctx.stroke(); }
+    else curve(f, A.pdf, lo, hi, css("--curve"), 3);
+    if (mode === "between") { handle(f, xa, "a = " + f2(xa), gold); handle(f, xb, "b = " + f2(xb), gold); }
+    else if (mode === "inv") handle(f, xa, "x = " + f2(xa), gold);
+    else handle(f, xa, "a = " + f2(xa), gold);
+    // ---- probability text
+    let p, calc;
+    if (dist === "normal") {
+      const z = v => (v - muA) / sdA;
+      if (mode === "between") { p = Phi(z(xb)) - Phi(z(xa)); calc = `z<sub>a</sub> = (${f2(xa)} − ${muA}) / ${sdA} = ${f2(z(xa))}, &nbsp; z<sub>b</sub> = (${f2(xb)} − ${muA}) / ${sdA} = ${f2(z(xb))}<br>P(${f2(xa)} ≤ X ≤ ${f2(xb)}) = Φ(${f2(z(xb))}) − Φ(${f2(z(xa))}) = ${f4(Phi(z(xb)))} − ${f4(Phi(z(xa)))} = <b>${f4(p)}</b>`; }
+      else if (mode === "left") { p = Phi(z(xa)); calc = `z = (${f2(xa)} − ${muA}) / ${sdA} = ${f2(z(xa))}<br>P(X ≤ ${f2(xa)}) = Φ(${f2(z(xa))}) = <b>${f4(p)}</b>`; }
+      else if (mode === "right") { p = 1 - Phi(z(xa)); calc = `z = (${f2(xa)} − ${muA}) / ${sdA} = ${f2(z(xa))}<br>P(X ≥ ${f2(xa)}) = 1 − Φ(${f2(z(xa))}) = 1 − ${f4(Phi(z(xa)))} = <b>${f4(p)}</b>`; }
+      else { p = pIn; const zq = PhiInv(pIn); calc = `Find z with Φ(z) = ${f2(pIn)}: z = ${f3(zq)} (from the table, read inside-out)<br>x = μ + z·σ = ${muA} + ${f3(zq)} × ${sdA} = <b>${f2(xa)}</b>`; }
+    } else {
+      const W = hiA - loA, cl = v => Math.min(Math.max(v, loA), hiA);
+      if (mode === "between") { p = (cl(xb) - cl(xa)) / W; calc = `P(${f2(xa)} ≤ X ≤ ${f2(xb)}) = (width of the shaded part inside [α, β]) / (β − α) = (${f2(cl(xb))} − ${f2(cl(xa))}) / (${hiA} − ${loA}) = ${f2(cl(xb) - cl(xa))} / ${W} = <b>${f4(p)}</b>`; }
+      else if (mode === "left") { p = (cl(xa) - loA) / W; calc = `P(X ≤ ${f2(xa)}) = (${f2(cl(xa))} − ${loA}) / (${hiA} − ${loA}) = <b>${f4(p)}</b>`; }
+      else if (mode === "right") { p = (hiA - cl(xa)) / W; calc = `P(X ≥ ${f2(xa)}) = (${hiA} − ${f2(cl(xa))}) / (${hiA} − ${loA}) = <b>${f4(p)}</b>`; }
+      else { p = pIn; calc = `Solve (x − α)/(β − α) = ${f2(pIn)}: x = α + p·(β − α) = ${loA} + ${f2(pIn)} × ${W} = <b>${f2(xa)}</b>`; }
+    }
+    const label = mode === "between" ? `P(${f2(xa)} ≤ X ≤ ${f2(xb)})` : mode === "left" ? `P(X ≤ ${f2(xa)})` : mode === "right" ? `P(X ≥ ${f2(xa)})` : `x with P(X ≤ x) = ${f2(pIn)}`;
+    $("probBig").textContent = mode === "inv" ? `${label}  →  x = ${f2(xa)}` : `${label} = ${f4(p)}`;
+    $("probCalc").innerHTML = calc;
+    // ---- cdf
+    const g = frame($("cCdf"), lo, hi, 1.05, "F(x)");
+    const { ctx, x, y, h } = g;
+    const mark = (v, color) => { ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.moveTo(x(v), PAD.t + h); ctx.lineTo(x(v), y(A.cdf(v))); ctx.lineTo(PAD.l, y(A.cdf(v))); ctx.stroke(); ctx.restore(); };
+    if (mode === "between") {
+      ctx.fillStyle = css("--area"); ctx.globalAlpha = 0.6; ctx.fillRect(PAD.l, y(A.cdf(xb)), x(xa) - PAD.l, y(A.cdf(xa)) - y(A.cdf(xb))); ctx.globalAlpha = 1;
+      mark(xa, css("--muted")); mark(xb, css("--muted"));
+      ctx.fillStyle = css("--text"); ctx.font = "bold 12px sans-serif"; ctx.textAlign = "left";
+      ctx.fillText(`F(b) − F(a) = ${f4(A.cdf(xb))} − ${f4(A.cdf(xa))} = ${f4(p)}`, PAD.l + 8, Math.max(PAD.t + 14, y(A.cdf(xb)) - 6));
+    } else {
+      const v = xa, left = (mode === "left" || mode === "inv");
+      ctx.fillStyle = css("--area"); ctx.globalAlpha = 0.6;
+      if (left) ctx.fillRect(PAD.l, y(A.cdf(v)), x(v) - PAD.l, PAD.t + h - y(A.cdf(v))); else ctx.fillRect(PAD.l, y(1), x(v) - PAD.l, y(A.cdf(v)) - y(1));
+      ctx.globalAlpha = 1; mark(v, css("--muted"));
+      ctx.fillStyle = css("--text"); ctx.font = "bold 12px sans-serif"; ctx.textAlign = "left";
+      ctx.fillText(left ? `F(${f2(v)}) = ${f4(A.cdf(v))}` : `1 − F(${f2(v)}) = ${f4(1 - A.cdf(v))}`, PAD.l + 8, PAD.t + 14);
+    }
+    curve(g, A.cdf, lo, hi, css("--curve"), 3);
+  }
+  // drag handles on the pdf canvas
+  (function () {
+    const cv = $("cPdf"); let drag = null;
+    const toX = clientX => { const r = cv.getBoundingClientRect(); const [lo, hi] = A.range(); const px = (clientX - r.left) * cv.width / r.width; return lo + (px - PAD.l) / (cv.width - PAD.l - PAD.r) * (hi - lo); };
+    const start = clientX => { if (mode === "inv") return; const v = toX(clientX); const [lo, hi] = A.range(); const tol = (hi - lo) * 0.03; if (mode === "between" && Math.abs(v - b) < tol && Math.abs(v - b) <= Math.abs(v - a)) drag = "b"; else if (Math.abs(v - a) < tol) drag = "a"; else drag = (mode === "between" && Math.abs(v - b) < Math.abs(v - a)) ? "b" : "a"; move(clientX); };
+    const move = clientX => { if (!drag) return; const v = toX(clientX); if (drag === "a") a = v; else b = v; drawA(); };
+    cv.addEventListener("mousedown", e => { start(e.clientX); e.preventDefault(); });
+    window.addEventListener("mousemove", e => move(e.clientX)); window.addEventListener("mouseup", () => { drag = null; });
+    cv.addEventListener("touchstart", e => start(e.touches[0].clientX), { passive: true });
+    cv.addEventListener("touchmove", e => { move(e.touches[0].clientX); e.preventDefault(); }, { passive: false });
+    cv.addEventListener("touchend", () => { drag = null; });
+  })();
+  $("dist").addEventListener("change", e => { dist = e.target.value; if (dist === "uniform") { a = loA + 0.25 * (hiA - loA); b = loA + 0.6 * (hiA - loA); } else { a = muA - sdA; b = muA + 1.5 * sdA; } drawA(); });
+  $("mode").addEventListener("change", e => { mode = e.target.value; drawA(); });
+  $("muA").addEventListener("input", e => { muA = +e.target.value; drawA(); });
+  $("sdA").addEventListener("input", e => { sdA = +e.target.value; drawA(); });
+  $("loA").addEventListener("input", e => { loA = +e.target.value; if (hiA <= loA + 2) { hiA = loA + 2; $("hiA").value = hiA; } drawA(); });
+  $("hiA").addEventListener("input", e => { hiA = +e.target.value; if (loA >= hiA - 2) { loA = hiA - 2; $("loA").value = loA; } drawA(); });
+  $("a").addEventListener("input", e => { a = +e.target.value; drawA(); });
+  $("b").addEventListener("input", e => { b = +e.target.value; drawA(); });
+  $("pIn").addEventListener("input", e => { pIn = +e.target.value; drawA(); });
+
+  // =====================================================================
+  // Panel B
+  // =====================================================================
+  let muB = 100, sdB = 15, xB = 120, tailB = "left";
+  function drawB() {
+    $("muBOut").textContent = muB; $("sdBOut").textContent = sdB; $("xBOut").textContent = xB;
+    const z = (xB - muB) / sdB, p = tailB === "left" ? Phi(z) : 1 - Phi(z);
+    $("hTop").textContent = `X ~ N(μ = ${muB}, σ = ${sdB})`;
+    // top: same z-window as bottom so the pictures line up
+    const lo = muB - 4 * sdB, hi = muB + 4 * sdB;
+    const f = frame($("cTop"), lo, hi, phi(0) / sdB * 1.15, "f(x)");
+    const fx = v => phi((v - muB) / sdB) / sdB;
+    if (tailB === "left") area(f, fx, lo, Math.min(Math.max(xB, lo), hi), css("--area"), 0.75); else area(f, fx, Math.min(Math.max(xB, lo), hi), hi, css("--area"), 0.75);
+    curve(f, fx, lo, hi, css("--curve"), 3);
+    if (xB >= lo && xB <= hi) handle(f, xB, "x = " + xB, css("--area"));
+    { const { ctx, x, y, h } = f; ctx.save(); ctx.strokeStyle = css("--muted"); ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(x(muB), PAD.t + h); ctx.lineTo(x(muB), y(fx(muB))); ctx.stroke(); ctx.restore(); ctx.fillStyle = css("--text"); ctx.font = "bold 13px sans-serif"; ctx.textAlign = "right"; ctx.fillText(`area = ${f4(p)}`, PAD.l + f.w - 6, PAD.t + 16); ctx.textAlign = "center"; ctx.fillStyle = css("--muted"); ctx.font = "12px sans-serif"; ctx.fillText("μ", x(muB), PAD.t + h + 28); }
+    const g = frame($("cBot"), -4, 4, phi(0) * 1.15, "f(z)");
+    const zc = Math.min(Math.max(z, -4), 4);
+    if (tailB === "left") area(g, phi, -4, zc, css("--area"), 0.75); else area(g, phi, zc, 4, css("--area"), 0.75);
+    curve(g, phi, -4, 4, css("--curve"), 3);
+    if (z >= -4 && z <= 4) handle(g, z, "z = " + f2(z), css("--area"));
+    { const { ctx, x, y, h } = g; ctx.save(); ctx.strokeStyle = css("--muted"); ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(x(0), PAD.t + h); ctx.lineTo(x(0), y(phi(0))); ctx.stroke(); ctx.restore(); ctx.fillStyle = css("--text"); ctx.font = "bold 13px sans-serif"; ctx.textAlign = "right"; ctx.fillText(`area = ${f4(p)}`, PAD.l + g.w - 6, PAD.t + 16); }
+    $("zCalc").innerHTML = `z = (x − μ) / σ = (${xB} − ${muB}) / ${sdB} = <b>${f2(z)}</b><br>` +
+      (tailB === "left" ? `P(X ≤ ${xB}) = P(Z ≤ ${f2(z)}) = Φ(${f2(z)}) = <b>${f4(p)}</b>` : `P(X ≥ ${xB}) = P(Z ≥ ${f2(z)}) = 1 − Φ(${f2(z)}) = <b>${f4(p)}</b>`) +
+      `<br><span style="font-size:0.9rem;color:var(--muted)">x is ${Math.abs(z).toFixed(2)} standard deviations ${z >= 0 ? "above" : "below"} the mean.</span>`;
+  }
+  for (const [id, fn] of [["muB", v => muB = v], ["sdB", v => sdB = v], ["xB", v => xB = v]]) $(id).addEventListener("input", e => { fn(+e.target.value); drawB(); });
+  $("tailB").addEventListener("change", e => { tailB = e.target.value; drawB(); });
+
+  // =====================================================================
+  // Panel C
+  // =====================================================================
+  let muC = 50, sdC = 10, draws = null;
+  const BANDC = ["#8C1D40", "#FFC627", "#5C6670", "#191919"];
+  function drawC() {
+    $("muCOut").textContent = muC; $("sdCOut").textContent = sdC;
+    const lo = muC - 4.2 * sdC, hi = muC + 4.2 * sdC, top = phi(0) / sdC;
+    const f = frame($("cEmp"), lo, hi, top * 1.15, "f(x)"); const { ctx, x, y, h, w } = f;
+    const fx = v => phi((v - muC) / sdC) / sdC;
+    // bands
+    for (let k = 3; k >= 1; k--) { ctx.fillStyle = BANDC[k - 1]; ctx.globalAlpha = 0.12; ctx.fillRect(x(muC - k * sdC), PAD.t, x(muC + k * sdC) - x(muC - k * sdC), h); }
+    ctx.globalAlpha = 1;
+    for (let k = -3; k <= 3; k++) { ctx.save(); ctx.strokeStyle = k === 0 ? css("--text") : "#8a94a0"; ctx.setLineDash(k === 0 ? [] : [4, 4]); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x(muC + k * sdC), PAD.t); ctx.lineTo(x(muC + k * sdC), PAD.t + h); ctx.stroke(); ctx.restore(); ctx.fillStyle = css("--muted"); ctx.font = "12px sans-serif"; ctx.textAlign = "center"; ctx.fillText(k === 0 ? "μ" : (k > 0 ? "μ+" + k + "σ" : "μ−" + (-k) + "σ"), x(muC + k * sdC), PAD.t + 12); }
+    curve(f, fx, lo, hi, css("--curve"), 3);
+    if (draws) {
+      const counts = [0, 0, 0, 0];
+      const N = draws.length, r = N > 3000 ? 1.2 : N > 800 ? 1.8 : 2.6;
+      for (const v of draws) {
+        const k = Math.abs(v - muC) / sdC, band = k < 1 ? 0 : k < 2 ? 1 : k < 3 ? 2 : 3; counts[band]++;
+        if (v < lo || v > hi) continue;
+        // stack dots under the curve, jittered vertically within the curve's height at that x
+        const yy = PAD.t + h - Math.random() * (h * fx(v) / (top * 1.15)) * 0.92 - 3;
+        ctx.fillStyle = BANDC[band]; ctx.globalAlpha = 0.7; ctx.beginPath(); ctx.arc(x(v), yy, r, 0, 2 * Math.PI); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      const within1 = counts[0], within2 = counts[0] + counts[1], within3 = within2 + counts[2];
+      $("o1").textContent = pct(within1 / N); $("c1").textContent = `${within1.toLocaleString()} of ${N.toLocaleString()}`;
+      $("o2").textContent = pct(within2 / N); $("c2").textContent = `${within2.toLocaleString()} of ${N.toLocaleString()}`;
+      $("o3").textContent = pct(within3 / N); $("c3").textContent = `${within3.toLocaleString()} of ${N.toLocaleString()}`;
+      $("o4").textContent = pct(counts[3] / N); $("c4").textContent = `${counts[3].toLocaleString()} of ${N.toLocaleString()}`;
+      $("empNote").textContent = `With ${N.toLocaleString()} draws the observed shares differ from the exact areas by up to about ±${(100 * 2 * Math.sqrt(0.68 * 0.32 / N)).toFixed(1)} percentage points for the ±1σ band. Draw again to see them wander; draw more to see them settle.`;
+    } else {
+      for (const id of ["o1", "o2", "o3", "o4", "c1", "c2", "c3", "c4"]) $(id).textContent = "–";
+      $("empNote").textContent = "Click Draw values to run the check.";
+      ctx.fillStyle = css("--muted"); ctx.font = "14px sans-serif"; ctx.textAlign = "center"; ctx.fillText("Click ▶ Draw values.", PAD.l + w / 2, PAD.t + h * 0.45);
+    }
+  }
+  $("drawC").addEventListener("click", () => { const N = +$("nC").value; draws = new Array(N); for (let i = 0; i < N; i++) draws[i] = muC + sdC * randNormal(); drawC(); });
+  $("muC").addEventListener("input", e => { muC = +e.target.value; draws = null; drawC(); });
+  $("sdC").addEventListener("input", e => { sdC = +e.target.value; draws = null; drawC(); });
+  $("nC").addEventListener("change", () => { draws = null; drawC(); });
+
+  drawA(); drawB(); drawC();
+})();
+</script>
+</body>
+</html>
