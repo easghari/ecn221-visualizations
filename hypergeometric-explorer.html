@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Binomial vs. Hypergeometric – ECN 221</title>
+<style>
+  :root {
+    --maroon: #8C1D40; --gold: #FFC627; --asu-gray: #5C6670; --asu-black: #191919;
+    --text: #191919; --muted: #5C6670; --line: #d9dee5; --panel: #f7f7f7;
+    --binom: #5C6670; --hyper: #8C1D40; --defect: #FFC627; --good: #dfe3e8;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--text); background: #fff; line-height: 1.55; font-size: 16px; }
+  header { padding: 18px 24px 14px; background: var(--maroon); color: #fff; border-bottom: 6px solid var(--gold); }
+  header h1 { margin: 0 0 4px; font-size: 1.5rem; }
+  header p { margin: 0; color: #f3e6ea; font-size: 0.95rem; }
+  main { max-width: 1100px; margin: 0 auto; padding: 8px 24px 32px; }
+  section { padding: 22px 0; border-bottom: 1px solid var(--line); }
+  section:last-of-type { border-bottom: none; }
+  h2 { font-size: 1.25rem; margin: 0 0 10px; color: var(--maroon); }
+  h2 .step { display: inline-block; background: var(--maroon); color: #fff; border-radius: 50%; width: 28px; height: 28px; line-height: 28px; text-align: center; font-size: 0.95rem; margin-right: 8px; }
+  h3.sub { font-size: 1.05rem; margin: 18px 0 8px; color: var(--maroon); border-top: 1px dashed var(--line); padding-top: 14px; }
+  p { margin: 0 0 10px; }
+  a { color: var(--maroon); }
+  html { scroll-behavior: smooth; }
+  .formula { font-family: Georgia, "Times New Roman", serif; font-size: 1.05rem; }
+  .callout { background: var(--panel); border-left: 4px solid var(--maroon); padding: 12px 16px; border-radius: 4px; margin: 10px 0; }
+  .callout ol, .callout ul { margin: 6px 0 0; padding-left: 22px; }
+  .callout li { margin-bottom: 8px; }
+  .warn { background: #fff8e0; border-left: 4px solid var(--gold); padding: 12px 16px; border-radius: 4px; margin: 10px 0; }
+  .controls { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; }
+  @media (max-width: 760px) { .controls { grid-template-columns: 1fr; } }
+  label { display: block; margin: 4px 0 4px; font-weight: 600; font-size: 0.95rem; }
+  input[type=range] { width: 100%; accent-color: var(--maroon); }
+  select { width: 100%; padding: 6px; font-size: 1rem; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+  .note { font-size: 0.88rem; color: var(--muted); margin: 4px 0 0; }
+  .btns { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 14px; }
+  button { font-size: 0.95rem; padding: 8px 14px; border-radius: 6px; cursor: pointer; border: 1px solid var(--maroon); background: var(--maroon); color: #fff; font-weight: 600; }
+  button.primary { box-shadow: 0 3px 0 var(--gold); }
+  button.secondary { background: #fff; color: var(--maroon); }
+  button:hover { filter: brightness(1.08); }
+  button:disabled { opacity: 0.45; cursor: default; filter: none; }
+  button:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid var(--maroon); outline-offset: 2px; }
+  .chart { margin-bottom: 14px; }
+  .chart h3 { margin: 0 0 4px; font-size: 1rem; }
+  .legend { font-size: 0.85rem; color: var(--muted); display: flex; gap: 14px; flex-wrap: wrap; margin: 4px 0 8px; }
+  .legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .swatch { display: inline-block; width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(0,0,0,.15); }
+  canvas { width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 760px) { .pair { grid-template-columns: 1fr; } }
+  .side { border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; }
+  .side.b { border-top: 4px solid var(--binom); }
+  .side.h { border-top: 4px solid var(--hyper); }
+  .side h4 { margin: 0 0 6px; font-size: 1rem; }
+  .chance { font-size: 1.05rem; margin: 6px 0; }
+  .chance b { font-variant-numeric: tabular-nums; }
+  table.cmp { border-collapse: collapse; width: 100%; font-size: 0.95rem; font-variant-numeric: tabular-nums; }
+  table.cmp th, table.cmp td { border: 1px solid var(--line); padding: 6px 10px; text-align: right; }
+  table.cmp th { background: var(--panel); text-align: center; }
+  table.cmp td:first-child { text-align: left; color: var(--muted); }
+  table.cmp td.f { font-family: Georgia, "Times New Roman", serif; text-align: left; line-height: 1.6; }
+  ol.explore { padding-left: 20px; }
+  ol.explore li { margin-bottom: 8px; }
+  .tip { background: #fff8e0; border-left: 4px solid var(--gold); padding: 10px 12px; border-radius: 4px; }
+  footer { padding: 10px 24px 20px; color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--line); text-align: center; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Binomial vs. Hypergeometric: Sampling With and Without Replacement</h1>
+  <p>ECN 221 Business Statistics · Instructor: Ehsan Asghari-Ghara</p>
+</header>
+
+<main>
+
+  <!-- 1 -->
+  <section aria-labelledby="h-idea">
+    <h2 id="h-idea"><span class="step">1</span>Two ways to count defective parts in a sample</h2>
+    <p>A shipment contains <em>N</em> parts, and <em>K</em> of them are defective. In the language of these distributions, finding a defective part is a success, and the probability of success on a draw, finding a defective item, is <em>p</em> = <em>K</em>/<em>N</em>. An inspector takes a sample of <em>n</em> parts and counts <em>X</em>, the number of defective parts in the sample. Which distribution describes <em>X</em> depends on one detail: whether each inspected part goes back into the shipment before the next one is drawn.</p>
+    <div class="callout">
+      <ul>
+        <li><strong>With replacement: binomial.</strong> Every draw is made from the full shipment, so every draw has the same probability of success, <em>p</em> = <em>K</em>/<em>N</em>, and the draws are independent. <span class="formula">P(X = k) = C(n, k) · pᵏ · (1 − p)ⁿ⁻ᵏ</span>.</li>
+        <li><strong>Without replacement: hypergeometric.</strong> Each inspected part is set aside, so the shipment shrinks and its mix changes after every draw. The draws are <em>not</em> independent: finding a defective part makes the next one a little less likely to be defective. <span class="formula">P(X = k) = C(K, k) · C(N − K, n − k) / C(N, n)</span>: the number of ways to pick <em>k</em> of the <em>K</em> defective parts and <em>n</em> − <em>k</em> of the good ones, out of all the ways to pick <em>n</em> parts.</li>
+      </ul>
+    </div>
+    <p>Both distributions have the same mean, <span class="formula">μ = n · K/N</span>. They differ in spread:</p>
+    <div class="callout">
+      <p class="formula" style="margin:0 0 4px">Binomial: &nbsp; σ = √( n p (1 − p) )</p>
+      <p class="formula" style="margin:0 0 6px">Hypergeometric: &nbsp; σ = √( n p (1 − p) ) · √( (N − n) / (N − 1) )</p>
+      <p style="margin:0">The extra factor, the <strong>finite population correction</strong>, is less than 1, so sampling without replacement gives a less variable count. Sampling without replacement can never inspect the same part twice, so each draw adds new information about the shipment.</p>
+    </div>
+    <div class="warn">
+      <p style="margin:0"><strong>When can you use the binomial instead?</strong> When the sample is a small fraction of the population, setting parts aside barely changes the shipment, and the two distributions are almost identical. The usual rule of thumb is <strong><em>n</em>/<em>N</em> ≤ 5%</strong>. Real inspections are almost always done without replacement; the binomial is the convenient approximation that works when the shipment is large.</p>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section aria-labelledby="h-how">
+    <h2 id="h-how"><span class="step">2</span>How the two panels work</h2>
+    <div class="callout">
+      <ol>
+        <li><strong><a href="#panelA">Panel A</a>: one inspection, part by part.</strong> The same shipment is shown twice. Two inspectors draw <em>n</em> parts one at a time. The inspector on the left puts every part back; the one on the right sets every part aside. Under each shipment you can watch the chance that the next part is defective: fixed on the left, changing with every draw on the right.</li>
+        <li><strong><a href="#panelB">Panel B</a>: the two distributions compared.</strong> The binomial and hypergeometric probabilities for every possible count, side by side, with their means and standard deviations. Change the shipment size and watch the two distributions pull apart or merge. An acceptance rule ("accept the shipment if at most <em>c</em> defective parts are found") shows when the difference matters for a real decision.</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section aria-labelledby="h-run">
+    <h2 id="h-run"><span class="step">3</span>Explore</h2>
+
+    <h3 class="sub" id="panelA">A. One inspection, part by part</h3>
+    <div class="controls">
+      <div><label for="NA">Shipment size N = <output id="NAOut" for="NA">20</output></label><input autocomplete="off" type="range" id="NA" min="5" max="100" value="20" step="1"></div>
+      <div><label for="KA">Defective parts K = <output id="KAOut" for="KA">5</output></label><input autocomplete="off" type="range" id="KA" min="1" max="19" value="5" step="1"></div>
+      <div><label for="nA">Sample size n = <output id="nAOut" for="nA">8</output></label><input autocomplete="off" type="range" id="nA" min="1" max="20" value="8" step="1"></div>
+    </div>
+    <div class="btns">
+      <button id="nextA" type="button" class="primary">Inspect the next part</button>
+      <button id="allA" type="button" class="secondary">Inspect all n parts</button>
+      <button id="resetA" type="button" class="secondary">New shipment</button>
+    </div>
+    <div class="legend">
+      <span><span class="swatch" style="background:var(--defect)"></span>defective part</span>
+      <span><span class="swatch" style="background:var(--good)"></span>good part</span>
+      <span>black outline = the part just inspected</span>
+      <span>left: badge = times inspected · right: ✕ = set aside</span>
+    </div>
+    <canvas id="cBoxes" width="900" height="300" role="img" aria-label="The same shipment shown twice, with the parts drawn by each inspector marked"></canvas>
+    <div class="pair" style="margin-top:12px" aria-live="polite">
+      <div class="side b">
+        <h4>Parts go back (binomial)</h4>
+        <p class="chance">Chance the next part is defective: <b id="chanceB">–</b></p>
+        <p class="note" id="foundB"></p>
+      </div>
+      <div class="side h">
+        <h4>Parts set aside (hypergeometric)</h4>
+        <p class="chance">Chance the next part is defective: <b id="chanceH">–</b></p>
+        <p class="note" id="foundH"></p>
+      </div>
+    </div>
+    <div class="chart" style="margin-top:12px">
+      <h3>Chance that each draw is defective, draw by draw</h3>
+      <div class="legend">
+        <span><span class="swatch" style="background:var(--binom)"></span>parts go back</span>
+        <span><span class="swatch" style="background:var(--hyper)"></span>parts set aside</span>
+      </div>
+      <canvas id="cChance" width="900" height="220" role="img" aria-label="Probability that each draw is defective, for both inspectors"></canvas>
+    </div>
+
+    <h3 class="sub" id="panelB">B. The two distributions compared</h3>
+    <div class="controls">
+      <div><label for="NB">Shipment size N = <output id="NBOut" for="NB">20</output></label><input autocomplete="off" type="range" id="NB" min="0" max="13" value="2" step="1">
+        <p class="note">Slide right for bigger shipments.</p></div>
+      <div><label for="rateB">Share defective K/N = <output id="rateBOut" for="rateB">25%</output></label><input autocomplete="off" type="range" id="rateB" min="0.05" max="0.5" value="0.25" step="0.05">
+        <p class="note" id="KBNote"></p></div>
+      <div><label for="nB">Sample size n = <output id="nBOut" for="nB">8</output></label><input autocomplete="off" type="range" id="nB" min="2" max="20" value="8" step="1">
+        <p class="note" id="fracNote"></p></div>
+    </div>
+    <div class="chart">
+      <h3>P(X = k): number of defective parts found in the sample</h3>
+      <div class="legend">
+        <span><span class="swatch" style="background:var(--binom)"></span>binomial (parts go back)</span>
+        <span><span class="swatch" style="background:var(--hyper)"></span>hypergeometric (parts set aside)</span>
+        <span>dashed line = acceptance cut-off</span>
+      </div>
+      <canvas id="cDist" width="900" height="300" role="img" aria-label="Binomial and hypergeometric probabilities side by side"></canvas>
+    </div>
+    <div class="controls" style="grid-template-columns: 1fr 2fr">
+      <div><label for="cB">Accept the shipment if at most c = <output id="cBOut" for="cB">1</output> defective parts are found</label><input autocomplete="off" type="range" id="cB" min="0" max="8" value="1" step="1"></div>
+      <div aria-live="polite">
+        <table class="cmp">
+          <thead><tr><th></th><th>Binomial</th><th>Hypergeometric</th></tr></thead>
+          <tbody>
+            <tr><td>Mean</td><td class="f" id="mB">–</td><td class="f" id="mH">–</td></tr>
+            <tr><td>Standard deviation</td><td class="f" id="sB">–</td><td class="f" id="sH">–</td></tr>
+            <tr><td>P(accept) = P(X ≤ c)</td><td id="aB">–</td><td id="aH">–</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <p id="verdictB" aria-live="polite"></p>
+  </section>
+
+  <!-- 4 -->
+  <section aria-labelledby="h-results">
+    <h2 id="h-results"><span class="step">4</span>Reading the results</h2>
+    <p><strong>Panel A.</strong> On the left, the chance that the next part is defective never changes, and the same part can be inspected more than once (its badge then shows 2 or more). That is the binomial setup: independent draws with a constant <em>p</em>. On the right, every defective part found lowers the chance for the next draw, and every good part found raises it. The draws depend on each other, which is why a different distribution, the hypergeometric, is needed.</p>
+    <p><strong>Panel B.</strong> The two sets of bars always balance at the same mean, but with a small shipment the hypergeometric bars are bunched more tightly around it. As the shipment grows with the share defective held fixed, setting parts aside makes less and less difference: the correction factor approaches 1 and the bars merge. The acceptance probability shows why this matters in practice: for a small shipment, using the binomial gives the wrong chance of accepting the shipment.</p>
+  </section>
+
+  <!-- 5 -->
+  <section aria-labelledby="h-explore">
+    <h2 id="h-explore"><span class="step">5</span>Explore further</h2>
+    <ol class="explore">
+      <li>Panel A, with N = 20, K = 5 and n = 8: inspect the parts one at a time. On the right, what happens to the chance of a defective part each time a defective one is found? Each time a good one is found?</li>
+      <li>Panel A: inspect all 8 parts a few times. Does the left inspector ever inspect the same part twice? Why can that never happen on the right?</li>
+      <li>Panel A: set n = N, so the inspector on the right inspects the whole shipment. How many defective parts must the right inspector find? Is the same true on the left?</li>
+      <li>Panel B, with N = 20, 25% defective and n = 8: compare the two sets of bars. Which one is bunched more tightly around the middle? How does that match the finite population correction in step 1?</li>
+      <li>Panel B: keep 25% defective and n = 8, and slide N up to 1,000. At what shipment size do the two sets of bars become hard to tell apart? What is n/N there?</li>
+      <li>Panel B: with N = 20, n = 8 and c = 1, compare P(accept) under the two models. If the inspector used the binomial for a shipment this small, would the acceptance rule look stricter or more lenient than it really is?</li>
+    </ol>
+    <p class="tip"><strong>Key point:</strong> the binomial distribution assumes every draw has the same chance of success, independently of the others. Sampling without replacement from a finite population breaks that assumption, and the hypergeometric distribution is the exact answer. When the sample is a small fraction of the population (about 5% or less), the difference is negligible and the binomial is a fine approximation.</p>
+  </section>
+
+</main>
+
+<footer>ECN 221 Business Statistics · W. P. Carey School of Business, Arizona State University</footer>
+
+<script>
+(function () {
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const f3 = v => v.toFixed(3), f4 = v => v.toFixed(4);
+
+  // ---------- Math ----------
+  const LF = [0]; for (let i = 1; i <= 5000; i++) LF[i] = LF[i - 1] + Math.log(i);
+  const lC = (a, b) => (b < 0 || b > a) ? -Infinity : LF[a] - LF[b] - LF[a - b];
+  const binomPmf = (k, n, p) => (k < 0 || k > n) ? 0 : Math.exp(lC(n, k) + k * Math.log(p) + (n - k) * Math.log(1 - p));
+  const hyperPmf = (k, N, K, n) => Math.exp(lC(K, k) + lC(N - K, n - k) - lC(N, n));
+  function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+  // =====================================================================
+  // Panel A — one inspection, part by part
+  // =====================================================================
+  let NA = 20, KA = 5, nA = 8, parts = [], drawsB = [], drawsH = [], timerA = null;
+  // parts[i] = true if defective; drawsB/drawsH = indices drawn, in order
+  function newShipment() {
+    stopA();
+    parts = shuffle(Array.from({ length: NA }, (_, i) => i < KA));
+    drawsB = []; drawsH = [];
+    drawA();
+  }
+  function syncA() {
+    $("NAOut").textContent = NA; $("KAOut").textContent = KA; $("nAOut").textContent = nA;
+    $("KA").max = NA - 1; $("nA").max = Math.min(NA, 20);
+  }
+  const chanceH = i => { const d = drawsH.slice(0, i).filter(j => parts[j]).length; return { num: KA - d, den: NA - i }; };
+  function drawBoxes() {
+    const cv = $("cBoxes"), ctx = cv.getContext("2d");
+    const cols = NA <= 20 ? 5 : 10, rows = Math.ceil(NA / cols);
+    const cell = Math.min(40, Math.floor((260 - 40) / rows), Math.floor(400 / cols));
+    const H = 44 + rows * cell + 20; if (cv.height !== H) cv.height = H;
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    const boxes = [{ x0: 20, title: "Parts go back after inspection", draws: drawsB, color: css("--binom"), back: true },
+                   { x0: 470, title: "Parts set aside after inspection", draws: drawsH, color: css("--hyper"), back: false }];
+    for (const bx of boxes) {
+      ctx.fillStyle = bx.color; ctx.fillRect(bx.x0, 10, 410, 4);
+      ctx.fillStyle = css("--text"); ctx.font = "bold 14px sans-serif"; ctx.textAlign = "left"; ctx.fillText(bx.title, bx.x0, 34);
+      const gx = bx.x0 + (410 - cols * cell) / 2, gy = 44;
+      const times = new Map(); bx.draws.forEach(j => times.set(j, (times.get(j) || 0) + 1));
+      const last = bx.draws.length ? bx.draws[bx.draws.length - 1] : -1;
+      for (let i = 0; i < NA; i++) {
+        const cx = gx + (i % cols) * cell, cy = gy + Math.floor(i / cols) * cell;
+        const removed = !bx.back && times.has(i);
+        ctx.globalAlpha = removed ? 0.22 : 1;
+        ctx.fillStyle = parts[i] ? css("--defect") : css("--good");
+        ctx.fillRect(cx + 3, cy + 3, cell - 6, cell - 6);
+        ctx.strokeStyle = "#b7bec6"; ctx.lineWidth = 1; ctx.strokeRect(cx + 3, cy + 3, cell - 6, cell - 6);
+        ctx.globalAlpha = 1;
+        if (removed) { ctx.strokeStyle = css("--muted"); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(cx + 7, cy + 7); ctx.lineTo(cx + cell - 7, cy + cell - 7); ctx.moveTo(cx + cell - 7, cy + 7); ctx.lineTo(cx + 7, cy + cell - 7); ctx.stroke(); }
+        if (i === last) { ctx.strokeStyle = css("--asu-black"); ctx.lineWidth = 3; ctx.strokeRect(cx + 1.5, cy + 1.5, cell - 3, cell - 3); }
+        if (bx.back && times.has(i)) {   // badge: how many times this part has been inspected
+          const r = Math.max(7, cell * 0.2), bxp = cx + cell - r - 1, byp = cy + r + 1;
+          ctx.fillStyle = times.get(i) > 1 ? css("--maroon") : css("--asu-black"); ctx.beginPath(); ctx.arc(bxp, byp, r, 0, 2 * Math.PI); ctx.fill();
+          ctx.fillStyle = "#fff"; ctx.font = `bold ${Math.round(r * 1.25)}px sans-serif`; ctx.textAlign = "center"; ctx.fillText(times.get(i), bxp, byp + r * 0.45);
+        }
+      }
+    }
+  }
+  function drawChanceChart() {
+    const cv = $("cChance"), ctx = cv.getContext("2d"); ctx.clearRect(0, 0, cv.width, cv.height);
+    const P = { l: 50, r: 20, t: 14, b: 36 }, w = cv.width - P.l - P.r, h = cv.height - P.t - P.b;
+    const p0 = KA / NA, ymax = Math.min(1, Math.max(0.5, Math.ceil(p0 * 2.2 * 10) / 10));
+    const x = i => P.l + (nA === 1 ? w / 2 : (i - 1) / (nA - 1) * w), y = v => P.t + h - (v / ymax) * h;
+    ctx.strokeStyle = "#8a94a0"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(P.l, P.t); ctx.lineTo(P.l, P.t + h); ctx.lineTo(P.l + w, P.t + h); ctx.stroke();
+    ctx.fillStyle = css("--muted"); ctx.font = "12px sans-serif"; ctx.textAlign = "right";
+    for (let t = 0; t <= ymax + 1e-9; t += ymax > 0.6 ? 0.2 : 0.1) { ctx.fillText(t.toFixed(1), P.l - 6, y(t) + 4); ctx.save(); ctx.strokeStyle = "#eef0f3"; ctx.beginPath(); ctx.moveTo(P.l + 1, y(t)); ctx.lineTo(P.l + w, y(t)); ctx.stroke(); ctx.restore(); }
+    ctx.textAlign = "center"; for (let i = 1; i <= nA; i++) ctx.fillText(i, x(i), P.t + h + 15);
+    ctx.fillText("draw number", P.l + w / 2, P.t + h + 31);
+    const series = (vals, color) => { if (!vals.length) return; ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 2.5; ctx.beginPath(); vals.forEach((v, k) => k ? ctx.lineTo(x(k + 1), y(v)) : ctx.moveTo(x(1), y(v))); ctx.stroke(); vals.forEach((v, k) => { ctx.beginPath(); ctx.arc(x(k + 1), y(v), 4.5, 0, 2 * Math.PI); ctx.fill(); }); };
+    // value for draw i = chance BEFORE that draw is made
+    const vb = drawsB.map(() => p0), vh = drawsH.map((_, i) => { const c = chanceH(i); return c.num / c.den; });
+    series(vb, css("--binom")); series(vh, css("--hyper"));
+    if (!drawsB.length) { ctx.fillStyle = css("--muted"); ctx.font = "14px sans-serif"; ctx.fillText("Click “Inspect the next part” to start.", P.l + w / 2, P.t + h / 2); }
+  }
+  function drawA() {
+    syncA(); drawBoxes(); drawChanceChart();
+    const i = drawsH.length, done = i >= nA;
+    $("chanceB").textContent = done ? "sample complete" : `${KA}/${NA} = ${f3(KA / NA)}`;
+    const c = chanceH(i);
+    $("chanceH").textContent = done ? "sample complete" : `${c.num}/${c.den} = ${f3(c.num / c.den)}`;
+    const dB = drawsB.filter(j => parts[j]).length, dH = drawsH.filter(j => parts[j]).length;
+    $("foundB").textContent = `Inspected ${drawsB.length} of ${nA} parts; defective found: ${dB}.`;
+    $("foundH").textContent = `Inspected ${drawsH.length} of ${nA} parts; defective found: ${dH}.`;
+    $("nextA").disabled = done; $("allA").disabled = done;
+  }
+  function stepA() {
+    if (drawsH.length >= nA) return false;
+    drawsB.push(Math.floor(Math.random() * NA));
+    const left = [...Array(NA).keys()].filter(j => !drawsH.includes(j));
+    drawsH.push(left[Math.floor(Math.random() * left.length)]);
+    drawA(); return drawsH.length < nA;
+  }
+  function stopA() { if (timerA) { clearInterval(timerA); timerA = null; } }
+  $("nextA").addEventListener("click", () => { stopA(); stepA(); });
+  $("allA").addEventListener("click", () => { stopA(); if (stepA()) timerA = setInterval(() => { if (!stepA()) stopA(); }, 450); });
+  $("resetA").addEventListener("click", newShipment);
+  $("NA").addEventListener("input", e => { NA = +e.target.value; KA = Math.min(KA, NA - 1); nA = Math.min(nA, NA, 20); $("KA").value = KA; $("nA").value = nA; newShipment(); });
+  $("KA").addEventListener("input", e => { KA = +e.target.value; newShipment(); });
+  $("nA").addEventListener("input", e => { nA = +e.target.value; newShipment(); });
+
+  // =====================================================================
+  // Panel B — the two distributions compared
+  // =====================================================================
+  const NVALS = [10, 15, 20, 30, 40, 60, 80, 100, 160, 200, 400, 600, 1000, 2000];
+  let NB = 20, rateB = 0.25, nB = 8, cB = 1;
+  const KB = () => Math.max(1, Math.min(NB - 1, Math.round(rateB * NB)));
+  function drawB() {
+    NB = NVALS[+$("NB").value]; nB = Math.min(+$("nB").value, NB);
+    const K = KB(), p = K / NB;
+    cB = Math.min(cB, nB); $("cB").max = nB; $("cB").value = cB;
+    $("NBOut").textContent = NB.toLocaleString(); $("rateBOut").textContent = Math.round(rateB * 100) + "%"; $("nBOut").textContent = nB; $("cBOut").textContent = cB;
+    $("KBNote").textContent = `K = ${K} defective parts out of ${NB.toLocaleString()} (p = ${f3(p)}).`;
+    const frac = nB / NB;
+    $("fracNote").textContent = `The sample is ${(100 * frac).toFixed(frac < 0.01 ? 2 : 1)}% of the shipment (n/N = ${nB}/${NB.toLocaleString()}).`;
+    const ks = [...Array(nB + 1).keys()], pb = ks.map(k => binomPmf(k, nB, p)), ph = ks.map(k => hyperPmf(k, NB, K, nB));
+    // chart
+    const cv = $("cDist"), ctx = cv.getContext("2d"); ctx.clearRect(0, 0, cv.width, cv.height);
+    const P = { l: 50, r: 20, t: 16, b: 38 }, w = cv.width - P.l - P.r, h = cv.height - P.t - P.b;
+    const ymax = Math.max(0.1, Math.ceil(Math.max(...pb, ...ph) * 1.15 * 20) / 20);
+    const x = k => P.l + (k + 0.5) / (nB + 1) * w, y = v => P.t + h - (v / ymax) * h, bw = Math.min(28, w / (nB + 1) * 0.36);
+    ctx.strokeStyle = "#8a94a0"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(P.l, P.t); ctx.lineTo(P.l, P.t + h); ctx.lineTo(P.l + w, P.t + h); ctx.stroke();
+    ctx.fillStyle = css("--muted"); ctx.font = "12px sans-serif"; ctx.textAlign = "right";
+    const yt = ymax > 0.6 ? 0.2 : ymax > 0.25 ? 0.1 : 0.05;
+    for (let t = 0; t <= ymax + 1e-9; t += yt) { ctx.fillText(t.toFixed(2), P.l - 6, y(t) + 4); ctx.save(); ctx.strokeStyle = "#eef0f3"; ctx.beginPath(); ctx.moveTo(P.l + 1, y(t)); ctx.lineTo(P.l + w, y(t)); ctx.stroke(); ctx.restore(); }
+    ks.forEach(k => {
+      ctx.fillStyle = css("--binom"); ctx.fillRect(x(k) - bw - 1, y(pb[k]), bw, P.t + h - y(pb[k]));
+      ctx.fillStyle = css("--hyper"); ctx.fillRect(x(k) + 1, y(ph[k]), bw, P.t + h - y(ph[k]));
+      ctx.fillStyle = css("--text"); ctx.font = "12px sans-serif"; ctx.textAlign = "center"; ctx.fillText(k, x(k), P.t + h + 15);
+    });
+    ctx.fillStyle = css("--muted"); ctx.fillText("number of defective parts in the sample, k", P.l + w / 2, P.t + h + 32);
+    const cx = (x(cB) + x(cB + 1)) / 2;
+    if (cB < nB) { ctx.save(); ctx.strokeStyle = css("--asu-black"); ctx.lineWidth = 1.5; ctx.setLineDash([6, 4]); ctx.beginPath(); ctx.moveTo(cx, P.t); ctx.lineTo(cx, P.t + h); ctx.stroke(); ctx.restore();
+      ctx.fillStyle = css("--text"); ctx.font = "bold 12px sans-serif"; ctx.textAlign = "right"; ctx.fillText("← accept", cx - 6, P.t + 12); ctx.textAlign = "left"; ctx.fillText("reject →", cx + 6, P.t + 12); }
+    // table
+    const accB = pb.slice(0, cB + 1).reduce((s, v) => s + v, 0), accH = ph.slice(0, cB + 1).reduce((s, v) => s + v, 0);
+    $("aB").textContent = f4(accB); $("aH").textContent = f4(accH);
+    // mean and standard deviation, with the formula and the numbers plugged in
+    const mu = nB * p, sb = Math.sqrt(nB * p * (1 - p)), fpc = Math.sqrt((NB - nB) / (NB - 1)), sh = sb * fpc;
+    const mean = `n·p = ${nB} × ${f3(p)} = <b>${f3(mu)}</b>`;
+    $("mB").innerHTML = mean; $("mH").innerHTML = mean;
+    $("sB").innerHTML = `√(n·p·(1 − p))<br>= √(${nB} × ${f3(p)} × ${f3(1 - p)}) = <b>${f3(sb)}</b>`;
+    $("sH").innerHTML = `√(n·p·(1 − p)) × √((N − n)/(N − 1))<br>= ${f3(sb)} × √((${NB} − ${nB})/(${NB} − 1))<br>= ${f3(sb)} × ${f3(fpc)} = <b>${f3(sh)}</b>`;
+    const gap = Math.abs(accB - accH);
+    $("verdictB").textContent = frac <= 0.05
+      ? `The sample is only ${(100 * frac).toFixed(1)}% of the shipment, within the 5% rule of thumb, so the binomial is a good approximation: the two acceptance probabilities differ by ${f4(gap)}.`
+      : `The sample is ${(100 * frac).toFixed(0)}% of the shipment, well above 5%, so setting parts aside matters: the binomial puts the chance of accepting the shipment at ${f4(accB)}, while the exact (hypergeometric) chance is ${f4(accH)}.`;
+  }
+  $("NB").addEventListener("input", drawB);
+  $("rateB").addEventListener("input", e => { rateB = +e.target.value; drawB(); });
+  $("nB").addEventListener("input", drawB);
+  $("cB").addEventListener("input", e => { cB = +e.target.value; drawB(); });
+
+  newShipment(); drawB();
+})();
+</script>
+</body>
+</html>

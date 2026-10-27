@@ -3,6 +3,7 @@
 Self-contained HTML visualizations for ECN 221 Business Statistics (Arizona State University), embedded in Canvas via iframe.
 
 - `index.html` — landing page listing all visualizations
+- `hypergeometric-explorer.html` — Binomial vs. Hypergeometric: Sampling With and Without Replacement
 - `continuous-explorer.html` — Continuous Distributions: Probability as Area
 - `clt-explorer.html` — Central Limit Theorem
 - `ci-explorer.html` — Confidence Intervals
