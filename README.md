@@ -3,6 +3,7 @@
 Self-contained HTML visualizations for ECN 221 Business Statistics (Arizona State University), embedded in Canvas via iframe.
 
 - `index.html` — landing page listing all visualizations
+- `discrete-explorer.html` — Discrete Random Variables: Expected Value, Binomial and Poisson
 - `continuous-explorer.html` — Continuous Distributions: Probability as Area
 - `clt-explorer.html` — Central Limit Theorem
 - `ci-explorer.html` — Confidence Intervals

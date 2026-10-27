@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Discrete Random Variables – ECN 221</title>
+<style>
+  :root {
+    --maroon: #8C1D40; --gold: #FFC627; --asu-gray: #5C6670; --asu-black: #191919;
+    --text: #191919; --muted: #5C6670; --line: #d9dee5; --panel: #f7f7f7;
+    --theory: #8C1D40; --sim: #191919; --shade: #FFC627;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--text); background: #fff; line-height: 1.55; font-size: 16px; }
+  header { padding: 18px 24px 14px; background: var(--maroon); color: #fff; border-bottom: 6px solid var(--gold); }
+  header h1 { margin: 0 0 4px; font-size: 1.5rem; }
+  header p { margin: 0; color: #f3e6ea; font-size: 0.95rem; }
+  main { max-width: 1100px; margin: 0 auto; padding: 8px 24px 32px; }
+  section { padding: 22px 0; border-bottom: 1px solid var(--line); }
+  section:last-of-type { border-bottom: none; }
+  h2 { font-size: 1.25rem; margin: 0 0 10px; color: var(--maroon); }
+  h2 .step { display: inline-block; background: var(--maroon); color: #fff; border-radius: 50%; width: 28px; height: 28px; line-height: 28px; text-align: center; font-size: 0.95rem; margin-right: 8px; }
+  h3.sub { font-size: 1.05rem; margin: 18px 0 8px; color: var(--maroon); border-top: 1px dashed var(--line); padding-top: 14px; }
+  p { margin: 0 0 10px; }
+  a { color: var(--maroon); }
+  html { scroll-behavior: smooth; }
+  .formula { font-family: Georgia, "Times New Roman", serif; font-size: 1.05rem; }
+  .callout { background: var(--panel); border-left: 4px solid var(--maroon); padding: 12px 16px; border-radius: 4px; margin: 10px 0; }
+  .callout ol, .callout ul { margin: 6px 0 0; padding-left: 22px; }
+  .callout li { margin-bottom: 8px; }
+  .warn { background: #fff8e0; border-left: 4px solid var(--gold); padding: 12px 16px; border-radius: 4px; margin: 10px 0; }
+  .twocol { display: grid; grid-template-columns: 320px 1fr; gap: 24px; align-items: start; }
+  @media (max-width: 860px) { .twocol { grid-template-columns: 1fr; } }
+  fieldset { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; margin: 0 0 14px; background: var(--panel); }
+  legend { font-weight: 600; padding: 0 6px; color: var(--maroon); }
+  label { display: block; margin: 8px 0 4px; font-weight: 600; font-size: 0.95rem; }
+  select, input[type=range] { width: 100%; }
+  select { padding: 6px; font-size: 1rem; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+  input[type=range] { accent-color: var(--maroon); }
+  .note { font-size: 0.88rem; color: var(--muted); margin: 4px 0 0; }
+  .btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  button { font-size: 0.95rem; padding: 8px 12px; border-radius: 6px; cursor: pointer; border: 1px solid var(--maroon); background: var(--maroon); color: #fff; font-weight: 600; }
+  button.primary { font-size: 1.05rem; padding: 12px 16px; box-shadow: 0 3px 0 var(--gold); width: 100%; }
+  button.secondary { background: #fff; color: var(--maroon); }
+  button:hover { filter: brightness(1.08); }
+  button:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid var(--maroon); outline-offset: 2px; }
+  .anim-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: end; margin-top: 14px; }
+  .anim-row select { width: 110px; }
+  .chart { margin-bottom: 14px; }
+  .chart h3 { margin: 0 0 4px; font-size: 1rem; }
+  .legend { font-size: 0.85rem; color: var(--muted); display: flex; gap: 14px; flex-wrap: wrap; margin: 4px 0 8px; }
+  .legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .swatch { display: inline-block; width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(0,0,0,.15); }
+  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--sim); }
+  canvas { width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+  canvas.drag { cursor: ns-resize; touch-action: none; }
+  .kvbox { border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; background: #fff; }
+  .kvbox h3 { margin: 0 0 6px; font-size: 1rem; color: var(--maroon); }
+  .kv { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; font-size: 0.95rem; }
+  .kv span { color: var(--muted); }
+  .kv b { font-variant-numeric: tabular-nums; text-align: right; }
+  .calc { font-family: Georgia, "Times New Roman", serif; font-size: 1rem; background: var(--panel); border-radius: 6px; padding: 8px 12px; margin-top: 8px; line-height: 1.7; }
+  .big { font-size: 1.4rem; font-weight: 700; color: var(--maroon); font-variant-numeric: tabular-nums; margin: 4px 0; }
+  table.pmf { border-collapse: collapse; width: 100%; font-size: 0.95rem; font-variant-numeric: tabular-nums; }
+  table.pmf th, table.pmf td { border: 1px solid var(--line); padding: 4px 8px; text-align: right; }
+  table.pmf th { background: var(--panel); text-align: center; font-weight: 600; }
+  table.pmf tfoot td { background: var(--panel); font-weight: 700; }
+  table.pmf input { width: 80px; padding: 3px 4px; font-size: 0.95rem; text-align: right; border: 1px solid var(--line); border-radius: 4px; }
+  .tally { font-size: 1.05rem; font-weight: 700; margin: 8px 0; }
+  .tally b { color: var(--maroon); font-variant-numeric: tabular-nums; }
+  ol.explore { padding-left: 20px; }
+  ol.explore li { margin-bottom: 8px; }
+  .tip { background: #fff8e0; border-left: 4px solid var(--gold); padding: 10px 12px; border-radius: 4px; }
+  footer { padding: 10px 24px 20px; color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--line); text-align: center; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Discrete Random Variables: Expected Value, Binomial and Poisson</h1>
+  <p>ECN 221 Business Statistics · Instructor: Ehsan Asghari-Ghara</p>
+</header>
+
+<main>
+
+  <!-- 1. Theory -->
+  <section aria-labelledby="h-idea">
+    <h2 id="h-idea"><span class="step">1</span>Random variables you can count</h2>
+    <p>A <strong>discrete random variable</strong> takes values you can list and count: the number of cars a dealership sells today, the number of customers who respond to an email, the number of calls a help desk receives in an hour. Its <strong>probability distribution</strong> lists every possible value <em>x</em> and its probability <em>P</em>(<em>x</em>). Every probability is between 0 and 1, and together they add up to 1.</p>
+    <div class="callout">
+      <p style="margin:0 0 6px">Two numbers summarize a distribution:</p>
+      <p class="formula" style="margin:0 0 4px">Expected value (mean): &nbsp; μ = E(X) = Σ x · P(x)</p>
+      <p class="formula" style="margin:0 0 6px">Variance: &nbsp; σ² = Σ (x − μ)² · P(x), &nbsp;&nbsp; standard deviation σ = √σ²</p>
+      <p style="margin:0">The expected value is the <strong>long-run average</strong>: if you observed the variable over and over, the average of the values would settle on μ. It does not have to be a value the variable can actually take; a dealership can sell 2.2 cars per day on average but never 2.2 cars on a given day. You can watch the average settle in <a href="#panelA">panel A</a>.</p>
+    </div>
+    <p>Two named distributions come up again and again in business:</p>
+    <div class="callout">
+      <ul>
+        <li><strong>Binomial.</strong> Count the successes in <em>n</em> independent trials, each with the same probability of success <em>p</em> (each of <em>n</em> customers buys or does not; each of <em>n</em> items is defective or not). <span class="formula">P(X = k) = C(n, k) · pᵏ · (1 − p)ⁿ⁻ᵏ</span>, where C(<em>n</em>, <em>k</em>) = <em>n</em>! / (<em>k</em>! (<em>n</em> − <em>k</em>)!) counts the ways to choose which <em>k</em> trials are the successes. Mean <span class="formula">μ = np</span>, standard deviation <span class="formula">σ = √(np(1 − p))</span>. See <a href="#panelB">panel B</a>.</li>
+        <li><strong>Poisson.</strong> Count how many times an event happens in a fixed interval of time or space, when events happen independently at an average rate λ per interval (calls per hour, customers per hour, typos per page). <span class="formula">P(X = k) = e<sup>−λ</sup> λᵏ / k!</span>. Its mean and its variance are <em>both</em> equal to λ. See <a href="#panelC">panel C</a>.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 2. How -->
+  <section aria-labelledby="h-how">
+    <h2 id="h-how"><span class="step">2</span>How the three panels work</h2>
+    <div class="callout">
+      <ol>
+        <li><strong><a href="#panelA">Panel A</a>: the expected value as a long-run average.</strong> Pick a distribution, or build your own by dragging the bars or typing probabilities into the table. The table computes E(X) and the variance column by column. Then let the computer observe the variable day after day: the black dots show how often each value has come up, and the running average traces its way toward E(X).</li>
+        <li><strong><a href="#panelB">Panel B</a>: the binomial distribution on a Galton board.</strong> Each ball is one group of <em>n</em> customers. At each row of pegs, one customer decides: the ball bounces right if that customer buys (probability <em>p</em>) and left if not. The bin where a ball lands is the number of customers who bought. Thousands of balls pile up into the binomial distribution. A calculator below finds P(X = k), P(X ≤ k) or P(X ≥ k) from the formula.</li>
+        <li><strong><a href="#panelC">Panel C</a>: Poisson arrivals.</strong> Customers arrive at random, at an average rate of λ per hour. The timeline shows the arrivals in one interval; the count for that interval is added to the histogram, which builds up against the Poisson distribution.</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- 3. Panels -->
+  <section aria-labelledby="h-run">
+    <h2 id="h-run"><span class="step">3</span>Explore</h2>
+
+    <!-- ======================= Panel A ======================= -->
+    <h3 class="sub" id="panelA">A. The expected value as a long-run average</h3>
+    <div class="twocol">
+      <div>
+        <fieldset>
+          <legend>Distribution</legend>
+          <label for="preset">Random variable X</label>
+          <select autocomplete="off" id="preset">
+            <option value="cars" selected>Cars sold per day at a dealership</option>
+            <option value="raffle">Net gain from a $5 raffle ticket</option>
+            <option value="custom">Build your own (drag the bars)</option>
+          </select>
+          <p class="note" id="presetDesc"></p>
+        </fieldset>
+        <fieldset>
+          <legend>Observe X over and over</legend>
+          <label for="repsA">Number of observations</label>
+          <select autocomplete="off" id="repsA">
+            <option value="100">100</option>
+            <option value="1000" selected>1,000</option>
+            <option value="10000">10,000</option>
+          </select>
+          <div class="anim-row">
+            <button id="animA" type="button" class="primary" aria-pressed="false">▶ Animate one observation at a time</button>
+            <div>
+              <label for="speedA" style="margin-top:0">Speed</label>
+              <select autocomplete="off" id="speedA">
+                <option value="500">Slow</option>
+                <option value="180" selected>Medium</option>
+                <option value="50">Fast</option>
+              </select>
+            </div>
+          </div>
+          <div class="btns">
+            <button id="drawA" type="button" class="secondary">Observe all at once</button>
+            <button id="clearA" type="button" class="secondary">Clear</button>
+          </div>
+        </fieldset>
+        <div class="kvbox" aria-live="polite">
+          <h3>Theory vs. observation</h3>
+          <div class="kv">
+            <span>Expected value E(X)</span><b id="aMu">–</b>
+            <span>Average of the observations</span><b id="aAvg">–</b>
+            <span>Standard deviation σ</span><b id="aSd">–</b>
+            <span>SD of the observations</span><b id="aSdObs">–</b>
+            <span>Observations so far</span><b id="aN">0</b>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="chart">
+          <h3>Probability distribution of X</h3>
+          <div class="legend">
+            <span><span class="swatch" style="background:var(--theory)"></span>P(x), the theory</span>
+            <span><span class="dot"></span>share of observations equal to x</span>
+            <span>▲ = E(X), the balance point</span>
+          </div>
+          <canvas id="cDistA" width="900" height="300" role="img" aria-label="Bar chart of the probability distribution with the expected value marked"></canvas>
+          <p class="note" id="dragNote">Drag the top of any bar up or down to change its probability; the others rescale so the total stays 1.</p>
+        </div>
+        <div class="kvbox">
+          <h3>Computing E(X) and the variance</h3>
+          <table class="pmf" id="tableA" aria-live="polite"></table>
+          <p class="note" style="margin-top:6px">You can type a probability into the P(x) column; the other probabilities rescale so they still add to 1.</p>
+        </div>
+        <div class="chart">
+          <h3>Running average of the observations</h3>
+          <canvas id="cRunA" width="900" height="240" role="img" aria-label="Running average of the observations converging to the expected value"></canvas>
+          <p class="tally" id="tallyA">No observations yet.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================= Panel B ======================= -->
+    <h3 class="sub" id="panelB">B. The binomial distribution on a Galton board</h3>
+    <div class="twocol">
+      <div>
+        <fieldset>
+          <legend>Binomial(n, p)</legend>
+          <label for="nB">Customers emailed, n = <output id="nBOut" for="nB">10</output></label>
+          <input autocomplete="off" type="range" id="nB" min="1" max="20" value="10" step="1">
+          <label for="pB">Probability a customer buys, p = <output id="pBOut" for="pB">0.50</output></label>
+          <input autocomplete="off" type="range" id="pB" min="0.05" max="0.95" value="0.5" step="0.05">
+          <p class="note">Each row of pegs is one customer. Right = buys, left = does not.</p>
+        </fieldset>
+        <fieldset>
+          <legend>Drop balls</legend>
+          <label for="ballsB">Number of balls (groups of n customers)</label>
+          <select autocomplete="off" id="ballsB">
+            <option value="100">100</option>
+            <option value="500" selected>500</option>
+            <option value="2000">2,000</option>
+          </select>
+          <div class="anim-row">
+            <button id="animB" type="button" class="primary" aria-pressed="false">▶ Drop the balls</button>
+            <div>
+              <label for="speedB" style="margin-top:0">Speed</label>
+              <select autocomplete="off" id="speedB">
+                <option value="0.5">Slow</option>
+                <option value="1" selected>Medium</option>
+                <option value="2.5">Fast</option>
+              </select>
+            </div>
+          </div>
+          <div class="btns">
+            <button id="drawB" type="button" class="secondary">Drop all at once</button>
+            <button id="clearB" type="button" class="secondary">Clear</button>
+          </div>
+        </fieldset>
+        <div class="kvbox" aria-live="polite">
+          <h3>Theory vs. the board</h3>
+          <div class="kv">
+            <span>Mean μ = np</span><b id="bMu">–</b>
+            <span>Average bin of the balls</span><b id="bAvg">–</b>
+            <span>SD σ = √(np(1 − p))</span><b id="bSd">–</b>
+            <span>SD of the balls' bins</span><b id="bSdObs">–</b>
+            <span>Balls landed</span><b id="bN">0</b>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="chart">
+          <h3>Galton board: each landing bin is the number of buyers out of n</h3>
+          <div class="legend">
+            <span><span class="swatch" style="background:var(--asu-gray)"></span>balls in each bin</span>
+            <span>— black dash = what the binomial formula predicts for that many balls</span>
+          </div>
+          <canvas id="cGalton" width="900" height="470" role="img" aria-label="Galton board with balls falling through pegs into bins"></canvas>
+        </div>
+        <div class="chart">
+          <h3>Binomial probability calculator</h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div><label for="modeB" style="margin-top:0">Probability</label>
+              <select autocomplete="off" id="modeB"><option value="eq" selected>P(X = k)</option><option value="le">P(X ≤ k)</option><option value="ge">P(X ≥ k)</option></select></div>
+            <div><label for="kB" style="margin-top:0">k = <output id="kBOut" for="kB">5</output></label>
+              <input autocomplete="off" type="range" id="kB" min="0" max="10" value="5" step="1"></div>
+          </div>
+          <canvas id="cPmfB" width="900" height="250" role="img" aria-label="Binomial probability distribution with the selected probability shaded" style="margin-top:8px"></canvas>
+          <div class="big" id="probB" aria-live="polite"></div>
+          <div class="calc" id="calcB"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================= Panel C ======================= -->
+    <h3 class="sub" id="panelC">C. Poisson arrivals</h3>
+    <div class="twocol">
+      <div>
+        <fieldset>
+          <legend>Arrival rate</legend>
+          <label for="lamC">Average customers per hour = <output id="lamCOut" for="lamC">4</output></label>
+          <input autocomplete="off" type="range" id="lamC" min="0.5" max="12" value="4" step="0.5">
+          <label for="lenC">Count the customers in each</label>
+          <select autocomplete="off" id="lenC">
+            <option value="0.5">30 minutes</option>
+            <option value="1" selected>1 hour</option>
+            <option value="2">2 hours</option>
+          </select>
+          <p class="note" id="lamDesc"></p>
+        </fieldset>
+        <fieldset>
+          <legend>Watch the arrivals</legend>
+          <label for="repsC">Number of intervals</label>
+          <select autocomplete="off" id="repsC">
+            <option value="50">50</option>
+            <option value="200" selected>200</option>
+            <option value="1000">1,000</option>
+          </select>
+          <div class="anim-row">
+            <button id="animC" type="button" class="primary" aria-pressed="false">▶ Animate the arrivals</button>
+            <div>
+              <label for="speedC" style="margin-top:0">Speed</label>
+              <select autocomplete="off" id="speedC">
+                <option value="0.5">Slow</option>
+                <option value="1" selected>Medium</option>
+                <option value="2.5">Fast</option>
+              </select>
+            </div>
+          </div>
+          <div class="btns">
+            <button id="drawC" type="button" class="secondary">Simulate all at once</button>
+            <button id="clearC" type="button" class="secondary">Clear</button>
+          </div>
+        </fieldset>
+        <div class="kvbox" aria-live="polite">
+          <h3>Theory vs. the arrivals</h3>
+          <div class="kv">
+            <span>Mean λ for this interval</span><b id="cMu">–</b>
+            <span>Average count per interval</span><b id="cAvg">–</b>
+            <span>Variance λ for this interval</span><b id="cVar">–</b>
+            <span>Variance of the counts</span><b id="cVarObs">–</b>
+            <span>Intervals so far</span><b id="cN">0</b>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="chart">
+          <h3 id="hTimeline">Arrivals during the current interval</h3>
+          <canvas id="cTime" width="900" height="120" role="img" aria-label="Timeline of customer arrivals during the current interval"></canvas>
+        </div>
+        <div class="chart">
+          <h3>Customers per interval: Poisson distribution and what was observed</h3>
+          <div class="legend">
+            <span><span class="swatch" style="background:var(--theory)"></span>P(X = k), the theory</span>
+            <span><span class="dot"></span>share of intervals with k customers</span>
+            <span><span class="swatch" style="background:var(--shade)"></span>probability selected below</span>
+          </div>
+          <canvas id="cPmfC" width="900" height="270" role="img" aria-label="Poisson distribution with observed shares of interval counts"></canvas>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px">
+            <div><label for="modeC" style="margin-top:0">Probability</label>
+              <select autocomplete="off" id="modeC"><option value="eq" selected>P(X = k)</option><option value="le">P(X ≤ k)</option><option value="ge">P(X ≥ k)</option></select></div>
+            <div><label for="kC" style="margin-top:0">k = <output id="kCOut" for="kC">4</output></label>
+              <input autocomplete="off" type="range" id="kC" min="0" max="15" value="4" step="1"></div>
+          </div>
+          <div class="big" id="probC" aria-live="polite"></div>
+          <div class="calc" id="calcC"></div>
+          <p class="tally" id="tallyC">No intervals yet.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Reading -->
+  <section aria-labelledby="h-results">
+    <h2 id="h-results"><span class="step">4</span>Reading the results</h2>
+    <p><strong>Panel A.</strong> The table is the definition of the expected value written out: multiply each value by its probability and add. On the chart, E(X) is the balance point of the bars: if the bars were weights on a ruler, the ruler would balance on the triangle. The running average jumps around at first, then settles onto E(X); that settling is the law of large numbers, and it is why a casino or an insurance company can plan on E(X) even though no single customer is predictable. A distribution with a large standard deviation, like the raffle ticket, takes much longer to settle.</p>
+    <p><strong>Panel B.</strong> Each ball makes <em>n</em> independent left/right decisions with the same probability <em>p</em>, exactly the binomial setup. There are C(<em>n</em>, <em>k</em>) different paths into bin <em>k</em>, and each has probability pᵏ(1 − p)ⁿ⁻ᵏ, which is where the formula comes from. With <em>p</em> = 0.5 the pile is symmetric around <em>n</em>/2; with a small <em>p</em> it bunches up on the left and trails off to the right.</p>
+    <p><strong>Panel C.</strong> Arrivals come in clumps and gaps even though the rate is constant; that randomness is what the Poisson distribution describes. The average count settles on λ and, unusually, so does the variance. Doubling the length of the interval doubles λ, so it shifts and widens the whole distribution.</p>
+  </section>
+
+  <!-- 5. Explore -->
+  <section aria-labelledby="h-explore">
+    <h2 id="h-explore"><span class="step">5</span>Explore further</h2>
+    <ol class="explore">
+      <li>Panel A, cars sold per day: E(X) = 2.2. Can the dealership ever sell exactly 2.2 cars on one day? Animate 1,000 days and explain in your own words what 2.2 means.</li>
+      <li>Panel A, raffle ticket: compute E(X) from the table. Is buying the ticket a good deal on average? Animate 100 tickets several times and watch the running average. How many tickets does it take before the average stops jumping? Why does the raffle organizer care about E(X), while a single buyer mostly experiences the big variance?</li>
+      <li>Panel A, build your own: make two distributions on the values 0 to 6 that both have E(X) = 3, one with a small standard deviation and one with a large one. What do the bars look like in each case?</li>
+      <li>Panel B: with n = 10, compare p = 0.5, p = 0.1 and p = 0.9. Describe the shape of the pile in each case. Where is np on each one?</li>
+      <li>Panel B: set n = 10 and p = 0.2. Use the calculator to find P(X ≥ 3), the chance that at least 3 of 10 customers buy. Then drop 2,000 balls and check what share of them landed in bins 3 and above.</li>
+      <li>Panel B: keep p = 0.2 and compare n = 5 with n = 20. How does the shape change as n grows?</li>
+      <li>Panel C: with 4 customers per hour and 1-hour intervals, simulate 1,000 hours. Are the average count and the variance of the counts both close to 4? Now switch to 2-hour intervals. What happens to λ, and to the shape?</li>
+      <li>Panel C: compare 1 customer per hour with 10 per hour. When is the Poisson distribution strongly skewed, and when does it look roughly symmetric?</li>
+    </ol>
+    <p class="tip"><strong>Key point:</strong> a discrete probability distribution is a list of values and their probabilities, and its expected value is the average you would see in the long run, not the value you should expect on any one occasion. The binomial distribution counts successes in a fixed number of independent trials; the Poisson distribution counts events in a fixed interval when they occur at a steady average rate.</p>
+  </section>
+
+</main>
+
+<footer>ECN 221 Business Statistics · W. P. Carey School of Business, Arizona State University</footer>
+
+<script>
+(function () {
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const f2 = v => v.toFixed(2), f3 = v => v.toFixed(3), f4 = v => v.toFixed(4);
+  const pct = v => (100 * v).toFixed(1) + "%";
+
+  // ---------- Math ----------
+  const LF = [0]; for (let i = 1; i <= 400; i++) LF[i] = LF[i - 1] + Math.log(i);
+  const lfact = k => LF[k];
+  function comb(n, k) { let c = 1; for (let i = 1; i <= k; i++) c = c * (n - k + i) / i; return Math.round(c); }
+  function binomPmf(k, n, p) { if (k < 0 || k > n) return 0; return Math.exp(lfact(n) - lfact(k) - lfact(n - k) + k * Math.log(p) + (n - k) * Math.log(1 - p)); }
+  function poisPmf(k, m) { return k < 0 ? 0 : Math.exp(-m + k * Math.log(m) - lfact(k)); }
+  function randPois(m) { const L = Math.exp(-m); let k = 0, p = 1; do { k++; p *= Math.random(); } while (p > L); return k - 1; }
+  function randBinom(n, p) { let k = 0; for (let i = 0; i < n; i++) if (Math.random() < p) k++; return k; }
+  const fmtNum = v => Number.isInteger(v) ? String(v) : (Math.abs(v) >= 100 ? v.toFixed(0) : v.toFixed(2));
+
+  // ---------- Bar chart with a numeric x axis ----------
+  const PAD = { l: 46, r: 16, t: 16, b: 52 };
+  function barChart(cv, o) {
+    // o: xs, ps, ymax, observed (array|null), shade (i=>bool), mean, sd, xlabel, barPx
+    const ctx = cv.getContext("2d"); ctx.clearRect(0, 0, cv.width, cv.height);
+    const w = cv.width - PAD.l - PAD.r, h = cv.height - PAD.t - PAD.b;
+    const xs = o.xs, lo = o.xmin, hi = o.xmax;
+    const x = v => PAD.l + ((v - lo) / (hi - lo)) * w, y = v => PAD.t + h - (v / o.ymax) * h;
+    ctx.strokeStyle = "#8a94a0"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(PAD.l, PAD.t); ctx.lineTo(PAD.l, PAD.t + h); ctx.lineTo(PAD.l + w, PAD.t + h); ctx.stroke();
+    ctx.fillStyle = css("--muted"); ctx.font = "12px sans-serif"; ctx.textAlign = "right";
+    const yt = o.ymax > 0.6 ? 0.2 : o.ymax > 0.3 ? 0.1 : o.ymax > 0.12 ? 0.05 : 0.02;
+    for (let t = 0; t <= o.ymax + 1e-9; t += yt) { ctx.fillText(Math.round(t * 100) / 100, PAD.l - 5, y(t) + 4); ctx.save(); ctx.strokeStyle = "#eef0f3"; ctx.beginPath(); ctx.moveTo(PAD.l + 1, y(t)); ctx.lineTo(PAD.l + w, y(t)); ctx.stroke(); ctx.restore(); }
+    const bw = o.barPx;
+    const every = xs.length > 26 ? 5 : xs.length > 16 ? 2 : 1;
+    xs.forEach((v, i) => {
+      ctx.fillStyle = o.shade && o.shade(i) ? css("--shade") : css("--theory");
+      ctx.fillRect(x(v) - bw / 2, y(o.ps[i]), bw, PAD.t + h - y(o.ps[i]));
+      if (o.shade && o.shade(i)) { ctx.strokeStyle = css("--maroon"); ctx.lineWidth = 1.5; ctx.strokeRect(x(v) - bw / 2, y(o.ps[i]), bw, PAD.t + h - y(o.ps[i])); }
+      if (i % every === 0 || xs.length <= 16) { ctx.fillStyle = css("--text"); ctx.font = "12px sans-serif"; ctx.textAlign = "center"; ctx.fillText(fmtNum(v), x(v), PAD.t + h + 15); }
+    });
+    if (o.observed) xs.forEach((v, i) => {
+      const q = Math.min(o.observed[i], o.ymax);
+      ctx.strokeStyle = css("--sim"); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x(v) - bw * 0.45, y(q)); ctx.lineTo(x(v) + bw * 0.45, y(q)); ctx.stroke();
+      ctx.fillStyle = css("--sim"); ctx.beginPath(); ctx.arc(x(v), y(q), 4, 0, 2 * Math.PI); ctx.fill();
+    });
+    if (o.mean !== undefined) {
+      const mx = x(o.mean);
+      ctx.fillStyle = css("--gold"); ctx.strokeStyle = css("--asu-black"); ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(mx, PAD.t + h + 20); ctx.lineTo(mx - 7, PAD.t + h + 32); ctx.lineTo(mx + 7, PAD.t + h + 32); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = css("--text"); ctx.font = "bold 12px sans-serif"; ctx.textAlign = "center";
+      ctx.fillText(o.meanLabel || ("μ = " + f2(o.mean)), Math.min(Math.max(mx, PAD.l + 50), PAD.l + w - 50), PAD.t + h + 46);
+      if (o.sd !== undefined) {
+        const a = x(o.mean - o.sd), b = x(o.mean + o.sd), yy = PAD.t + 6;
+        ctx.save(); ctx.strokeStyle = css("--muted"); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(a, yy); ctx.lineTo(b, yy); ctx.moveTo(a, yy - 4); ctx.lineTo(a, yy + 4); ctx.moveTo(b, yy - 4); ctx.lineTo(b, yy + 4); ctx.stroke(); ctx.restore();
+        ctx.fillStyle = css("--muted"); ctx.font = "11px sans-serif"; ctx.textAlign = "left"; ctx.fillText("μ ± σ", Math.min(b + 4, PAD.l + w - 34), yy + 4);
+      }
+    }
+    return { x, y, w, h };
+  }
+  const pxRange = (xs, padFrac) => { const lo = Math.min(...xs), hi = Math.max(...xs), span = Math.max(hi - lo, 1); return [lo - span * padFrac, hi + span * padFrac]; };
+
+  // =====================================================================
+  // Panel A — expected value as a long-run average
+  // =====================================================================
+  const PRESETS = {
+    cars:   { xs: [0, 1, 2, 3, 4, 5], ps: [0.10, 0.20, 0.30, 0.25, 0.10, 0.05], ymax: 0.6, unit: "cars sold",
+              desc: "X = number of cars the dealership sells in one day. Past sales give these probabilities." },
+    raffle: { xs: [-5, 45, 195], ps: [0.94, 0.05, 0.01], ymax: 1.15, unit: "net gain ($)",
+              desc: "A $5 ticket. You lose your $5 with probability 0.94, win a $50 prize (net +$45) with probability 0.05, or win the $200 grand prize (net +$195) with probability 0.01." },
+    custom: { xs: [0, 1, 2, 3, 4, 5, 6], ps: [1, 1, 1, 1, 1, 1, 1].map(v => v / 7), ymax: 0.6, unit: "x",
+              desc: "Values 0 to 6. Drag the bars or type into the table to set the probabilities." }
+  };
+  let presetA = "cars", xsA = [], psA = [], ymaxA = 0.6;
+  let countsA = [], nA = 0, sumA = 0, sqA = 0, runA = [], timerA = null, ticksA = 0;
+  const muA = () => xsA.reduce((s, v, i) => s + v * psA[i], 0);
+  const varA = () => { const m = muA(); return xsA.reduce((s, v, i) => s + (v - m) ** 2 * psA[i], 0); };
+  function loadPreset(k) { presetA = k; const P = PRESETS[k]; xsA = P.xs.slice(); psA = P.ps.slice(); ymaxA = P.ymax; $("presetDesc").textContent = P.desc; clearA(); }
+  function setP(i, v) {
+    v = Math.min(1, Math.max(0, v));
+    const others = psA.reduce((s, p, j) => j === i ? s : s + p, 0);
+    psA = psA.map((p, j) => j === i ? v : (others > 1e-12 ? p * (1 - v) / others : (1 - v) / (psA.length - 1)));
+    ymaxA = Math.max(PRESETS[presetA].ymax, Math.ceil(Math.max(...psA) * 1.15 * 10) / 10);
+    clearA();
+  }
+  const barPxA = () => { const [lo, hi] = pxRange(xsA, 0.12); const W = 900 - PAD.l - PAD.r; const gaps = xsA.slice(1).map((v, i) => v - xsA[i]); const g = Math.min(...gaps) / (hi - lo) * W; return Math.max(14, Math.min(70, g * 0.6)); };
+  function drawDistA() {
+    const [lo, hi] = pxRange(xsA, 0.12), m = muA();
+    barChart($("cDistA"), { xs: xsA, ps: psA, xmin: lo, xmax: hi, ymax: ymaxA, barPx: barPxA(), observed: nA ? countsA.map(c => c / nA) : null, mean: m, sd: Math.sqrt(varA()), meanLabel: "E(X) = " + f2(m) });
+  }
+  function renderTableA() {
+    const m = muA(), unit = PRESETS[presetA].unit;
+    let html = `<thead><tr><th>x (${unit})</th><th>P(x)</th><th>x · P(x)</th><th>(x − μ)² · P(x)</th></tr></thead><tbody>`;
+    xsA.forEach((v, i) => { html += `<tr><td>${fmtNum(v)}</td><td><input autocomplete="off" type="number" min="0" max="1" step="0.01" data-i="${i}" value="${psA[i].toFixed(3)}" aria-label="P(x = ${fmtNum(v)})"></td><td>${f3(v * psA[i])}</td><td>${f3((v - m) ** 2 * psA[i])}</td></tr>`; });
+    html += `</tbody><tfoot><tr><td>Total</td><td>${f3(psA.reduce((s, p) => s + p, 0))}</td><td>E(X) = ${f3(m)}</td><td>σ² = ${f3(varA())}</td></tr>` +
+            `<tr><td colspan="4" style="text-align:left;font-weight:600">Standard deviation σ = √${f3(varA())} = ${f3(Math.sqrt(varA()))}</td></tr></tfoot>`;
+    $("tableA").innerHTML = html;
+    $("tableA").querySelectorAll("input").forEach(inp => inp.addEventListener("change", e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setP(+e.target.dataset.i, v); }));
+  }
+  function drawRunA() {
+    const cv = $("cRunA"), ctx = cv.getContext("2d"); ctx.clearRect(0, 0, cv.width, cv.height);
+    const w = cv.width - PAD.l - PAD.r, h = cv.height - PAD.t - PAD.b, m = muA(), s = Math.sqrt(varA()), target = +$("repsA").value;
+    let ylo = Math.max(Math.min(...xsA), m - 3 * s), yhi = Math.min(Math.max(...xsA), m + 3 * s);
+    if (yhi - ylo < 1e-6) { ylo = m - 1; yhi = m + 1; }   // all probability on one value
+    const x = i => PAD.l + (i / target) * w, y = v => PAD.t + h - ((Math.min(Math.max(v, ylo), yhi) - ylo) / (yhi - ylo)) * h;
+    ctx.strokeStyle = "#8a94a0"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(PAD.l, PAD.t); ctx.lineTo(PAD.l, PAD.t + h); ctx.lineTo(PAD.l + w, PAD.t + h); ctx.stroke();
+    ctx.fillStyle = css("--muted"); ctx.font = "12px sans-serif"; ctx.textAlign = "right";
+    const span = yhi - ylo, yt = span > 60 ? 20 : span > 25 ? 10 : span > 8 ? 2 : span > 3 ? 1 : 0.5;
+    for (let t = Math.ceil(ylo / yt) * yt; t <= yhi + 1e-9; t += yt) ctx.fillText(Math.round(t * 10) / 10, PAD.l - 5, y(t) + 4);
+    ctx.textAlign = "center"; for (const f of [0, 0.25, 0.5, 0.75, 1]) ctx.fillText(Math.round(f * target).toLocaleString(), x(f * target), PAD.t + h + 15);
+    ctx.fillText("number of observations", PAD.l + w / 2, PAD.t + h + 31);
+    ctx.save(); ctx.strokeStyle = css("--maroon"); ctx.lineWidth = 2; ctx.setLineDash([6, 4]); ctx.beginPath(); ctx.moveTo(PAD.l, y(m)); ctx.lineTo(PAD.l + w, y(m)); ctx.stroke(); ctx.restore();
+    ctx.fillStyle = css("--maroon"); ctx.font = "bold 12px sans-serif"; ctx.textAlign = "right"; ctx.fillText("E(X) = " + f2(m), PAD.l + w - 4, y(m) - 6);
+    if (runA.length) {
+      ctx.save(); ctx.beginPath(); ctx.rect(PAD.l, PAD.t, w, h); ctx.clip();
+      ctx.strokeStyle = css("--sim"); ctx.lineWidth = 1.8; ctx.beginPath();
+      const step = Math.max(1, Math.floor(runA.length / 1500));
+      for (let i = 0; i < runA.length; i += step) { i ? ctx.lineTo(x(i + 1), y(runA[i])) : ctx.moveTo(x(1), y(runA[0])); }
+      ctx.lineTo(x(runA.length), y(runA[runA.length - 1])); ctx.stroke(); ctx.restore();
+    } else { ctx.fillStyle = css("--muted"); ctx.font = "14px sans-serif"; ctx.textAlign = "center"; ctx.fillText("Click ▶ Animate to start observing X.", PAD.l + w / 2, PAD.t + h / 2 - 10); }
+  }
+  function statsA() {
+    const m = muA(), s = Math.sqrt(varA());
+    $("aMu").textContent = f3(m); $("aSd").textContent = f3(s); $("aN").textContent = nA.toLocaleString();
+    if (nA) {
+      const avg = sumA / nA, sd = nA > 1 ? Math.sqrt(Math.max(0, (sqA - nA * avg * avg) / (nA - 1))) : 0;
+      $("aAvg").textContent = f3(avg); $("aSdObs").textContent = nA > 1 ? f3(sd) : "–";
+      $("tallyA").innerHTML = `After <b>${nA.toLocaleString()}</b> observations the average is <b>${f3(avg)}</b>; the expected value is <b>${f3(m)}</b>.`;
+    } else { $("aAvg").textContent = "–"; $("aSdObs").textContent = "–"; $("tallyA").textContent = "No observations yet."; }
+  }
+  function drawOneA() {
+    let u = Math.random(), i = 0; while (i < psA.length - 1 && u > psA[i]) { u -= psA[i]; i++; }
+    const v = xsA[i]; countsA[i]++; nA++; sumA += v; sqA += v * v; runA.push(sumA / nA);
+  }
+  function addA(k) { for (let j = 0; j < k; j++) drawOneA(); drawDistA(); drawRunA(); statsA(); }
+  function stopA() { if (timerA) { clearInterval(timerA); timerA = null; } $("animA").textContent = "▶ Animate one observation at a time"; $("animA").setAttribute("aria-pressed", "false"); }
+  const perTick = t => t < 30 ? 1 : t < 60 ? 3 : t < 100 ? 10 : 40;
+  function startA() {
+    $("animA").textContent = "⏹ Stop animation"; $("animA").setAttribute("aria-pressed", "true");
+    const target = +$("repsA").value;
+    timerA = setInterval(() => { const k = Math.min(perTick(ticksA++), target - nA); if (k > 0) addA(k); if (nA >= target) stopA(); }, +$("speedA").value);
+  }
+  function clearA() { stopA(); countsA = xsA.map(() => 0); nA = 0; sumA = 0; sqA = 0; runA = []; ticksA = 0; drawDistA(); renderTableA(); drawRunA(); statsA(); }
+  $("preset").addEventListener("change", e => loadPreset(e.target.value));
+  $("animA").addEventListener("click", () => { if (timerA) stopA(); else { clearA(); startA(); } });
+  $("drawA").addEventListener("click", () => { clearA(); addA(+$("repsA").value); });
+  $("clearA").addEventListener("click", clearA);
+  $("repsA").addEventListener("change", clearA);
+  $("speedA").addEventListener("change", () => { if (timerA) { clearInterval(timerA); timerA = null; const t = ticksA; startA(); ticksA = t; } });
+  // drag bars
+  (function () {
+    const cv = $("cDistA"); let drag = -1;
+    const pos = (cx, cy) => { const r = cv.getBoundingClientRect(); return [(cx - r.left) * cv.width / r.width, (cy - r.top) * cv.height / r.height]; };
+    const xOf = v => { const [lo, hi] = pxRange(xsA, 0.12); return PAD.l + ((v - lo) / (hi - lo)) * (cv.width - PAD.l - PAD.r); };
+    const pick = px => { let best = -1, d = Infinity; xsA.forEach((v, i) => { const dd = Math.abs(xOf(v) - px); if (dd < d) { d = dd; best = i; } }); return d <= Math.max(barPxA(), 30) ? best : -1; };
+    const set = py => { const h = cv.height - PAD.t - PAD.b; const v = (PAD.t + h - py) / h * ymaxA; setP(drag, v); };
+    const down = (cx, cy) => { const [px, py] = pos(cx, cy); drag = pick(px); if (drag >= 0) set(py); };
+    const move = (cx, cy) => { if (drag < 0) return; set(pos(cx, cy)[1]); };
+    cv.addEventListener("mousedown", e => { down(e.clientX, e.clientY); e.preventDefault(); });
+    window.addEventListener("mousemove", e => move(e.clientX, e.clientY)); window.addEventListener("mouseup", () => { drag = -1; });
+    cv.addEventListener("touchstart", e => { down(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
+    cv.addEventListener("touchmove", e => { move(e.touches[0].clientX, e.touches[0].clientY); e.preventDefault(); }, { passive: false });
+    cv.addEventListener("touchend", () => { drag = -1; });
+  })();
+
+  // =====================================================================
+  // Panel B — binomial on a Galton board
+  // =====================================================================
+  let nB = 10, pB = 0.5, binsB = [], landedB = 0, sumB = 0, sqB = 0, ballsB = [], spawnedB = 0, rafB = null, frameB = 0, lastSpawnB = 0;
+  const G = { top: 34, rowsH: 250, binTop: 312, binH: 120 };
+  function galtonGeom() { const W = 900, sp = Math.min(60, (W - 80) / (nB + 1)); return { cx: W / 2, sp, rowH: G.rowsH / Math.max(nB, 1) }; }
+  function drawGalton() {
+    const cv = $("cGalton"), ctx = cv.getContext("2d"); ctx.clearRect(0, 0, cv.width, cv.height);
+    const { cx, sp, rowH } = galtonGeom();
+    // pegs
+    ctx.fillStyle = "#9aa3ad";
+    for (let r = 0; r < nB; r++) for (let i = 0; i <= r; i++) { ctx.beginPath(); ctx.arc(cx + (i - r / 2) * sp, G.top + r * rowH, Math.max(2, Math.min(4, sp * 0.08)), 0, 2 * Math.PI); ctx.fill(); }
+    ctx.fillStyle = css("--muted"); ctx.font = "12px sans-serif"; ctx.textAlign = "left";
+    ctx.fillText("← does not buy", 12, G.top + 4); ctx.textAlign = "right"; ctx.fillText("buys →", 888, G.top + 4);
+    // bins
+    const exp = binsB.map((_, k) => landedB * binomPmf(k, nB, pB));
+    const scale = Math.max(1, ...binsB, ...exp) / 0.95;
+    const base = G.binTop + G.binH;
+    ctx.strokeStyle = "#c9d0d7"; ctx.lineWidth = 1;
+    for (let k = 0; k <= nB + 1; k++) { const bx = cx + (k - 0.5 - nB / 2) * sp; ctx.beginPath(); ctx.moveTo(bx, G.binTop); ctx.lineTo(bx, base); ctx.stroke(); }
+    ctx.beginPath(); ctx.moveTo(cx + (-0.5 - nB / 2) * sp, base); ctx.lineTo(cx + (nB + 0.5 - nB / 2) * sp, base); ctx.stroke();
+    for (let k = 0; k <= nB; k++) {
+      const bx = cx + (k - nB / 2) * sp, bh = binsB[k] / scale * G.binH;
+      ctx.fillStyle = css("--asu-gray"); ctx.fillRect(bx - sp * 0.38, base - bh, sp * 0.76, bh);
+      if (landedB) { const eh = exp[k] / scale * G.binH; ctx.strokeStyle = css("--asu-black"); ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(bx - sp * 0.45, base - eh); ctx.lineTo(bx + sp * 0.45, base - eh); ctx.stroke(); }
+      ctx.fillStyle = css("--text"); ctx.font = "12px sans-serif"; ctx.textAlign = "center"; ctx.fillText(k, bx, base + 15);
+    }
+    ctx.fillStyle = css("--muted"); ctx.fillText("number of buyers out of " + nB, cx, base + 31);
+    // balls in flight
+    const rad = Math.max(3, Math.min(7, sp * 0.18));
+    ctx.fillStyle = css("--gold"); ctx.strokeStyle = css("--asu-black"); ctx.lineWidth = 1;
+    for (const b of ballsB) {
+      const r = Math.min(Math.floor(b.t), nB - 1), f = b.t - r;
+      const j0 = b.path[r], j1 = b.path[r + 1];
+      const x0 = cx + (j0 - r / 2) * sp, x1 = cx + (j1 - (r + 1) / 2) * sp;
+      const y0 = G.top + r * rowH - rad - 2, y1 = r + 1 >= nB ? G.binTop - rad : G.top + (r + 1) * rowH - rad - 2;
+      const bxp = x0 + (x1 - x0) * f, byp = y0 + (y1 - y0) * f - Math.sin(Math.PI * f) * rowH * 0.25;
+      ctx.beginPath(); ctx.arc(bxp, byp, rad, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+    }
+  }
+  function newBall() { const path = [0]; for (let r = 0; r < nB; r++) path.push(path[r] + (Math.random() < pB ? 1 : 0)); return { t: 0, path }; }
+  function land(k) { binsB[k]++; landedB++; sumB += k; sqB += k * k; }
+  function statsB() {
+    const mu = nB * pB, sd = Math.sqrt(nB * pB * (1 - pB));
+    $("bMu").textContent = f3(mu); $("bSd").textContent = f3(sd); $("bN").textContent = landedB.toLocaleString();
+    if (landedB) { const a = sumB / landedB; $("bAvg").textContent = f3(a); $("bSdObs").textContent = landedB > 1 ? f3(Math.sqrt(Math.max(0, (sqB - landedB * a * a) / (landedB - 1)))) : "–"; }
+    else { $("bAvg").textContent = "–"; $("bSdObs").textContent = "–"; }
+  }
+  function stepB() {
+    const target = +$("ballsB").value, sf = +$("speedB").value;
+    frameB++;
+    // spawn
+    if (spawnedB < target) {
+      if (spawnedB < 12) { if (frameB - lastSpawnB >= 40 / sf) { ballsB.push(newBall()); spawnedB++; lastSpawnB = frameB; } }
+      else if (spawnedB < 50) { if (frameB - lastSpawnB >= 8 / sf) { ballsB.push(newBall()); spawnedB++; lastSpawnB = frameB; } }
+      else { const k = Math.min(target - spawnedB, Math.ceil(3 * sf)); for (let i = 0; i < k; i++) ballsB.push(newBall()); spawnedB += k; }
+    }
+    const speed = (spawnedB < 12 ? 0.08 : spawnedB < 50 ? 0.2 : 0.6) * sf;
+    for (const b of ballsB) b.t += speed;
+    ballsB = ballsB.filter(b => { if (b.t >= nB) { land(b.path[nB]); return false; } return true; });
+    drawGalton(); statsB();
+    if (spawnedB >= target && ballsB.length === 0) { stopB(); return; }
+    rafB = requestAnimationFrame(stepB);
+  }
+  function stopB() { if (rafB) cancelAnimationFrame(rafB); rafB = null; $("animB").textContent = "▶ Drop the balls"; $("animB").setAttribute("aria-pressed", "false"); drawGalton(); }
+  function clearB() { stopB(); binsB = new Array(nB + 1).fill(0); landedB = 0; sumB = 0; sqB = 0; ballsB = []; spawnedB = 0; frameB = 0; lastSpawnB = -1000; drawGalton(); statsB(); }
+  function drawPmfB() {
+    const xs = [...Array(nB + 1).keys()], ps = xs.map(k => binomPmf(k, nB, pB)), k = +$("kB").value, mode = $("modeB").value;
+    const shade = i => mode === "eq" ? i === k : mode === "le" ? i <= k : i >= k;
+    const ymax = Math.max(0.1, Math.ceil(Math.max(...ps) * 1.2 * 20) / 20);
+    barChart($("cPmfB"), { xs, ps, xmin: -0.7, xmax: nB + 0.7, ymax, barPx: Math.min(50, (900 - PAD.l - PAD.r) / (nB + 1.4) * 0.7), shade, mean: nB * pB, sd: Math.sqrt(nB * pB * (1 - pB)), meanLabel: "np = " + f2(nB * pB) });
+    const term = j => `C(${nB}, ${j}) · ${f2(pB)}<sup>${j}</sup> · ${f2(1 - pB)}<sup>${nB - j}</sup>`;
+    const P = xs.filter(shade).reduce((s, j) => s + ps[j], 0);
+    let calc;
+    if (mode === "eq") { calc = `P(X = ${k}) = ${term(k)} = ${comb(nB, k).toLocaleString()} × ${pB ** k < 1e-4 ? (pB ** k).toExponential(3) : f4(pB ** k)} × ${(1 - pB) ** (nB - k) < 1e-4 ? ((1 - pB) ** (nB - k)).toExponential(3) : f4((1 - pB) ** (nB - k))} = <b>${f4(P)}</b>`; }
+    else {
+      const ks = xs.filter(shade), label = mode === "le" ? `P(X ≤ ${k})` : `P(X ≥ ${k})`;
+      const list = ks.length <= 5 ? ks.map(j => `P(X = ${j})`).join(" + ") : `P(X = ${ks[0]}) + P(X = ${ks[1]}) + … + P(X = ${ks[ks.length - 1]})`;
+      const vals = ks.length <= 5 ? ks.map(j => f4(ps[j])).join(" + ") : `(${ks.length} terms)`;
+      calc = `${label} = ${list}<br>= ${vals} = <b>${f4(P)}</b>`;
+      const comp = mode === "le" ? `1 − P(X ≥ ${k + 1})` : `1 − P(X ≤ ${k - 1})`;
+      if (ks.length > 1 && ks.length < xs.length) calc += `<br><span style="font-size:0.9rem;color:var(--muted)">Shortcut: ${label} = ${comp}, the complement rule.</span>`;
+    }
+    $("probB").textContent = (mode === "eq" ? `P(X = ${k})` : mode === "le" ? `P(X ≤ ${k})` : `P(X ≥ ${k})`) + ` = ${f4(P)}`;
+    $("calcB").innerHTML = calc;
+  }
+  function paramsB() {
+    $("nBOut").textContent = nB; $("pBOut").textContent = f2(pB);
+    const kEl = $("kB"); kEl.max = nB; if (+kEl.value > nB) kEl.value = nB; $("kBOut").textContent = kEl.value;
+    clearB(); drawPmfB();
+  }
+  $("nB").addEventListener("input", e => { nB = +e.target.value; paramsB(); });
+  $("pB").addEventListener("input", e => { pB = +e.target.value; paramsB(); });
+  $("kB").addEventListener("input", e => { $("kBOut").textContent = e.target.value; drawPmfB(); });
+  $("modeB").addEventListener("change", drawPmfB);
+  $("animB").addEventListener("click", () => { if (rafB) stopB(); else { clearB(); $("animB").textContent = "⏹ Stop"; $("animB").setAttribute("aria-pressed", "true"); rafB = requestAnimationFrame(stepB); } });
+  $("drawB").addEventListener("click", () => { clearB(); const N = +$("ballsB").value; for (let i = 0; i < N; i++) land(randBinom(nB, pB)); spawnedB = N; drawGalton(); statsB(); });
+  $("clearB").addEventListener("click", clearB);
+  $("ballsB").addEventListener("change", clearB);
+
+  // =====================================================================
+  // Panel C — Poisson arrivals
+  // =====================================================================
+  let lamC = 4, lenC = 1, countsC = [], nC = 0, sumC = 0, sqC = 0, cur = null, rafC = null;
+  const mC = () => lamC * lenC;
+  const kMaxC = () => Math.max(8, Math.ceil(mC() + 4 * Math.sqrt(mC()) + 2));
+  function newInterval() { const mins = lenC * 60, rate = lamC / 60, ts = []; let t = 0; for (;;) { t += -Math.log(1 - Math.random()) / rate; if (t > mins) break; ts.push(t); } return { ts, reveal: 0 }; }
+  function commit(k) { while (countsC.length <= k) countsC.push(0); countsC[k]++; nC++; sumC += k; sqC += k * k; }
+  function drawTime() {
+    const cv = $("cTime"), ctx = cv.getContext("2d"); ctx.clearRect(0, 0, cv.width, cv.height);
+    const mins = lenC * 60, L = 30, R = 870, yA = 70, x = t => L + (t / mins) * (R - L);
+    ctx.strokeStyle = "#8a94a0"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(L, yA); ctx.lineTo(R, yA); ctx.stroke();
+    ctx.fillStyle = css("--muted"); ctx.font = "12px sans-serif"; ctx.textAlign = "center";
+    const step = mins <= 30 ? 5 : mins <= 60 ? 10 : 20;
+    for (let t = 0; t <= mins; t += step) { ctx.beginPath(); ctx.moveTo(x(t), yA - 4); ctx.lineTo(x(t), yA + 4); ctx.stroke(); ctx.fillText(t + " min", x(t), yA + 20); }
+    if (!cur) { ctx.fillText("Click ▶ Animate to watch customers arrive.", (L + R) / 2, 30); return; }
+    const shown = cur.ts.filter(t => t <= cur.reveal);
+    for (const t of shown) { ctx.fillStyle = css("--maroon"); ctx.beginPath(); ctx.moveTo(x(t), yA - 4); ctx.lineTo(x(t) - 6, yA - 22); ctx.lineTo(x(t) + 6, yA - 22); ctx.closePath(); ctx.fill(); }
+    if (cur.reveal < mins) { ctx.save(); ctx.strokeStyle = css("--gold"); ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x(cur.reveal), yA - 30); ctx.lineTo(x(cur.reveal), yA + 6); ctx.stroke(); ctx.restore(); }
+    ctx.fillStyle = css("--text"); ctx.font = "bold 13px sans-serif"; ctx.textAlign = "left";
+    ctx.fillText(`Interval ${nC + (cur.reveal < mins ? 1 : 0)}: ${shown.length} customer${shown.length === 1 ? "" : "s"}${cur.reveal < mins ? " so far" : ""}`, L, 18);
+  }
+  function drawPmfC() {
+    const K = Math.max(kMaxC(), countsC.length - 1), xs = [...Array(K + 1).keys()], ps = xs.map(k => poisPmf(k, mC()));
+    const k = +$("kC").value, mode = $("modeC").value, shade = i => mode === "eq" ? i === k : mode === "le" ? i <= k : i >= k;
+    const obs = nC ? xs.map(i => (countsC[i] || 0) / nC) : null;
+    const ymax = Math.max(0.1, Math.ceil(Math.max(...ps, ...(obs || [0])) * 1.2 * 20) / 20);
+    barChart($("cPmfC"), { xs, ps, xmin: -0.7, xmax: K + 0.7, ymax, barPx: Math.min(40, (900 - PAD.l - PAD.r) / (K + 1.4) * 0.7), observed: obs, shade, mean: mC(), sd: Math.sqrt(mC()), meanLabel: "λ = " + fmtNum(mC()) });
+    // probability (over all k ≥ 0, not just the plotted range)
+    let P;
+    if (mode === "eq") P = poisPmf(k, mC());
+    else { let le = 0; for (let j = 0; j <= (mode === "le" ? k : k - 1); j++) le += poisPmf(j, mC()); P = mode === "le" ? le : 1 - le; }
+    const m = fmtNum(mC());
+    let calc;
+    if (mode === "eq") calc = `P(X = ${k}) = e<sup>−${m}</sup> · ${m}<sup>${k}</sup> / ${k}! = <b>${f4(P)}</b>`;
+    else if (mode === "le") calc = `P(X ≤ ${k}) = P(X = 0) + P(X = 1) + … + P(X = ${k}) = <b>${f4(P)}</b>`;
+    else calc = k === 0 ? `P(X ≥ 0) = 1` : `P(X ≥ ${k}) = 1 − P(X ≤ ${k - 1}) = 1 − ${f4(1 - P)} = <b>${f4(P)}</b> &nbsp;<span style="font-size:0.9rem;color:var(--muted)">(the complement rule: a Poisson count has no upper limit)</span>`;
+    $("probC").textContent = (mode === "eq" ? `P(X = ${k})` : mode === "le" ? `P(X ≤ ${k})` : `P(X ≥ ${k})`) + ` = ${f4(P)}`;
+    $("calcC").innerHTML = calc;
+  }
+  function statsC() {
+    $("cMu").textContent = fmtNum(mC()); $("cVar").textContent = fmtNum(mC()); $("cN").textContent = nC.toLocaleString();
+    if (nC) {
+      const a = sumC / nC, v = nC > 1 ? Math.max(0, (sqC - nC * a * a) / (nC - 1)) : 0;
+      $("cAvg").textContent = f3(a); $("cVarObs").textContent = nC > 1 ? f3(v) : "–";
+      $("tallyC").innerHTML = `After <b>${nC.toLocaleString()}</b> intervals: average <b>${f3(a)}</b> customers, variance <b>${nC > 1 ? f3(v) : "–"}</b> (theory: both equal λ = ${fmtNum(mC())}).`;
+    } else { $("cAvg").textContent = "–"; $("cVarObs").textContent = "–"; $("tallyC").textContent = "No intervals yet."; }
+  }
+  function stepC() {
+    const target = +$("repsC").value, sf = +$("speedC").value, mins = lenC * 60;
+    if (!cur) cur = newInterval();
+    if (nC < 5) cur.reveal += mins / 100 * sf;            // first few intervals: watch the arrivals in "real time"
+    else if (nC < 20) cur.reveal += mins / 20 * sf;
+    else { const k = Math.min(target - nC, Math.ceil(2 * sf)); for (let i = 0; i < k - 1; i++) commit(newInterval().ts.length); cur.reveal = mins; }
+    if (cur.reveal >= mins) { cur.reveal = mins; commit(cur.ts.length); drawTime(); if (nC < target) cur = newInterval(); }
+    drawTime(); drawPmfC(); statsC();
+    if (nC >= target) { stopC(); return; }
+    rafC = requestAnimationFrame(stepC);
+  }
+  function stopC() { if (rafC) cancelAnimationFrame(rafC); rafC = null; $("animC").textContent = "▶ Animate the arrivals"; $("animC").setAttribute("aria-pressed", "false"); }
+  function clearC() { stopC(); countsC = []; nC = 0; sumC = 0; sqC = 0; cur = null; drawTime(); drawPmfC(); statsC(); }
+  function paramsC() {
+    $("lamCOut").textContent = fmtNum(lamC);
+    $("lamDesc").textContent = `On average ${fmtNum(lamC)} customers per hour, so λ = ${fmtNum(lamC)} × ${fmtNum(lenC)} = ${fmtNum(mC())} customers per ${lenC === 1 ? "hour" : lenC === 0.5 ? "30 minutes" : "2 hours"}.`;
+    $("hTimeline").textContent = `Arrivals during the current ${lenC === 1 ? "hour" : lenC === 0.5 ? "30-minute interval" : "2-hour interval"}`;
+    const kEl = $("kC"); kEl.max = kMaxC(); if (+kEl.value > kMaxC()) kEl.value = kMaxC(); $("kCOut").textContent = kEl.value;
+    clearC();
+  }
+  $("lamC").addEventListener("input", e => { lamC = +e.target.value; paramsC(); });
+  $("lenC").addEventListener("change", e => { lenC = +e.target.value; paramsC(); });
+  $("kC").addEventListener("input", e => { $("kCOut").textContent = e.target.value; drawPmfC(); });
+  $("modeC").addEventListener("change", drawPmfC);
+  $("animC").addEventListener("click", () => { if (rafC) stopC(); else { clearC(); $("animC").textContent = "⏹ Stop"; $("animC").setAttribute("aria-pressed", "true"); rafC = requestAnimationFrame(stepC); } });
+  $("drawC").addEventListener("click", () => { clearC(); const N = +$("repsC").value; for (let i = 0; i < N; i++) commit(randPois(mC())); cur = newInterval(); cur.reveal = lenC * 60; drawTime(); drawPmfC(); statsC(); });
+  $("clearC").addEventListener("click", clearC);
+  $("repsC").addEventListener("change", clearC);
+
+  // ---------- start ----------
+  loadPreset("cars"); paramsB(); paramsC();
+})();
+</script>
+</body>
+</html>
