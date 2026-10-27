@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Discrete Random Variables – ECN 221</title>
+<title>Binomial and Poisson Distributions – ECN 221</title>
 <style>
   :root {
     --maroon: #8C1D40; --gold: #FFC627; --asu-gray: #5C6670; --asu-black: #191919;
@@ -61,11 +61,6 @@
   .kv b { font-variant-numeric: tabular-nums; text-align: right; }
   .calc { font-family: Georgia, "Times New Roman", serif; font-size: 1rem; background: var(--panel); border-radius: 6px; padding: 8px 12px; margin-top: 8px; line-height: 1.7; }
   .big { font-size: 1.4rem; font-weight: 700; color: var(--maroon); font-variant-numeric: tabular-nums; margin: 4px 0; }
-  table.pmf { border-collapse: collapse; width: 100%; font-size: 0.95rem; font-variant-numeric: tabular-nums; }
-  table.pmf th, table.pmf td { border: 1px solid var(--line); padding: 4px 8px; text-align: right; }
-  table.pmf th { background: var(--panel); text-align: center; font-weight: 600; }
-  table.pmf tfoot td { background: var(--panel); font-weight: 700; }
-  table.pmf input { width: 80px; padding: 3px 4px; font-size: 0.95rem; text-align: right; border: 1px solid var(--line); border-radius: 4px; }
   .tally { font-size: 1.05rem; font-weight: 700; margin: 8px 0; }
   .tally b { color: var(--maroon); font-variant-numeric: tabular-nums; }
   ol.explore { padding-left: 20px; }
@@ -77,7 +72,7 @@
 </head>
 <body>
 <header>
-  <h1>Discrete Random Variables: Expected Value, Binomial and Poisson</h1>
+  <h1>Discrete Random Variables: Binomial and Poisson Distributions</h1>
   <p>ECN 221 Business Statistics · Instructor: Ehsan Asghari-Ghara</p>
 </header>
 
@@ -91,25 +86,24 @@
       <p style="margin:0 0 6px">Two numbers summarize a distribution:</p>
       <p class="formula" style="margin:0 0 4px">Expected value (mean): &nbsp; μ = E(X) = Σ x · P(x)</p>
       <p class="formula" style="margin:0 0 6px">Variance: &nbsp; σ² = Σ (x − μ)² · P(x), &nbsp;&nbsp; standard deviation σ = √σ²</p>
-      <p style="margin:0">The expected value is the <strong>long-run average</strong>: if you observed the variable over and over, the average of the values would settle on μ. It does not have to be a value the variable can actually take; a dealership can sell 2.2 cars per day on average but never 2.2 cars on a given day. You can watch the average settle in <a href="#panelA">panel A</a>.</p>
+      <p style="margin:0">The expected value is the <strong>long-run average</strong>: if you observed the variable over and over, the average of the values would settle on μ. It does not have to be a value the variable can actually take; a dealership can sell 2.2 cars per day on average but never 2.2 cars on a given day.</p>
     </div>
     <p>Two named distributions come up again and again in business:</p>
     <div class="callout">
       <ul>
-        <li><strong>Binomial.</strong> Count the successes in <em>n</em> independent trials, each with the same probability of success <em>p</em> (each of <em>n</em> customers buys or does not; each of <em>n</em> items is defective or not). <span class="formula">P(X = k) = C(n, k) · pᵏ · (1 − p)ⁿ⁻ᵏ</span>, where C(<em>n</em>, <em>k</em>) = <em>n</em>! / (<em>k</em>! (<em>n</em> − <em>k</em>)!) counts the ways to choose which <em>k</em> trials are the successes. Mean <span class="formula">μ = np</span>, standard deviation <span class="formula">σ = √(np(1 − p))</span>. See <a href="#panelB">panel B</a>.</li>
-        <li><strong>Poisson.</strong> Count how many times an event happens in a fixed interval of time or space, when events happen independently at an average rate λ per interval (calls per hour, customers per hour, typos per page). <span class="formula">P(X = k) = e<sup>−λ</sup> λᵏ / k!</span>. Its mean and its variance are <em>both</em> equal to λ. See <a href="#panelC">panel C</a>.</li>
+        <li><strong>Binomial.</strong> Count the successes in <em>n</em> independent trials, each with the same probability of success <em>p</em> (each of <em>n</em> customers buys or does not; each of <em>n</em> items is defective or not). <span class="formula">P(X = k) = C(n, k) · pᵏ · (1 − p)ⁿ⁻ᵏ</span>, where C(<em>n</em>, <em>k</em>) = <em>n</em>! / (<em>k</em>! (<em>n</em> − <em>k</em>)!) counts the ways to choose which <em>k</em> trials are the successes. Mean <span class="formula">μ = np</span>, standard deviation <span class="formula">σ = √(np(1 − p))</span>. See <a href="#panelA">panel A</a>.</li>
+        <li><strong>Poisson.</strong> Count how many times an event happens in a fixed interval of time or space, when events happen independently at an average rate λ per interval (calls per hour, customers per hour, typos per page). <span class="formula">P(X = k) = e<sup>−λ</sup> λᵏ / k!</span>. Its mean and its variance are <em>both</em> equal to λ. See <a href="#panelB">panel B</a>.</li>
       </ul>
     </div>
   </section>
 
   <!-- 2. How -->
   <section aria-labelledby="h-how">
-    <h2 id="h-how"><span class="step">2</span>How the three panels work</h2>
+    <h2 id="h-how"><span class="step">2</span>How the two panels work</h2>
     <div class="callout">
       <ol>
-        <li><strong><a href="#panelA">Panel A</a>: the expected value as a long-run average.</strong> Pick a distribution, or build your own by dragging the bars or typing probabilities into the table. The table computes E(X) and the variance column by column. Then let the computer observe the variable day after day: the black dots show how often each value has come up, and the running average traces its way toward E(X).</li>
-        <li><strong><a href="#panelB">Panel B</a>: the binomial distribution on a Galton board.</strong> Each ball is one group of <em>n</em> customers. At each row of pegs, one customer decides: the ball bounces right if that customer buys (probability <em>p</em>) and left if not. The bin where a ball lands is the number of customers who bought. Thousands of balls pile up into the binomial distribution. A calculator below finds P(X = k), P(X ≤ k) or P(X ≥ k) from the formula.</li>
-        <li><strong><a href="#panelC">Panel C</a>: Poisson arrivals.</strong> Customers arrive at random, at an average rate of λ per hour. The timeline shows the arrivals in one interval; the count for that interval is added to the histogram, which builds up against the Poisson distribution.</li>
+        <li><strong><a href="#panelA">Panel A</a>: the binomial distribution on a Galton board.</strong> Each ball is one group of <em>n</em> customers. At each row of pegs, one customer decides: the ball bounces right if that customer buys (probability <em>p</em>) and left if not. The bin where a ball lands is the number of customers who bought. Thousands of balls pile up into the binomial distribution. A calculator below finds P(X = k), P(X ≤ k) or P(X ≥ k) from the formula.</li>
+        <li><strong><a href="#panelB">Panel B</a>: Poisson arrivals.</strong> Customers arrive at random, at an average rate of λ per hour. The timeline shows the arrivals in one interval; the count for that interval is added to the histogram, which builds up against the Poisson distribution.</li>
       </ol>
     </div>
   </section>
@@ -118,81 +112,8 @@
   <section aria-labelledby="h-run">
     <h2 id="h-run"><span class="step">3</span>Explore</h2>
 
-    <!-- ======================= Panel A ======================= -->
-    <h3 class="sub" id="panelA">A. The expected value as a long-run average</h3>
-    <div class="twocol">
-      <div>
-        <fieldset>
-          <legend>Distribution</legend>
-          <label for="preset">Random variable X</label>
-          <select autocomplete="off" id="preset">
-            <option value="cars" selected>Cars sold per day at a dealership</option>
-            <option value="raffle">Net gain from a $5 raffle ticket</option>
-            <option value="custom">Build your own (drag the bars)</option>
-          </select>
-          <p class="note" id="presetDesc"></p>
-        </fieldset>
-        <fieldset>
-          <legend>Observe X over and over</legend>
-          <label for="repsA">Number of observations</label>
-          <select autocomplete="off" id="repsA">
-            <option value="100">100</option>
-            <option value="1000" selected>1,000</option>
-            <option value="10000">10,000</option>
-          </select>
-          <div class="anim-row">
-            <button id="animA" type="button" class="primary" aria-pressed="false">▶ Animate one observation at a time</button>
-            <div>
-              <label for="speedA" style="margin-top:0">Speed</label>
-              <select autocomplete="off" id="speedA">
-                <option value="500">Slow</option>
-                <option value="180" selected>Medium</option>
-                <option value="50">Fast</option>
-              </select>
-            </div>
-          </div>
-          <div class="btns">
-            <button id="drawA" type="button" class="secondary">Observe all at once</button>
-            <button id="clearA" type="button" class="secondary">Clear</button>
-          </div>
-        </fieldset>
-        <div class="kvbox" aria-live="polite">
-          <h3>Theory vs. observation</h3>
-          <div class="kv">
-            <span>Expected value E(X)</span><b id="aMu">–</b>
-            <span>Average of the observations</span><b id="aAvg">–</b>
-            <span>Standard deviation σ</span><b id="aSd">–</b>
-            <span>SD of the observations</span><b id="aSdObs">–</b>
-            <span>Observations so far</span><b id="aN">0</b>
-          </div>
-        </div>
-      </div>
-      <div>
-        <div class="chart">
-          <h3>Probability distribution of X</h3>
-          <div class="legend">
-            <span><span class="swatch" style="background:var(--theory)"></span>P(x), the theory</span>
-            <span><span class="dot"></span>share of observations equal to x</span>
-            <span>▲ = E(X), the balance point</span>
-          </div>
-          <canvas id="cDistA" width="900" height="300" role="img" aria-label="Bar chart of the probability distribution with the expected value marked"></canvas>
-          <p class="note" id="dragNote">Drag the top of any bar up or down to change its probability; the others rescale so the total stays 1.</p>
-        </div>
-        <div class="kvbox">
-          <h3>Computing E(X) and the variance</h3>
-          <table class="pmf" id="tableA" aria-live="polite"></table>
-          <p class="note" style="margin-top:6px">You can type a probability into the P(x) column; the other probabilities rescale so they still add to 1.</p>
-        </div>
-        <div class="chart">
-          <h3>Running average of the observations</h3>
-          <canvas id="cRunA" width="900" height="240" role="img" aria-label="Running average of the observations converging to the expected value"></canvas>
-          <p class="tally" id="tallyA">No observations yet.</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- ======================= Panel B ======================= -->
-    <h3 class="sub" id="panelB">B. The binomial distribution on a Galton board</h3>
+    <!-- ======================= Panel A: binomial ======================= -->
+    <h3 class="sub" id="panelA">A. The binomial distribution on a Galton board</h3>
     <div class="twocol">
       <div>
         <fieldset>
@@ -262,8 +183,8 @@
       </div>
     </div>
 
-    <!-- ======================= Panel C ======================= -->
-    <h3 class="sub" id="panelC">C. Poisson arrivals</h3>
+    <!-- ======================= Panel B: Poisson ======================= -->
+    <h3 class="sub" id="panelB">B. Poisson arrivals</h3>
     <div class="twocol">
       <div>
         <fieldset>
@@ -343,23 +264,19 @@
   <!-- 4. Reading -->
   <section aria-labelledby="h-results">
     <h2 id="h-results"><span class="step">4</span>Reading the results</h2>
-    <p><strong>Panel A.</strong> The table is the definition of the expected value written out: multiply each value by its probability and add. On the chart, E(X) is the balance point of the bars: if the bars were weights on a ruler, the ruler would balance on the triangle. The running average jumps around at first, then settles onto E(X); that settling is the law of large numbers, and it is why a casino or an insurance company can plan on E(X) even though no single customer is predictable. A distribution with a large standard deviation, like the raffle ticket, takes much longer to settle.</p>
-    <p><strong>Panel B.</strong> Each ball makes <em>n</em> independent left/right decisions with the same probability <em>p</em>, exactly the binomial setup. There are C(<em>n</em>, <em>k</em>) different paths into bin <em>k</em>, and each has probability pᵏ(1 − p)ⁿ⁻ᵏ, which is where the formula comes from. With <em>p</em> = 0.5 the pile is symmetric around <em>n</em>/2; with a small <em>p</em> it bunches up on the left and trails off to the right.</p>
-    <p><strong>Panel C.</strong> Arrivals come in clumps and gaps even though the rate is constant; that randomness is what the Poisson distribution describes. The average count settles on λ and, unusually, so does the variance. Doubling the length of the interval doubles λ, so it shifts and widens the whole distribution.</p>
+    <p><strong>Panel A.</strong> Each ball makes <em>n</em> independent left/right decisions with the same probability <em>p</em>, exactly the binomial setup. There are C(<em>n</em>, <em>k</em>) different paths into bin <em>k</em>, and each has probability pᵏ(1 − p)ⁿ⁻ᵏ, which is where the formula comes from. With <em>p</em> = 0.5 the pile is symmetric around <em>n</em>/2; with a small <em>p</em> it bunches up on the left and trails off to the right.</p>
+    <p><strong>Panel B.</strong> Arrivals come in clumps and gaps even though the rate is constant; that randomness is what the Poisson distribution describes. The average count settles on λ and, unusually, so does the variance. Doubling the length of the interval doubles λ, so it shifts and widens the whole distribution.</p>
   </section>
 
   <!-- 5. Explore -->
   <section aria-labelledby="h-explore">
     <h2 id="h-explore"><span class="step">5</span>Explore further</h2>
     <ol class="explore">
-      <li>Panel A, cars sold per day: E(X) = 2.2. Can the dealership ever sell exactly 2.2 cars on one day? Animate 1,000 days and explain in your own words what 2.2 means.</li>
-      <li>Panel A, raffle ticket: compute E(X) from the table. Is buying the ticket a good deal on average? Animate 100 tickets several times and watch the running average. How many tickets does it take before the average stops jumping? Why does the raffle organizer care about E(X), while a single buyer mostly experiences the big variance?</li>
-      <li>Panel A, build your own: make two distributions on the values 0 to 6 that both have E(X) = 3, one with a small standard deviation and one with a large one. What do the bars look like in each case?</li>
-      <li>Panel B: with n = 10, compare p = 0.5, p = 0.1 and p = 0.9. Describe the shape of the pile in each case. Where is np on each one?</li>
-      <li>Panel B: set n = 10 and p = 0.2. Use the calculator to find P(X ≥ 3), the chance that at least 3 of 10 customers buy. Then drop 2,000 balls and check what share of them landed in bins 3 and above.</li>
-      <li>Panel B: keep p = 0.2 and compare n = 5 with n = 20. How does the shape change as n grows?</li>
-      <li>Panel C: with 4 customers per hour and 1-hour intervals, simulate 1,000 hours. Are the average count and the variance of the counts both close to 4? Now switch to 2-hour intervals. What happens to λ, and to the shape?</li>
-      <li>Panel C: compare 1 customer per hour with 10 per hour. When is the Poisson distribution strongly skewed, and when does it look roughly symmetric?</li>
+      <li>Panel A: with n = 10, compare p = 0.5, p = 0.1 and p = 0.9. Describe the shape of the pile in each case. Where is np on each one?</li>
+      <li>Panel A: set n = 10 and p = 0.2. Use the calculator to find P(X ≥ 3), the chance that at least 3 of 10 customers buy. Then drop 2,000 balls and check what share of them landed in bins 3 and above.</li>
+      <li>Panel A: keep p = 0.2 and compare n = 5 with n = 20. How does the shape change as n grows?</li>
+      <li>Panel B: with 4 customers per hour and 1-hour intervals, simulate 1,000 hours. Are the average count and the variance of the counts both close to 4? Now switch to 2-hour intervals. What happens to λ, and to the shape?</li>
+      <li>Panel B: compare 1 customer per hour with 10 per hour. When is the Poisson distribution strongly skewed, and when does it look roughly symmetric?</li>
     </ol>
     <p class="tip"><strong>Key point:</strong> a discrete probability distribution is a list of values and their probabilities, and its expected value is the average you would see in the long run, not the value you should expect on any one occasion. The binomial distribution counts successes in a fixed number of independent trials; the Poisson distribution counts events in a fixed interval when they occur at a steady average rate.</p>
   </section>
@@ -428,110 +345,7 @@
   const pxRange = (xs, padFrac) => { const lo = Math.min(...xs), hi = Math.max(...xs), span = Math.max(hi - lo, 1); return [lo - span * padFrac, hi + span * padFrac]; };
 
   // =====================================================================
-  // Panel A — expected value as a long-run average
-  // =====================================================================
-  const PRESETS = {
-    cars:   { xs: [0, 1, 2, 3, 4, 5], ps: [0.10, 0.20, 0.30, 0.25, 0.10, 0.05], ymax: 0.6, unit: "cars sold",
-              desc: "X = number of cars the dealership sells in one day. Past sales give these probabilities." },
-    raffle: { xs: [-5, 45, 195], ps: [0.94, 0.05, 0.01], ymax: 1.15, unit: "net gain ($)",
-              desc: "A $5 ticket. You lose your $5 with probability 0.94, win a $50 prize (net +$45) with probability 0.05, or win the $200 grand prize (net +$195) with probability 0.01." },
-    custom: { xs: [0, 1, 2, 3, 4, 5, 6], ps: [1, 1, 1, 1, 1, 1, 1].map(v => v / 7), ymax: 0.6, unit: "x",
-              desc: "Values 0 to 6. Drag the bars or type into the table to set the probabilities." }
-  };
-  let presetA = "cars", xsA = [], psA = [], ymaxA = 0.6;
-  let countsA = [], nA = 0, sumA = 0, sqA = 0, runA = [], timerA = null, ticksA = 0;
-  const muA = () => xsA.reduce((s, v, i) => s + v * psA[i], 0);
-  const varA = () => { const m = muA(); return xsA.reduce((s, v, i) => s + (v - m) ** 2 * psA[i], 0); };
-  function loadPreset(k) { presetA = k; const P = PRESETS[k]; xsA = P.xs.slice(); psA = P.ps.slice(); ymaxA = P.ymax; $("presetDesc").textContent = P.desc; clearA(); }
-  function setP(i, v) {
-    v = Math.min(1, Math.max(0, v));
-    const others = psA.reduce((s, p, j) => j === i ? s : s + p, 0);
-    psA = psA.map((p, j) => j === i ? v : (others > 1e-12 ? p * (1 - v) / others : (1 - v) / (psA.length - 1)));
-    ymaxA = Math.max(PRESETS[presetA].ymax, Math.ceil(Math.max(...psA) * 1.15 * 10) / 10);
-    clearA();
-  }
-  const barPxA = () => { const [lo, hi] = pxRange(xsA, 0.12); const W = 900 - PAD.l - PAD.r; const gaps = xsA.slice(1).map((v, i) => v - xsA[i]); const g = Math.min(...gaps) / (hi - lo) * W; return Math.max(14, Math.min(70, g * 0.6)); };
-  function drawDistA() {
-    const [lo, hi] = pxRange(xsA, 0.12), m = muA();
-    barChart($("cDistA"), { xs: xsA, ps: psA, xmin: lo, xmax: hi, ymax: ymaxA, barPx: barPxA(), observed: nA ? countsA.map(c => c / nA) : null, mean: m, sd: Math.sqrt(varA()), meanLabel: "E(X) = " + f2(m) });
-  }
-  function renderTableA() {
-    const m = muA(), unit = PRESETS[presetA].unit;
-    let html = `<thead><tr><th>x (${unit})</th><th>P(x)</th><th>x · P(x)</th><th>(x − μ)² · P(x)</th></tr></thead><tbody>`;
-    xsA.forEach((v, i) => { html += `<tr><td>${fmtNum(v)}</td><td><input autocomplete="off" type="number" min="0" max="1" step="0.01" data-i="${i}" value="${psA[i].toFixed(3)}" aria-label="P(x = ${fmtNum(v)})"></td><td>${f3(v * psA[i])}</td><td>${f3((v - m) ** 2 * psA[i])}</td></tr>`; });
-    html += `</tbody><tfoot><tr><td>Total</td><td>${f3(psA.reduce((s, p) => s + p, 0))}</td><td>E(X) = ${f3(m)}</td><td>σ² = ${f3(varA())}</td></tr>` +
-            `<tr><td colspan="4" style="text-align:left;font-weight:600">Standard deviation σ = √${f3(varA())} = ${f3(Math.sqrt(varA()))}</td></tr></tfoot>`;
-    $("tableA").innerHTML = html;
-    $("tableA").querySelectorAll("input").forEach(inp => inp.addEventListener("change", e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setP(+e.target.dataset.i, v); }));
-  }
-  function drawRunA() {
-    const cv = $("cRunA"), ctx = cv.getContext("2d"); ctx.clearRect(0, 0, cv.width, cv.height);
-    const w = cv.width - PAD.l - PAD.r, h = cv.height - PAD.t - PAD.b, m = muA(), s = Math.sqrt(varA()), target = +$("repsA").value;
-    let ylo = Math.max(Math.min(...xsA), m - 3 * s), yhi = Math.min(Math.max(...xsA), m + 3 * s);
-    if (yhi - ylo < 1e-6) { ylo = m - 1; yhi = m + 1; }   // all probability on one value
-    const x = i => PAD.l + (i / target) * w, y = v => PAD.t + h - ((Math.min(Math.max(v, ylo), yhi) - ylo) / (yhi - ylo)) * h;
-    ctx.strokeStyle = "#8a94a0"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(PAD.l, PAD.t); ctx.lineTo(PAD.l, PAD.t + h); ctx.lineTo(PAD.l + w, PAD.t + h); ctx.stroke();
-    ctx.fillStyle = css("--muted"); ctx.font = "12px sans-serif"; ctx.textAlign = "right";
-    const span = yhi - ylo, yt = span > 60 ? 20 : span > 25 ? 10 : span > 8 ? 2 : span > 3 ? 1 : 0.5;
-    for (let t = Math.ceil(ylo / yt) * yt; t <= yhi + 1e-9; t += yt) ctx.fillText(Math.round(t * 10) / 10, PAD.l - 5, y(t) + 4);
-    ctx.textAlign = "center"; for (const f of [0, 0.25, 0.5, 0.75, 1]) ctx.fillText(Math.round(f * target).toLocaleString(), x(f * target), PAD.t + h + 15);
-    ctx.fillText("number of observations", PAD.l + w / 2, PAD.t + h + 31);
-    ctx.save(); ctx.strokeStyle = css("--maroon"); ctx.lineWidth = 2; ctx.setLineDash([6, 4]); ctx.beginPath(); ctx.moveTo(PAD.l, y(m)); ctx.lineTo(PAD.l + w, y(m)); ctx.stroke(); ctx.restore();
-    ctx.fillStyle = css("--maroon"); ctx.font = "bold 12px sans-serif"; ctx.textAlign = "right"; ctx.fillText("E(X) = " + f2(m), PAD.l + w - 4, y(m) - 6);
-    if (runA.length) {
-      ctx.save(); ctx.beginPath(); ctx.rect(PAD.l, PAD.t, w, h); ctx.clip();
-      ctx.strokeStyle = css("--sim"); ctx.lineWidth = 1.8; ctx.beginPath();
-      const step = Math.max(1, Math.floor(runA.length / 1500));
-      for (let i = 0; i < runA.length; i += step) { i ? ctx.lineTo(x(i + 1), y(runA[i])) : ctx.moveTo(x(1), y(runA[0])); }
-      ctx.lineTo(x(runA.length), y(runA[runA.length - 1])); ctx.stroke(); ctx.restore();
-    } else { ctx.fillStyle = css("--muted"); ctx.font = "14px sans-serif"; ctx.textAlign = "center"; ctx.fillText("Click ▶ Animate to start observing X.", PAD.l + w / 2, PAD.t + h / 2 - 10); }
-  }
-  function statsA() {
-    const m = muA(), s = Math.sqrt(varA());
-    $("aMu").textContent = f3(m); $("aSd").textContent = f3(s); $("aN").textContent = nA.toLocaleString();
-    if (nA) {
-      const avg = sumA / nA, sd = nA > 1 ? Math.sqrt(Math.max(0, (sqA - nA * avg * avg) / (nA - 1))) : 0;
-      $("aAvg").textContent = f3(avg); $("aSdObs").textContent = nA > 1 ? f3(sd) : "–";
-      $("tallyA").innerHTML = `After <b>${nA.toLocaleString()}</b> observations the average is <b>${f3(avg)}</b>; the expected value is <b>${f3(m)}</b>.`;
-    } else { $("aAvg").textContent = "–"; $("aSdObs").textContent = "–"; $("tallyA").textContent = "No observations yet."; }
-  }
-  function drawOneA() {
-    let u = Math.random(), i = 0; while (i < psA.length - 1 && u > psA[i]) { u -= psA[i]; i++; }
-    const v = xsA[i]; countsA[i]++; nA++; sumA += v; sqA += v * v; runA.push(sumA / nA);
-  }
-  function addA(k) { for (let j = 0; j < k; j++) drawOneA(); drawDistA(); drawRunA(); statsA(); }
-  function stopA() { if (timerA) { clearInterval(timerA); timerA = null; } $("animA").textContent = "▶ Animate one observation at a time"; $("animA").setAttribute("aria-pressed", "false"); }
-  const perTick = t => t < 30 ? 1 : t < 60 ? 3 : t < 100 ? 10 : 40;
-  function startA() {
-    $("animA").textContent = "⏹ Stop animation"; $("animA").setAttribute("aria-pressed", "true");
-    const target = +$("repsA").value;
-    timerA = setInterval(() => { const k = Math.min(perTick(ticksA++), target - nA); if (k > 0) addA(k); if (nA >= target) stopA(); }, +$("speedA").value);
-  }
-  function clearA() { stopA(); countsA = xsA.map(() => 0); nA = 0; sumA = 0; sqA = 0; runA = []; ticksA = 0; drawDistA(); renderTableA(); drawRunA(); statsA(); }
-  $("preset").addEventListener("change", e => loadPreset(e.target.value));
-  $("animA").addEventListener("click", () => { if (timerA) stopA(); else { clearA(); startA(); } });
-  $("drawA").addEventListener("click", () => { clearA(); addA(+$("repsA").value); });
-  $("clearA").addEventListener("click", clearA);
-  $("repsA").addEventListener("change", clearA);
-  $("speedA").addEventListener("change", () => { if (timerA) { clearInterval(timerA); timerA = null; const t = ticksA; startA(); ticksA = t; } });
-  // drag bars
-  (function () {
-    const cv = $("cDistA"); let drag = -1;
-    const pos = (cx, cy) => { const r = cv.getBoundingClientRect(); return [(cx - r.left) * cv.width / r.width, (cy - r.top) * cv.height / r.height]; };
-    const xOf = v => { const [lo, hi] = pxRange(xsA, 0.12); return PAD.l + ((v - lo) / (hi - lo)) * (cv.width - PAD.l - PAD.r); };
-    const pick = px => { let best = -1, d = Infinity; xsA.forEach((v, i) => { const dd = Math.abs(xOf(v) - px); if (dd < d) { d = dd; best = i; } }); return d <= Math.max(barPxA(), 30) ? best : -1; };
-    const set = py => { const h = cv.height - PAD.t - PAD.b; const v = (PAD.t + h - py) / h * ymaxA; setP(drag, v); };
-    const down = (cx, cy) => { const [px, py] = pos(cx, cy); drag = pick(px); if (drag >= 0) set(py); };
-    const move = (cx, cy) => { if (drag < 0) return; set(pos(cx, cy)[1]); };
-    cv.addEventListener("mousedown", e => { down(e.clientX, e.clientY); e.preventDefault(); });
-    window.addEventListener("mousemove", e => move(e.clientX, e.clientY)); window.addEventListener("mouseup", () => { drag = -1; });
-    cv.addEventListener("touchstart", e => { down(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
-    cv.addEventListener("touchmove", e => { move(e.touches[0].clientX, e.touches[0].clientY); e.preventDefault(); }, { passive: false });
-    cv.addEventListener("touchend", () => { drag = -1; });
-  })();
-
-  // =====================================================================
-  // Panel B — binomial on a Galton board
+  // Panel A (binomial on a Galton board); element ids keep the "B" suffix
   // =====================================================================
   let nB = 10, pB = 0.5, binsB = [], landedB = 0, sumB = 0, sqB = 0, ballsB = [], spawnedB = 0, rafB = null, frameB = 0, lastSpawnB = 0;
   const G = { top: 34, rowsH: 250, binTop: 312, binH: 120 };
@@ -631,7 +445,7 @@
   $("ballsB").addEventListener("change", clearB);
 
   // =====================================================================
-  // Panel C — Poisson arrivals
+  // Panel B (Poisson arrivals); element ids keep the "C" suffix
   // =====================================================================
   let lamC = 4, lenC = 1, countsC = [], nC = 0, sumC = 0, sqC = 0, cur = null, rafC = null;
   const mC = () => lamC * lenC;
@@ -708,7 +522,7 @@
   $("repsC").addEventListener("change", clearC);
 
   // ---------- start ----------
-  loadPreset("cars"); paramsB(); paramsC();
+  paramsB(); paramsC();
 })();
 </script>
 </body>
