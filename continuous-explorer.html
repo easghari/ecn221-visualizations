@@ -118,36 +118,36 @@
         <fieldset>
           <legend>Distribution</legend>
           <label for="dist">Family</label>
-          <select id="dist">
+          <select autocomplete="off" id="dist">
             <option value="normal" selected>Normal N(μ, σ)</option>
             <option value="uniform">Uniform on [α, β]</option>
           </select>
           <div id="normParams">
             <label for="muA">Mean μ = <output id="muAOut" for="muA">50</output></label>
-            <input type="range" id="muA" min="20" max="80" value="50" step="1">
+            <input autocomplete="off" type="range" id="muA" min="20" max="80" value="50" step="1">
             <label for="sdA">Standard deviation σ = <output id="sdAOut" for="sdA">10</output></label>
-            <input type="range" id="sdA" min="2" max="25" value="10" step="1">
+            <input autocomplete="off" type="range" id="sdA" min="2" max="25" value="10" step="1">
           </div>
           <div id="unifParams" style="display:none">
             <label for="loA">Lower end α = <output id="loAOut" for="loA">20</output></label>
-            <input type="range" id="loA" min="0" max="90" value="20" step="1">
+            <input autocomplete="off" type="range" id="loA" min="0" max="90" value="20" step="1">
             <label for="hiA">Upper end β = <output id="hiAOut" for="hiA">80</output></label>
-            <input type="range" id="hiA" min="10" max="100" value="80" step="1">
+            <input autocomplete="off" type="range" id="hiA" min="10" max="100" value="80" step="1">
           </div>
           <p class="note" id="distDesc"></p>
         </fieldset>
         <fieldset style="margin-top:14px">
           <legend>Question</legend>
           <label for="mode">What do you want to know?</label>
-          <select id="mode">
+          <select autocomplete="off" id="mode">
             <option value="between" selected>P(a ≤ X ≤ b): between two values</option>
             <option value="left">P(X ≤ a): below a value</option>
             <option value="right">P(X ≥ a): above a value</option>
             <option value="inv">Find x such that P(X ≤ x) = p</option>
           </select>
-          <div id="handleA"><label for="a">a = <output id="aOut" for="a">40</output></label><input type="range" id="a" min="0" max="100" value="40" step="0.5"></div>
-          <div id="handleB"><label for="b">b = <output id="bOut" for="b">65</output></label><input type="range" id="b" min="0" max="100" value="65" step="0.5"></div>
-          <div id="handleP" style="display:none"><label for="pIn">p = <output id="pOut" for="pIn">0.90</output></label><input type="range" id="pIn" min="0.01" max="0.99" value="0.90" step="0.01"></div>
+          <div id="handleA"><label for="a">a = <output id="aOut" for="a">40</output></label><input autocomplete="off" type="range" id="a" min="0" max="100" value="40" step="0.5"></div>
+          <div id="handleB"><label for="b">b = <output id="bOut" for="b">65</output></label><input autocomplete="off" type="range" id="b" min="0" max="100" value="65" step="0.5"></div>
+          <div id="handleP" style="display:none"><label for="pIn">p = <output id="pOut" for="pIn">0.90</output></label><input autocomplete="off" type="range" id="pIn" min="0.01" max="0.99" value="0.90" step="0.01"></div>
           <p class="note">You can also drag the gold handles directly on the chart.</p>
         </fieldset>
       </div>
@@ -173,13 +173,13 @@
         <fieldset>
           <legend>Settings</legend>
           <label for="muB">Mean μ = <output id="muBOut" for="muB">100</output></label>
-          <input type="range" id="muB" min="0" max="200" value="100" step="1">
+          <input autocomplete="off" type="range" id="muB" min="0" max="200" value="100" step="1">
           <label for="sdB">Standard deviation σ = <output id="sdBOut" for="sdB">15</output></label>
-          <input type="range" id="sdB" min="1" max="40" value="15" step="1">
+          <input autocomplete="off" type="range" id="sdB" min="1" max="40" value="15" step="1">
           <label for="xB">Value x = <output id="xBOut" for="xB">120</output></label>
-          <input type="range" id="xB" min="0" max="200" value="120" step="1">
+          <input autocomplete="off" type="range" id="xB" min="0" max="200" value="120" step="1">
           <label for="tailB">Which area?</label>
-          <select id="tailB">
+          <select autocomplete="off" id="tailB">
             <option value="left" selected>P(X ≤ x), left of x</option>
             <option value="right">P(X ≥ x), right of x</option>
           </select>
@@ -208,11 +208,11 @@
         <fieldset>
           <legend>Settings</legend>
           <label for="muC">Mean μ = <output id="muCOut" for="muC">50</output></label>
-          <input type="range" id="muC" min="20" max="80" value="50" step="1">
+          <input autocomplete="off" type="range" id="muC" min="20" max="80" value="50" step="1">
           <label for="sdC">Standard deviation σ = <output id="sdCOut" for="sdC">10</output></label>
-          <input type="range" id="sdC" min="2" max="20" value="10" step="1">
+          <input autocomplete="off" type="range" id="sdC" min="2" max="20" value="10" step="1">
           <label for="nC">Number of values to draw</label>
-          <select id="nC">
+          <select autocomplete="off" id="nC">
             <option value="100">100</option>
             <option value="500" selected>500</option>
             <option value="2000">2,000</option>

@@ -130,7 +130,7 @@
         <fieldset>
           <legend>Settings</legend>
           <label for="pop">Population we sample from</label>
-          <select id="pop">
+          <select autocomplete="off" id="pop">
             <option value="uniform" selected>Uniform (flat, 0 to 10)</option>
             <option value="skewed">Right-skewed (e.g., wait times)</option>
             <option value="heavy">Heavily right-skewed (e.g., insurance claims)</option>
@@ -140,11 +140,11 @@
           <p class="note" id="popDesc"></p>
 
           <label for="n">Sample size n = <output id="nOut" for="n">30</output> observations per sample</label>
-          <input type="range" id="n" min="2" max="500" value="30" step="1">
+          <input autocomplete="off" type="range" id="n" min="2" max="500" value="30" step="1">
           <p class="note">How many observations go into each sample, and so into each interval.</p>
 
           <label for="level">Confidence level</label>
-          <select id="level">
+          <select autocomplete="off" id="level">
             <option value="0.80">80%</option>
             <option value="0.90">90%</option>
             <option value="0.95" selected>95%</option>
@@ -152,14 +152,14 @@
           </select>
 
           <label for="method">Standard deviation used in the interval</label>
-          <select id="method">
+          <select autocomplete="off" id="method">
             <option value="z" selected>Population σ is known (z interval)</option>
             <option value="t">σ unknown, use sample s (t interval)</option>
           </select>
           <p class="note" id="methodDesc"></p>
 
           <label for="reps">Number of samples (intervals to build)</label>
-          <select id="reps">
+          <select autocomplete="off" id="reps">
             <option value="20">20</option>
             <option value="50">50</option>
             <option value="100" selected>100</option>
@@ -173,7 +173,7 @@
             <button id="anim" type="button" class="primary" aria-pressed="false">▶ Animate one sample at a time</button>
             <div>
               <label for="speed" style="margin-top:0">Speed</label>
-              <select id="speed">
+              <select autocomplete="off" id="speed">
                 <option value="700">Slow</option>
                 <option value="250" selected>Medium</option>
                 <option value="60">Fast</option>
@@ -503,18 +503,24 @@
       $("avgWidth").textContent = fmt(widthSum / N);
       $("missLow").textContent = `${missLow.toLocaleString()} (${pct(missLow / N)})`;
       $("missHigh").textContent = `${missHigh.toLocaleString()} (${pct(missHigh / N)})`;
-      $("tally").innerHTML = `<b>${hits.toLocaleString()}</b> of <b>${N.toLocaleString()}</b> intervals contain μ &nbsp;=&nbsp; <b>${pct(share)}</b> &nbsp;(target: ${levelPct()})`;
-      let msg = `After ${N.toLocaleString()} intervals at the ${levelPct()} level: ${hits.toLocaleString()} contained μ and ${(N - hits).toLocaleString()} missed, an observed share of ${pct(share)}. `;
+      const mName = method === "z" ? "z interval, σ known" : "t interval, σ unknown";
+      $("tally").innerHTML = `<b>${hits.toLocaleString()}</b> of <b>${N.toLocaleString()}</b> intervals contain μ &nbsp;=&nbsp; <b>${pct(share)}</b> &nbsp;(target: ${levelPct()}; ${mName}, n = ${n})`;
+      let msg = `After ${N.toLocaleString()} intervals (${mName}, n = ${n}) at the ${levelPct()} level: ${hits.toLocaleString()} contained μ and ${(N - hits).toLocaleString()} missed, an observed share of ${pct(share)}. `;
       const gap = Math.abs(share - level);
-      if (N < 50) msg += "With fewer than 50 intervals the share is still noisy; a few more or fewer gold intervals swing the percentage a lot.";
-      else if (gap < 0.03) msg += `That is close to the promised ${levelPct()}: the method is delivering what it claims.`;
-      else if (share < level) msg += cond === "no" || pop === POPS.heavy
-        ? `That is well below the promised ${levelPct()}. This is what a wrong assumption costs: x̄ is not normal here (skewed population, ${n < 30 ? "small" : "not yet large enough"} sample), so the intervals are not reliable at the stated level.`
-        : `That is noticeably below ${levelPct()}. Run more intervals to let the share settle.`;
-      else msg += `That is above ${levelPct()}; run more intervals and the share should settle down toward the target.`;
       const tail = (1 - level) / 2, lop = Math.max(missLow, missHigh) / N, lo2 = Math.min(missLow, missHigh) / N;
-      if (N >= 200 && (N - hits) >= 10 && lop > 1.6 * tail && lo2 < 0.6 * tail)
-        msg += ` The misses are also lopsided: ${pct(missLow / N)} of intervals fell entirely below μ and ${pct(missHigh / N)} entirely above, where a correct ${levelPct()} method would put about ${pct(tail)} on each side.`;
+      const lopsided = N >= 200 && (N - hits) >= 10 && lop > 1.4 * tail && lo2 < 0.6 * tail;
+      const split = `${pct(missLow / N)} of intervals fell entirely below μ and ${pct(missHigh / N)} entirely above, where a correct ${levelPct()} method would put about ${pct(tail)} on each side`;
+      if (N < 50) msg += "With fewer than 50 intervals the share is still noisy; a few more or fewer gold intervals swing the percentage a lot.";
+      else if (gap < 0.03 && lopsided) msg += `The total is close to ${levelPct()}, but that does not mean the method is working. x̄ is not normal here, and the misses show it: ${split}.` +
+        (method === "z"
+          ? " With σ known, the extra misses on one side are offset by too few on the other, so the total hides the problem: as two one-sided bounds, this interval is clearly wrong. Switch to the t interval (σ unknown, the case you meet in practice) and the total drops as well."
+          : " Draw more intervals: the total should settle below the target.");
+      else if (gap < 0.03 && cond === "no") msg += `That is close to ${levelPct()}, but nothing guaranteed it: the population is not normal and n < 30. For a symmetric population like this one, x̄ is already close to normal at small n, so the method happens to work. Try the heavily right-skewed population with the t interval to see what happens when it does not.`;
+      else if (gap < 0.03) msg += `That is close to the promised ${levelPct()}: the method is delivering what it claims.`;
+      else if (share < level) msg += (cond === "no" || pop === POPS.heavy
+        ? `That is well below the promised ${levelPct()}. This is what a wrong assumption costs: x̄ is not normal here (skewed population, ${n < 30 ? "small" : "not yet large enough"} sample), so the intervals are not reliable at the stated level.`
+        : `That is noticeably below ${levelPct()}. Run more intervals to let the share settle.`) + (lopsided ? ` The misses are also lopsided: ${split}.` : "");
+      else msg += `That is above ${levelPct()}; run more intervals and the share should settle down toward the target.`;
       $("verdict").textContent = msg; $("chartDesc").textContent = msg;
     } else {
       $("hits").textContent = "–"; $("misses").textContent = "–"; $("obsShare").textContent = "–"; $("avgWidth").textContent = "–"; $("missLow").textContent = "–"; $("missHigh").textContent = "–";

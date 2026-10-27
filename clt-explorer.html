@@ -125,7 +125,7 @@
         <fieldset>
           <legend>Settings</legend>
           <label for="pop">Population we sample from</label>
-          <select id="pop">
+          <select autocomplete="off" id="pop">
             <option value="coin" selected>Fair coin flip (1 = heads, 0 = tails)</option>
             <option value="uniform">Uniform (flat, 0 to 10)</option>
             <option value="skewed">Right-skewed (e.g., wait times)</option>
@@ -135,11 +135,11 @@
           <p class="note" id="popDesc"></p>
 
           <label for="n">Sample size n = <output id="nOut" for="n">50</output> <span id="nUnit">flips per sample</span></label>
-          <input type="range" id="n" min="1" max="200" value="50" step="1">
+          <input autocomplete="off" type="range" id="n" min="1" max="200" value="50" step="1">
           <p class="note">How many observations go into each sample mean.</p>
 
           <label for="reps">Number of samples (rounds of sampling)</label>
-          <select id="reps">
+          <select autocomplete="off" id="reps">
             <option value="10">10</option>
             <option value="100">100</option>
             <option value="500">500</option>
@@ -153,7 +153,7 @@
             <button id="anim" type="button" class="primary" aria-pressed="false">▶ Animate one sample at a time</button>
             <div>
               <label for="speed" style="margin-top:0">Speed</label>
-              <select id="speed">
+              <select autocomplete="off" id="speed">
                 <option value="700">Slow</option>
                 <option value="250" selected>Medium</option>
                 <option value="60">Fast</option>

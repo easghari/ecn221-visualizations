@@ -145,7 +145,7 @@
         <fieldset>
           <legend>Settings</legend>
           <label for="pop">Population we sample from</label>
-          <select id="pop">
+          <select autocomplete="off" id="pop">
             <option value="normal" selected>Normal (bell-shaped), σ = 1.5</option>
             <option value="uniform">Uniform (flat), σ ≈ 2.887</option>
             <option value="skewed">Right-skewed (wait times), σ = 3</option>
@@ -155,34 +155,34 @@
           <p class="note" id="popDesc"></p>
 
           <label for="shift">True population mean μ = <output id="muOut" for="shift">5.0</output> &nbsp;(H₀ says μ₀ = <span id="mu0Lbl">5</span>)</label>
-          <input type="range" id="shift" min="-2" max="2" value="0" step="0.1">
+          <input autocomplete="off" type="range" id="shift" min="-2" max="2" value="0" step="0.1">
           <p class="note" id="shiftDesc"></p>
 
           <label for="n">Sample size n = <output id="nOut" for="n">30</output></label>
-          <input type="range" id="n" min="2" max="500" value="30" step="1">
+          <input autocomplete="off" type="range" id="n" min="2" max="500" value="30" step="1">
 
           <label for="alpha">Significance level α</label>
-          <select id="alpha">
+          <select autocomplete="off" id="alpha">
             <option value="0.01">0.01</option>
             <option value="0.05" selected>0.05</option>
             <option value="0.10">0.10</option>
           </select>
 
           <label for="tail">Alternative hypothesis</label>
-          <select id="tail">
+          <select autocomplete="off" id="tail">
             <option value="two" selected>Two-tailed: μ ≠ μ₀</option>
             <option value="right">Right-tailed: μ &gt; μ₀</option>
             <option value="left">Left-tailed: μ &lt; μ₀</option>
           </select>
 
           <label for="method">Test statistic</label>
-          <select id="method">
+          <select autocomplete="off" id="method">
             <option value="z" selected>z test (population σ known)</option>
             <option value="t">t test (σ unknown, use sample s)</option>
           </select>
 
           <label for="reps">Number of tests to run</label>
-          <select id="reps">
+          <select autocomplete="off" id="reps">
             <option value="20">20</option>
             <option value="100">100</option>
             <option value="500">500</option>
@@ -194,7 +194,7 @@
             <button id="anim" type="button" class="primary" aria-pressed="false">▶ Animate one test at a time</button>
             <div>
               <label for="speed" style="margin-top:0">Speed</label>
-              <select id="speed">
+              <select autocomplete="off" id="speed">
                 <option value="700">Slow</option>
                 <option value="250" selected>Medium</option>
                 <option value="60">Fast</option>
@@ -589,16 +589,23 @@
       $("rejLowOut").textContent = `${rejLow.toLocaleString()} (${pct(rejLow / N)})`;
       $("rejHighOut").textContent = `${rejHigh.toLocaleString()} (${pct(rejHigh / N)})`;
       $("obsNote").textContent = h0true() ? "Every one of the rejections above is a Type I error." : `Every one of the ${(N - rejects).toLocaleString()} failures to reject is a Type II error.`;
+      const mName = method === "z" ? "z test, σ known" : `t test, ${df()} df`;
       $("tally").innerHTML = h0true()
-        ? `Rejected H₀ in <b>${rejects.toLocaleString()}</b> of <b>${N.toLocaleString()}</b> tests = <b>${pct(rate)}</b> &nbsp;(α = ${pct(alpha)}; H₀ is true, so these are false alarms)`
-        : `Rejected H₀ in <b>${rejects.toLocaleString()}</b> of <b>${N.toLocaleString()}</b> tests = <b>${pct(rate)}</b> &nbsp;(H₀ is false, so this is the power; theory ≈ ${pct(tr)})`;
-      let msg = `After ${N.toLocaleString()} tests: rejected ${rejects.toLocaleString()} times, an observed rate of ${pct(rate)} against a predicted ${pct(tr)}. `;
+        ? `Rejected H₀ in <b>${rejects.toLocaleString()}</b> of <b>${N.toLocaleString()}</b> tests = <b>${pct(rate)}</b> &nbsp;(α = ${pct(alpha)}; H₀ is true, so these are false alarms; ${mName}, n = ${n})`
+        : `Rejected H₀ in <b>${rejects.toLocaleString()}</b> of <b>${N.toLocaleString()}</b> tests = <b>${pct(rate)}</b> &nbsp;(H₀ is false, so this is the power; theory ≈ ${pct(tr)}; ${mName}, n = ${n})`;
+      let msg = `After ${N.toLocaleString()} tests (${mName}, n = ${n}): rejected ${rejects.toLocaleString()} times, an observed rate of ${pct(rate)} against a predicted ${pct(tr)}. `;
+      const lopsided = h0true() && tail === "two" && N >= 200 && rejects >= 10 && Math.max(rejLow, rejHigh) / N > 0.7 * alpha && Math.min(rejLow, rejHigh) / N < 0.3 * alpha;
+      const split = `${pct(rejLow / N)} of tests rejected in the left tail and ${pct(rejHigh / N)} in the right, where a correct test would put about ${pct(alpha / 2)} in each`;
       if (N < 100) msg += "With fewer than 100 tests the rate is still noisy; keep going.";
+      else if (Math.abs(rate - tr) < 0.03 && lopsided) msg += `The total is close to α, but that does not mean the test is working. x̄ is not normal here, and the rejections show it: ${split}.` +
+        (method === "z"
+          ? " With σ known, the extra rejections in one tail are offset by too few in the other, so the two-tailed total hides the problem. Switch to a one-tailed test, or to the t test (σ unknown, the case you meet in practice), and the false-alarm rate moves away from α."
+          : " Run more tests: the rate should settle above α.");
+      else if (Math.abs(rate - tr) < 0.03 && h0true() && cond === "no") msg += `That is close to α, but nothing guaranteed it: the population is not normal and n < 30. For a symmetric population like this one, x̄ is already close to normal at small n, so the test happens to keep its promise. Try the heavily right-skewed population with the t test to see what happens when it does not.`;
       else if (Math.abs(rate - tr) < 0.03) msg += h0true() ? "The false-alarm rate matches α: the test is keeping its promise." : "The power matches the prediction.";
-      else if (h0true() && rate > tr) msg += `The false-alarm rate is well above α = ${alpha}. This is what a wrong assumption costs: the population is skewed and the sample is ${n < 30 ? "small" : "not yet large enough for this much skew"}, so x̄ is not normal, the statistic does not follow the black curve, and the test cries wolf too often.`;
-      else msg += "The observed rate differs from the prediction more than usual; run more tests, or note that the normal approximation is rough for a t test with small n.";
-      if (h0true() && tail === "two" && N >= 200 && rejects >= 10 && Math.max(rejLow, rejHigh) > 3 * Math.max(1, Math.min(rejLow, rejHigh)))
-        msg += ` The rejections are also lopsided: ${pct(rejLow / N)} in the left tail and ${pct(rejHigh / N)} in the right, where a correct test would put about ${pct(alpha / 2)} in each.`;
+      else if (h0true() && rate > tr) msg += `The false-alarm rate is well above α = ${alpha}. This is what a wrong assumption costs: the population is skewed and the sample is ${n < 30 ? "small" : "not yet large enough for this much skew"}, so x̄ is not normal, the statistic does not follow the black curve, and the test cries wolf too often.` + (lopsided ? ` The rejections are also lopsided: ${split}.` : "");
+      else if (h0true() && cond !== "exact") msg += `The false-alarm rate is off from α = ${alpha}: x̄ is not normal enough here for the black curve to be right.` + (lopsided ? ` The rejections are also lopsided: ${split}.` : "");
+      else msg += "The observed rate differs from the prediction more than usual; run more tests, or note that the theory line is an approximation for a t test when H₀ is false.";
       $("verdict").textContent = msg; $("chartDesc").textContent = msg;
     } else {
       $("rejects").textContent = $("keeps").textContent = $("obsRate").textContent = $("avgP").textContent = $("rejLowOut").textContent = $("rejHighOut").textContent = "–";

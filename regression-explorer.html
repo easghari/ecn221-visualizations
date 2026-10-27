@@ -131,15 +131,15 @@
         <fieldset>
           <legend>Population parameters</legend>
           <label for="mux">μ<sub>X</sub> = <output id="muxOut" for="mux">5</output></label>
-          <input type="range" id="mux" min="2" max="8" value="5" step="0.5">
+          <input autocomplete="off" type="range" id="mux" min="2" max="8" value="5" step="0.5">
           <label for="muy">μ<sub>Y</sub> = <output id="muyOut" for="muy">5</output></label>
-          <input type="range" id="muy" min="2" max="8" value="5" step="0.5">
+          <input autocomplete="off" type="range" id="muy" min="2" max="8" value="5" step="0.5">
           <label for="sdx">σ<sub>X</sub> = <output id="sdxOut" for="sdx">1.5</output></label>
-          <input type="range" id="sdx" min="0.5" max="3" value="1.5" step="0.1">
+          <input autocomplete="off" type="range" id="sdx" min="0.5" max="3" value="1.5" step="0.1">
           <label for="sdy">σ<sub>Y</sub> = <output id="sdyOut" for="sdy">2</output></label>
-          <input type="range" id="sdy" min="0.5" max="3" value="2" step="0.1">
+          <input autocomplete="off" type="range" id="sdy" min="0.5" max="3" value="2" step="0.1">
           <label for="rho">Correlation ρ = <output id="rhoOut" for="rho">0.6</output></label>
-          <input type="range" id="rho" min="-0.95" max="0.95" value="0.6" step="0.05">
+          <input autocomplete="off" type="range" id="rho" min="-0.95" max="0.95" value="0.6" step="0.05">
           <p class="note">The black line on the floor is the population regression line; the gold line runs along the ridge of the hill, through the peak of every slice. The faint ellipses on the floor are contour lines of the density.</p>
         </fieldset>
         <div class="kvbox" style="margin-top:14px">
@@ -169,7 +169,7 @@
         <fieldset>
           <legend>Sample</legend>
           <label for="n">Sample size n = <output id="nOut" for="n">50</output></label>
-          <input type="range" id="n" min="5" max="200" value="50" step="1">
+          <input autocomplete="off" type="range" id="n" min="5" max="200" value="50" step="1">
           <button id="one" type="button" class="primary" style="margin-top:14px">▶ Draw a new sample</button>
           <p class="note">Each click draws n new pairs from the population above and fits the least-squares line to them.</p>
         </fieldset>
@@ -204,7 +204,7 @@
         <fieldset>
           <legend>Repeated sampling</legend>
           <label for="reps">Number of samples to draw</label>
-          <select id="reps">
+          <select autocomplete="off" id="reps">
             <option value="20">20</option>
             <option value="100">100</option>
             <option value="500" selected>500</option>
@@ -215,7 +215,7 @@
             <button id="anim" type="button" class="primary" aria-pressed="false">▶ Animate one sample at a time</button>
             <div>
               <label for="speed" style="margin-top:0">Speed</label>
-              <select id="speed">
+              <select autocomplete="off" id="speed">
                 <option value="700">Slow</option>
                 <option value="250" selected>Medium</option>
                 <option value="60">Fast</option>

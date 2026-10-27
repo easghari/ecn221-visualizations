@@ -134,7 +134,7 @@
         <fieldset>
           <legend>Settings</legend>
           <label for="shape">Shape of both populations</label>
-          <select id="shape">
+          <select autocomplete="off" id="shape">
             <option value="normal" selected>Normal (bell-shaped)</option>
             <option value="skewed">Right-skewed (e.g., spending)</option>
             <option value="uniform">Uniform (flat)</option>
@@ -142,45 +142,45 @@
 
           <div class="grp g1">
             <label for="mu1">Group 1 true mean μ₁ = <output id="mu1Out" for="mu1">50</output></label>
-            <input type="range" id="mu1" min="40" max="60" value="50" step="0.5">
+            <input autocomplete="off" type="range" id="mu1" min="40" max="60" value="50" step="0.5">
             <label for="sd1">Group 1 SD σ₁ = <output id="sd1Out" for="sd1">10</output></label>
-            <input type="range" id="sd1" min="2" max="20" value="10" step="1">
+            <input autocomplete="off" type="range" id="sd1" min="2" max="20" value="10" step="1">
             <label for="n1">Group 1 sample size n₁ = <output id="n1Out" for="n1">30</output></label>
-            <input type="range" id="n1" min="3" max="200" value="30" step="1">
+            <input autocomplete="off" type="range" id="n1" min="3" max="200" value="30" step="1">
           </div>
           <div class="grp g2">
             <label for="mu2">Group 2 true mean μ₂ = <output id="mu2Out" for="mu2">50</output></label>
-            <input type="range" id="mu2" min="40" max="60" value="50" step="0.5">
+            <input autocomplete="off" type="range" id="mu2" min="40" max="60" value="50" step="0.5">
             <label for="sd2">Group 2 SD σ₂ = <output id="sd2Out" for="sd2">10</output></label>
-            <input type="range" id="sd2" min="2" max="20" value="10" step="1">
+            <input autocomplete="off" type="range" id="sd2" min="2" max="20" value="10" step="1">
             <label for="n2">Group 2 sample size n₂ = <output id="n2Out" for="n2">30</output></label>
-            <input type="range" id="n2" min="3" max="200" value="30" step="1">
+            <input autocomplete="off" type="range" id="n2" min="3" max="200" value="30" step="1">
           </div>
           <p class="note" id="gapDesc"></p>
 
           <label for="method">Standard error / test</label>
-          <select id="method">
+          <select autocomplete="off" id="method">
             <option value="z">σ₁, σ₂ known (z)</option>
             <option value="pooled" selected>σ unknown, assumed equal (pooled t)</option>
             <option value="welch">σ unknown, not assumed equal (Welch t)</option>
           </select>
 
           <label for="alpha">Significance level α</label>
-          <select id="alpha">
+          <select autocomplete="off" id="alpha">
             <option value="0.01">0.01</option>
             <option value="0.05" selected>0.05</option>
             <option value="0.10">0.10</option>
           </select>
 
           <label for="tail">Alternative hypothesis</label>
-          <select id="tail">
+          <select autocomplete="off" id="tail">
             <option value="two" selected>Two-tailed: μ₁ − μ₂ ≠ 0</option>
             <option value="right">Right-tailed: μ₁ − μ₂ &gt; 0</option>
             <option value="left">Left-tailed: μ₁ − μ₂ &lt; 0</option>
           </select>
 
           <label for="reps">Number of tests to run</label>
-          <select id="reps">
+          <select autocomplete="off" id="reps">
             <option value="20">20</option>
             <option value="100">100</option>
             <option value="500">500</option>
@@ -192,7 +192,7 @@
             <button id="anim" type="button" class="primary" aria-pressed="false">▶ Animate one test at a time</button>
             <div>
               <label for="speed" style="margin-top:0">Speed</label>
-              <select id="speed">
+              <select autocomplete="off" id="speed">
                 <option value="700">Slow</option>
                 <option value="250" selected>Medium</option>
                 <option value="60">Fast</option>
