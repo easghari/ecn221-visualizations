@@ -4,6 +4,7 @@ Self-contained HTML visualizations for ECN 221 Business Statistics (Arizona Stat
 
 - `index.html` — landing page listing all visualizations
 - `crosstab-explorer.html` — Crosstabulation: Summarizing Two Variables at Once
+- `crosstab-explorer.html` — Crosstabulation: Summarizing Two Variables at Once
 - `correlation-explorer.html` — Correlation: The Strength of a Linear Relationship
 - `dice-explorer.html` — Classical vs. Relative Frequency Probability: Rolling Two Dice
 - `relationships-explorer.html` — Probability Relationships: Complements, Unions, Conditional Probability and Independence
