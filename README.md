@@ -3,6 +3,7 @@
 Self-contained HTML visualizations for ECN 221 Business Statistics (Arizona State University), embedded in Canvas via iframe.
 
 - `index.html` — landing page listing all visualizations
+- `simpson-explorer.html` — Correlation vs. Causation: Simpson's Paradox
 - `crosstab-explorer.html` — Crosstabulation: Summarizing Two Variables at Once
 - `correlation-explorer.html` — Correlation: The Strength of a Linear Relationship
 - `dice-explorer.html` — Classical vs. Relative Frequency Probability: Rolling Two Dice
