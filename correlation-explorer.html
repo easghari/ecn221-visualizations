@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Correlation – ECN 221</title>
+<style>
+  :root {
+    --maroon: #8C1D40; --gold: #FFC627; --asu-gray: #5C6670; --asu-black: #191919;
+    --text: #191919; --muted: #5C6670; --line: #d9dee5; --panel: #f7f7f7;
+    --pos: #8C1D40; --neg: #3d7ea6;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--text); background: #fff; line-height: 1.55; font-size: 16px; }
+  header { padding: 18px 24px 14px; background: var(--maroon); color: #fff; border-bottom: 6px solid var(--gold); }
+  header h1 { margin: 0 0 4px; font-size: 1.5rem; }
+  header p { margin: 0; color: #f3e6ea; font-size: 0.95rem; }
+  main { max-width: 1100px; margin: 0 auto; padding: 8px 24px 32px; }
+  section { padding: 22px 0; border-bottom: 1px solid var(--line); }
+  section:last-of-type { border-bottom: none; }
+  h2 { font-size: 1.25rem; margin: 0 0 10px; color: var(--maroon); }
+  h2 .step { display: inline-block; background: var(--maroon); color: #fff; border-radius: 50%; width: 28px; height: 28px; line-height: 28px; text-align: center; font-size: 0.95rem; margin-right: 8px; }
+  h3.sub { font-size: 1.05rem; margin: 18px 0 8px; color: var(--maroon); border-top: 1px dashed var(--line); padding-top: 14px; }
+  p { margin: 0 0 10px; }
+  a { color: var(--maroon); }
+  html { scroll-behavior: smooth; }
+  .formula { font-family: Georgia, "Times New Roman", serif; font-size: 1.05rem; }
+  .callout { background: var(--panel); border-left: 4px solid var(--maroon); padding: 12px 16px; border-radius: 4px; margin: 10px 0; }
+  .callout ol, .callout ul { margin: 6px 0 0; padding-left: 22px; }
+  .callout li { margin-bottom: 8px; }
+  .warn { background: #fff8e0; border-left: 4px solid var(--gold); padding: 12px 16px; border-radius: 4px; margin: 10px 0; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 860px) { .pair { grid-template-columns: 1fr; } }
+  .plotbox { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+  .plotbox h4 { margin: 0 0 6px; font-size: 1rem; color: var(--maroon); }
+  label { display: block; margin: 8px 0 4px; font-weight: 600; font-size: 0.95rem; }
+  input[type=range] { width: 100%; accent-color: var(--maroon); }
+  select { width: 100%; padding: 6px; font-size: 1rem; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+  .note { font-size: 0.88rem; color: var(--muted); margin: 4px 0 0; }
+  button { font-size: 0.95rem; padding: 8px 12px; border-radius: 6px; cursor: pointer; border: 1px solid var(--maroon); background: #fff; color: var(--maroon); font-weight: 600; }
+  button:hover { filter: brightness(1.08); }
+  button:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid var(--maroon); outline-offset: 2px; }
+  canvas { width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+  canvas.drag { cursor: crosshair; touch-action: none; }
+  .rbig { font-size: 1.5rem; font-weight: 700; color: var(--maroon); font-variant-numeric: tabular-nums; margin: 6px 0 2px; }
+  .kv { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; font-size: 0.95rem; }
+  .kv span { color: var(--muted); }
+  .kv b { font-variant-numeric: tabular-nums; text-align: right; }
+  .compare { margin-top: 12px; font-size: 1.02rem; }
+  .twocol { display: grid; grid-template-columns: 300px 1fr; gap: 22px; align-items: start; }
+  @media (max-width: 860px) { .twocol { grid-template-columns: 1fr; } }
+  fieldset { border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; margin: 0 0 14px; background: var(--panel); }
+  legend { font-weight: 600; padding: 0 6px; color: var(--maroon); }
+  .check { display: flex; gap: 8px; align-items: center; font-weight: 600; margin: 8px 0; }
+  table.stats { border-collapse: collapse; width: 100%; font-size: 0.95rem; font-variant-numeric: tabular-nums; }
+  table.stats th, table.stats td { border: 1px solid var(--line); padding: 5px 10px; text-align: right; }
+  table.stats th { background: var(--panel); text-align: center; }
+  table.stats td:first-child { text-align: left; color: var(--muted); }
+  .legend { font-size: 0.85rem; color: var(--muted); display: flex; gap: 14px; flex-wrap: wrap; margin: 4px 0 8px; }
+  .legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; }
+  ol.explore { padding-left: 20px; }
+  ol.explore li { margin-bottom: 8px; }
+  .tip { background: #fff8e0; border-left: 4px solid var(--gold); padding: 10px 12px; border-radius: 4px; }
+  footer { padding: 10px 24px 20px; color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--line); text-align: center; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Correlation: The Strength of a Linear Relationship</h1>
+  <p>ECN 221 Business Statistics · Instructor: Ehsan Asghari-Ghara</p>
+</header>
+
+<main>
+
+  <!-- 1 -->
+  <section aria-labelledby="h-idea">
+    <h2 id="h-idea"><span class="step">1</span>What covariance and correlation measure</h2>
+    <p>Covariance and correlation describe how two variables, <em>x</em> and <em>y</em>, move together. Both start from the same idea: for each observation, multiply how far <em>x</em> is from its mean by how far <em>y</em> is from its mean.</p>
+    <div class="callout">
+      <p class="formula" style="margin:0 0 4px">Population covariance: &nbsp; σ<sub>xy</sub> = Σ (x<sub>i</sub> − μ<sub>x</sub>)(y<sub>i</sub> − μ<sub>y</sub>) / N</p>
+      <p class="formula" style="margin:0 0 8px">Sample covariance: &nbsp; s<sub>xy</sub> = Σ (x<sub>i</sub> − x̄)(y<sub>i</sub> − ȳ) / (n − 1)</p>
+      <p style="margin:0 0 8px">When large values of <em>x</em> tend to go with large values of <em>y</em>, most products are positive and the covariance is positive. Its size, though, depends on the units: measure <em>y</em> in cents instead of dollars and the covariance is 100 times bigger. The <strong>correlation coefficient</strong> removes the units by dividing by both standard deviations:</p>
+      <p class="formula" style="margin:0">ρ = σ<sub>xy</sub> / (σ<sub>x</sub> σ<sub>y</sub>) &nbsp; (population), &nbsp;&nbsp; r = s<sub>xy</sub> / (s<sub>x</sub> s<sub>y</sub>) &nbsp; (sample)</p>
+    </div>
+    <div class="warn">
+      <p style="margin:0 0 6px"><strong>What the correlation tells you, and what it does not:</strong></p>
+      <ul style="margin:0;padding-left:22px">
+        <li>It is always between −1 and +1, and it has no units.</li>
+        <li>Its <em>sign</em> gives the direction: positive when <em>y</em> tends to rise with <em>x</em>, negative when it tends to fall.</li>
+        <li>Its <em>size</em> measures how tightly the points cluster around a <strong>straight line</strong>: ±1 means they lie exactly on one. It does <strong>not</strong> measure how steep the line is.</li>
+        <li>A correlation near 0 means no <em>linear</em> relationship. The variables can still be strongly related in a curved way.</li>
+        <li>A single unusual point can change the correlation a lot.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section aria-labelledby="h-how">
+    <h2 id="h-how"><span class="step">2</span>How the two panels work</h2>
+    <div class="callout">
+      <ol>
+        <li><strong><a href="#panelA">Panel A</a>: a steeper line is not a stronger correlation.</strong> Two scatter plots side by side. For each one, choose the slope of the line the points follow and how far the points scatter around it. The page starts with a steep line and a lot of scatter on the left, and a gentle line with very little scatter on the right. Compare the two correlations.</li>
+        <li><strong><a href="#panelB">Panel B</a>: correlation only sees straight lines.</strong> Pick a pattern, such as a curve, a circle, or a line with one outlier, and see what the correlation says about it. Drag any point to move it, click an empty spot to add a point, and double-click a point to remove it.</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section aria-labelledby="h-run">
+    <h2 id="h-run"><span class="step">3</span>Explore</h2>
+
+    <h3 class="sub" id="panelA">A. A steeper line is not a stronger correlation</h3>
+    <div class="pair">
+      <div class="plotbox">
+        <h4>Plot 1</h4>
+        <canvas id="c1" width="460" height="360" role="img" aria-label="Scatter plot 1 with its trend line"></canvas>
+        <label for="b1">Slope of the line = <output id="b1Out" for="b1">3.0</output></label>
+        <input autocomplete="off" type="range" id="b1" min="-3" max="3" value="3" step="0.1">
+        <label for="s1">Scatter around the line = <output id="s1Out" for="s1">15</output></label>
+        <input autocomplete="off" type="range" id="s1" min="0" max="20" value="15" step="0.5">
+        <div class="rbig" id="r1" aria-live="polite">r = –</div>
+        <div class="kv"><span>Slope of the fitted line</span><b id="fit1">–</b><span>Sample covariance s<sub>xy</sub></span><b id="cov1">–</b></div>
+      </div>
+      <div class="plotbox">
+        <h4>Plot 2</h4>
+        <canvas id="c2" width="460" height="360" role="img" aria-label="Scatter plot 2 with its trend line"></canvas>
+        <label for="b2">Slope of the line = <output id="b2Out" for="b2">0.5</output></label>
+        <input autocomplete="off" type="range" id="b2" min="-3" max="3" value="0.5" step="0.1">
+        <label for="s2">Scatter around the line = <output id="s2Out" for="s2">0.6</output></label>
+        <input autocomplete="off" type="range" id="s2" min="0" max="20" value="0.6" step="0.5">
+        <div class="rbig" id="r2" aria-live="polite">r = –</div>
+        <div class="kv"><span>Slope of the fitted line</span><b id="fit2">–</b><span>Sample covariance s<sub>xy</sub></span><b id="cov2">–</b></div>
+      </div>
+    </div>
+    <p class="compare" id="compareA" aria-live="polite"></p>
+    <button id="newA" type="button">New random points</button>
+    <p class="note">Both plots use the same axes, so their slopes can be compared by eye.</p>
+
+    <h3 class="sub" id="panelB">B. Correlation only sees straight lines</h3>
+    <div class="twocol">
+      <div>
+        <fieldset>
+          <legend>Pattern</legend>
+          <label for="preset">Start from</label>
+          <select autocomplete="off" id="preset">
+            <option value="linear" selected>Strong straight-line pattern</option>
+            <option value="none">No relationship</option>
+            <option value="u">U-shaped curve</option>
+            <option value="curve">Curved, rising pattern</option>
+            <option value="circle">Circle</option>
+            <option value="outlier">Straight line plus one outlier</option>
+            <option value="clusters">Two separate groups</option>
+          </select>
+          <p class="note" id="presetNote"></p>
+          <p class="note">Drag a point to move it. Click an empty spot to add a point. Double-click a point to remove it.</p>
+        </fieldset>
+      </div>
+      <div>
+        <div class="legend" id="legendB"></div>
+        <canvas id="cB" class="drag" width="900" height="460" role="img" aria-label="Scatter plot with draggable points, its least-squares line, and optionally the covariance quadrants"></canvas>
+        <div class="rbig" id="rB" aria-live="polite">r = –</div>
+        <table class="stats" aria-live="polite">
+          <thead><tr><th></th><th>Population (divide by N)</th><th>Sample (divide by n − 1)</th></tr></thead>
+          <tbody>
+            <tr><td>Number of points</td><td id="tN" colspan="2" style="text-align:center">–</td></tr>
+            <tr><td>Covariance</td><td id="covP">–</td><td id="covS">–</td></tr>
+            <tr><td>Standard deviation of x</td><td id="sxP">–</td><td id="sxS">–</td></tr>
+            <tr><td>Standard deviation of y</td><td id="syP">–</td><td id="syS">–</td></tr>
+            <tr><td>Correlation = covariance / (SD of x · SD of y)</td><td id="rP">–</td><td id="rS">–</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section aria-labelledby="h-results">
+    <h2 id="h-results"><span class="step">4</span>Reading the results</h2>
+    <p><strong>Panel A.</strong> The slope tells you how much <em>y</em> changes, on average, when <em>x</em> goes up by one unit. The correlation tells you how reliably the points follow that line. A steep line with points scattered far from it has a large slope and a weak correlation; a gentle line with points hugging it has a small slope and a strong correlation. The only thing the slope and the correlation always share is their sign.</p>
+    <p><strong>Panel B.</strong> In the U-shaped pattern, <em>y</em> is completely determined by <em>x</em>, yet the correlation is about 0: the points on the left pull the covariance one way and the points on the right pull it the other way. The circle does the same. A single outlier can drag a correlation of 0.99 down sharply, and two separate groups can create a high correlation even when there is no relationship inside either group. Notice that the population and sample columns always give the same correlation, because the N or n − 1 cancels out of the ratio.</p>
+  </section>
+
+  <!-- 5 -->
+  <section aria-labelledby="h-explore">
+    <h2 id="h-explore"><span class="step">5</span>Explore further</h2>
+    <ol class="explore">
+      <li>Panel A, starting setup: which plot has the steeper line? Which has the stronger correlation? Explain in one sentence why these are different questions.</li>
+      <li>Panel A, Plot 1: keep the slope at 3 and slide the scatter down to 0. What happens to r? Now keep the scatter at 0 and change the slope to 0.5, then to −2. What happens to r?</li>
+      <li>Panel A: make both plots have r close to 0.9, one with slope 0.5 and one with slope 3. What did you have to change?</li>
+      <li>Panel B, "U-shaped curve": is there a relationship between x and y? What is r? What does r = 0 mean, then?</li>
+      <li>Panel B, "Straight line plus one outlier": drag the outlier onto the line and watch r. Then drag a point from the middle of the line far away. Which single point moves r the most?</li>
+      <li>Panel B, "Two separate groups": the correlation is high. Is there a relationship inside either group? What does this warn you about when you combine data from two different groups?</li>
+    </ol>
+    <p class="tip"><strong>Key point:</strong> the correlation coefficient measures the direction and strength of a <em>linear</em> relationship: how tightly the points follow a straight line. It is not the slope, it can miss a strong curved relationship, and a single unusual point can change it. Always look at the scatter plot before trusting the number.</p>
+  </section>
+
+</main>
+
+<footer>ECN 221 Business Statistics · W. P. Carey School of Business, Arizona State University</footer>
+
+<script>
+(function () {
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const z0 = (v, d) => Math.abs(v) < 0.5 * 10 ** -d ? 0 : v;   // avoid printing "-0.000"
+  const f2 = v => z0(v, 2).toFixed(2), f3 = v => z0(v, 3).toFixed(3);
+  function randNormal() { let u = 0, v = 0; while (u === 0) u = Math.random(); while (v === 0) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+  function fmtBig(v) { const a = Math.abs(v); if (a < 5e-4) return "0.000"; return a >= 1e5 ? v.toExponential(3) : a >= 100 ? v.toFixed(1) : v.toFixed(3); }
+
+  // summary statistics for a set of points; scale multiplies y (units change)
+  function stats(pts, scale) {
+    const n = pts.length; if (n < 2) return null;
+    let mx = 0, my = 0; for (const p of pts) { mx += p.x; my += p.y * scale; } mx /= n; my /= n;
+    let sxx = 0, syy = 0, sxy = 0, pos = 0, neg = 0;
+    for (const p of pts) { const dx = p.x - mx, dy = p.y * scale - my, pr = dx * dy; sxx += dx * dx; syy += dy * dy; sxy += pr; if (pr > 0) pos += pr; else neg += pr; }
+    const r = (sxx > 0 && syy > 0) ? sxy / Math.sqrt(sxx * syy) : NaN;
+    return { n, mx, my, sxx, syy, sxy, pos, neg, r, slope: sxx > 0 ? sxy / sxx : NaN };
+  }
+
+  // generic scatter frame
+  function frame(cv, X, Y, P) {
+    const ctx = cv.getContext("2d"); ctx.clearRect(0, 0, cv.width, cv.height);
+    const w = cv.width - P.l - P.r, h = cv.height - P.t - P.b;
+    const x = v => P.l + (v - X[0]) / (X[1] - X[0]) * w, y = v => P.t + h - (v - Y[0]) / (Y[1] - Y[0]) * h;
+    ctx.strokeStyle = "#8a94a0"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(P.l, P.t); ctx.lineTo(P.l, P.t + h); ctx.lineTo(P.l + w, P.t + h); ctx.stroke();
+    ctx.fillStyle = css("--muted"); ctx.font = "12px sans-serif";
+    return { ctx, w, h, x, y };
+  }
+  function ticks(f, X, Y, P, xt, yt, yfmt) {
+    const { ctx, x, y, h } = f;
+    ctx.textAlign = "center"; for (let t = X[0]; t <= X[1] + 1e-9; t += xt) { ctx.fillText(t, x(t), P.t + h + 15); ctx.save(); ctx.strokeStyle = "#f0f2f4"; ctx.beginPath(); ctx.moveTo(x(t), P.t); ctx.lineTo(x(t), P.t + h); ctx.stroke(); ctx.restore(); }
+    ctx.textAlign = "right"; for (let t = Y[0]; t <= Y[1] + 1e-9; t += yt) { ctx.fillText(yfmt ? yfmt(t) : t, P.l - 5, y(t) + 4); ctx.save(); ctx.strokeStyle = "#f0f2f4"; ctx.beginPath(); ctx.moveTo(P.l + 1, y(t)); ctx.lineTo(P.l + f.w, y(t)); ctx.stroke(); ctx.restore(); }
+  }
+  function fitLine(f, s, X, Y, P, color, scaleBack) {
+    if (!s || !isFinite(s.slope)) return;
+    const { ctx, x, y, w, h } = f, sl = s.slope / scaleBack, my = s.my / scaleBack;
+    ctx.save(); ctx.beginPath(); ctx.rect(P.l, P.t, w, h); ctx.clip();
+    ctx.strokeStyle = color; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x(X[0]), y(my + sl * (X[0] - s.mx))); ctx.lineTo(x(X[1]), y(my + sl * (X[1] - s.mx))); ctx.stroke(); ctx.restore();
+  }
+
+  // =====================================================================
+  // Panel A
+  // =====================================================================
+  const NA = 40, XA = [0, 10], YA = [-40, 60], PA = { l: 40, r: 12, t: 12, b: 28 };
+  let base = [];
+  function newBase() { base = [1, 2].map(() => Array.from({ length: NA }, () => ({ x: Math.random() * 10, z: randNormal() }))); }
+  function ptsA(k) { const b = +$("b" + k).value, s = +$("s" + k).value; return base[k - 1].map(p => ({ x: p.x, y: 10 + b * (p.x - 5) + s * p.z })); }
+  function drawA() {
+    const res = [];
+    for (const k of [1, 2]) {
+      $("b" + k + "Out").textContent = (+$("b" + k).value).toFixed(1); $("s" + k + "Out").textContent = $("s" + k).value;
+      const pts = ptsA(k), s = stats(pts, 1), f = frame($("c" + k), XA, YA, PA);
+      ticks(f, XA, YA, PA, 2, 20);
+      const { ctx, x, y, w, h } = f;
+      ctx.save(); ctx.beginPath(); ctx.rect(PA.l, PA.t, w, h); ctx.clip();
+      ctx.fillStyle = css("--maroon"); ctx.globalAlpha = 0.75; for (const p of pts) { ctx.beginPath(); ctx.arc(x(p.x), y(p.y), 4.5, 0, 2 * Math.PI); ctx.fill(); } ctx.globalAlpha = 1; ctx.restore();
+      fitLine(f, s, XA, YA, PA, css("--asu-black"), 1);
+      $("r" + k).textContent = isFinite(s.r) ? `r = ${f3(s.r)}` : "r is undefined (no scatter in y)";
+      $("fit" + k).textContent = f2(s.slope); $("cov" + k).textContent = f2(s.sxy / (s.n - 1));
+      res.push(s);
+    }
+    const [a, b] = res, steeper = Math.abs(a.slope) > Math.abs(b.slope) ? 1 : 2, stronger = Math.abs(a.r) > Math.abs(b.r) ? 1 : 2;
+    $("compareA").innerHTML = steeper !== stronger
+      ? `Plot ${steeper} has the <strong>steeper</strong> line (slope ${f2(res[steeper - 1].slope)} vs. ${f2(res[2 - steeper].slope)}), but Plot ${stronger} has the <strong>stronger</strong> correlation (r = ${f3(res[stronger - 1].r)} vs. ${f3(res[2 - stronger].r)}).`
+      : `Plot ${steeper} has both the steeper line and the stronger correlation here. Change the scatter of either plot to pull these apart.`;
+  }
+  for (const id of ["b1", "s1", "b2", "s2"]) $(id).addEventListener("input", drawA);
+  $("newA").addEventListener("click", () => { newBase(); drawA(); });
+
+  // =====================================================================
+  // Panel B
+  // =====================================================================
+  const XB = [0, 10], YB = [0, 10], PB = { l: 54, r: 14, t: 14, b: 30 };
+  let ptsB = [];
+  const clamp = v => Math.min(9.8, Math.max(0.2, v));
+  const PRESETS = {
+    linear:   { note: "Points close to a straight line.", make: () => Array.from({ length: 40 }, () => { const x = 0.5 + Math.random() * 9; return { x, y: 1 + 0.8 * x + 0.6 * randNormal() }; }) },
+    none:     { note: "x and y are unrelated.", make: () => Array.from({ length: 40 }, () => ({ x: 0.5 + Math.random() * 9, y: 0.5 + Math.random() * 9 })) },
+    u:        { note: "y is an exact function of x, but the relationship is curved.", make: () => Array.from({ length: 41 }, (_, i) => { const x = 0.5 + 9 * i / 40; return { x, y: 0.5 + 0.44 * (x - 5) ** 2 }; }) },
+    curve:    { note: "y rises with x along a curve, exactly, with no scatter at all.", make: () => Array.from({ length: 41 }, (_, i) => { const x = 0.5 + 9 * i / 40; return { x, y: 0.5 + 9 * ((x - 0.5) / 9) ** 4 }; }) },
+    circle:   { note: "Points on a circle: a clear pattern, but no straight line.", make: () => Array.from({ length: 40 }, (_, i) => { const t = 2 * Math.PI * i / 40; return { x: 5 + 4 * Math.cos(t), y: 5 + 4 * Math.sin(t) }; }) },
+    outlier:  { note: "A tight straight line and one unusual point (bottom right).", make: () => Array.from({ length: 25 }, () => { const x = 0.5 + Math.random() * 7.5; return { x, y: 1 + 0.9 * x + 0.3 * randNormal() }; }).concat([{ x: 9.4, y: 1.2 }]) },
+    clusters: { note: "Two groups, with no relationship inside either one.", make: () => [[2.5, 2.5], [7.5, 7.5]].flatMap(([cx, cy]) => Array.from({ length: 18 }, () => ({ x: cx + 0.7 * randNormal(), y: cy + 0.7 * randNormal() }))) }
+  };
+  function loadPreset(k) { ptsB = PRESETS[k].make().map(p => ({ x: clamp(p.x), y: clamp(p.y) })); $("presetNote").textContent = PRESETS[k].note; drawB(); }
+  function drawB() {
+    const scale = 1;
+    const f = frame($("cB"), XB, YB, PB);
+    ticks(f, XB, YB, PB, 1, 1, t => scale === 1 ? t : (t * scale).toLocaleString());
+    const { ctx, x, y, w, h } = f, s = stats(ptsB, scale);
+    ctx.save(); ctx.translate(14, PB.t + h / 2); ctx.rotate(-Math.PI / 2); ctx.textAlign = "center"; ctx.fillStyle = css("--muted"); ctx.fillText("y", 0, 0); ctx.restore();
+    ctx.textAlign = "center"; ctx.fillText("x", PB.l + w / 2, PB.t + h + 28);
+    fitLine(f, s, XB, YB, PB, css("--asu-black"), scale);
+    for (const p of ptsB) {
+      ctx.fillStyle = css("--maroon"); ctx.beginPath(); ctx.arc(x(p.x), y(p.y), 6, 0, 2 * Math.PI); ctx.fill();
+      ctx.strokeStyle = "#fff"; ctx.lineWidth = 1.2; ctx.stroke();
+    }
+    $("legendB").innerHTML = `<span><span class="dot" style="background:var(--maroon)"></span>data point</span><span>black line: least-squares fit</span>`;
+    // numbers
+    if (!s) { $("rB").textContent = "Add at least two points."; for (const id of ["covP", "covS", "sxP", "sxS", "syP", "syS", "rP", "rS"]) $(id).textContent = "–"; $("tN").textContent = ptsB.length; return; }
+    const N = s.n, covP = s.sxy / N, covS = s.sxy / (N - 1), sxP = Math.sqrt(s.sxx / N), sxS = Math.sqrt(s.sxx / (N - 1)), syP = Math.sqrt(s.syy / N), syS = Math.sqrt(s.syy / (N - 1));
+    $("rB").textContent = isFinite(s.r) ? `r = ${f3(s.r)}` : "r is undefined (no spread in x or y)";
+    $("tN").textContent = N; $("covP").textContent = fmtBig(covP); $("covS").textContent = fmtBig(covS);
+    $("sxP").textContent = f3(sxP); $("sxS").textContent = f3(sxS); $("syP").textContent = fmtBig(syP); $("syS").textContent = fmtBig(syS);
+    $("rP").textContent = isFinite(s.r) ? `${fmtBig(covP)} / (${f3(sxP)} × ${fmtBig(syP)}) = ${f3(s.r)}` : "–";
+    $("rS").textContent = isFinite(s.r) ? `${fmtBig(covS)} / (${f3(sxS)} × ${fmtBig(syS)}) = ${f3(s.r)}` : "–";
+  }
+  // dragging, adding, removing
+  (function () {
+    const cv = $("cB"); let drag = -1, moved = false, downAt = null;
+    const toData = (cx, cy) => { const r = cv.getBoundingClientRect(), px = (cx - r.left) * cv.width / r.width, py = (cy - r.top) * cv.height / r.height;
+      const w = cv.width - PB.l - PB.r, h = cv.height - PB.t - PB.b; return { x: XB[0] + (px - PB.l) / w * (XB[1] - XB[0]), y: YB[0] + (PB.t + h - py) / h * (YB[1] - YB[0]), px, py }; };
+    const nearest = (px, py) => { const w = cv.width - PB.l - PB.r, h = cv.height - PB.t - PB.b; let best = -1, d = 14;
+      ptsB.forEach((p, i) => { const qx = PB.l + (p.x - XB[0]) / (XB[1] - XB[0]) * w, qy = PB.t + h - (p.y - YB[0]) / (YB[1] - YB[0]) * h, dd = Math.hypot(qx - px, qy - py); if (dd < d) { d = dd; best = i; } }); return best; };
+    const down = (cx, cy) => { const q = toData(cx, cy); drag = nearest(q.px, q.py); moved = false; downAt = q; };
+    const move = (cx, cy) => { if (drag < 0) return; const q = toData(cx, cy); ptsB[drag] = { x: clamp(q.x), y: clamp(q.y) }; moved = true; drawB(); };
+    const up = () => { if (drag < 0 && downAt && downAt.x >= XB[0] && downAt.x <= XB[1] && downAt.y >= YB[0] && downAt.y <= YB[1]) { ptsB.push({ x: clamp(downAt.x), y: clamp(downAt.y) }); drawB(); } drag = -1; downAt = null; };
+    cv.addEventListener("mousedown", e => { down(e.clientX, e.clientY); e.preventDefault(); });
+    window.addEventListener("mousemove", e => move(e.clientX, e.clientY));
+    window.addEventListener("mouseup", () => { if (downAt) up(); });
+    cv.addEventListener("dblclick", e => { const q = toData(e.clientX, e.clientY), i = nearest(q.px, q.py); if (i >= 0) { ptsB.splice(i, 1); drawB(); } });
+    cv.addEventListener("touchstart", e => { const t = e.touches[0]; down(t.clientX, t.clientY); }, { passive: true });
+    cv.addEventListener("touchmove", e => { const t = e.touches[0]; move(t.clientX, t.clientY); e.preventDefault(); }, { passive: false });
+    cv.addEventListener("touchend", () => { if (downAt) up(); });
+  })();
+  $("preset").addEventListener("change", e => loadPreset(e.target.value));
+
+  newBase(); drawA(); loadPreset("linear");
+})();
+</script>
+</body>
+</html>
