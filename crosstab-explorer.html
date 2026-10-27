@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crosstabulation – ECN 221</title>
+<style>
+  :root {
+    --maroon: #8C1D40; --gold: #FFC627; --asu-gray: #5C6670; --asu-black: #191919;
+    --text: #191919; --muted: #5C6670; --line: #d9dee5; --panel: #f7f7f7;
+    --c0: #8C1D40; --c1: #FFC627; --c2: #5C6670;
+    --r0: #00A3E0; --r1: #78BE20; --r2: #FF7F32;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--text); background: #fff; line-height: 1.55; font-size: 16px; }
+  header { padding: 18px 24px 14px; background: var(--maroon); color: #fff; border-bottom: 6px solid var(--gold); }
+  header h1 { margin: 0 0 4px; font-size: 1.5rem; }
+  header p { margin: 0; color: #f3e6ea; font-size: 0.95rem; }
+  main { max-width: 1100px; margin: 0 auto; padding: 8px 24px 32px; }
+  section { padding: 22px 0; border-bottom: 1px solid var(--line); }
+  section:last-of-type { border-bottom: none; }
+  h2 { font-size: 1.25rem; margin: 0 0 10px; color: var(--maroon); }
+  h2 .step { display: inline-block; background: var(--maroon); color: #fff; border-radius: 50%; width: 28px; height: 28px; line-height: 28px; text-align: center; font-size: 0.95rem; margin-right: 8px; }
+  p { margin: 0 0 10px; }
+  .callout { background: var(--panel); border-left: 4px solid var(--maroon); padding: 12px 16px; border-radius: 4px; margin: 10px 0; }
+  .callout ol, .callout ul { margin: 6px 0 0; padding-left: 22px; }
+  .callout li { margin-bottom: 8px; }
+  .warn { background: #fff8e0; border-left: 4px solid var(--gold); padding: 12px 16px; border-radius: 4px; margin: 10px 0; }
+  .controls { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; align-items: start; }
+  @media (max-width: 860px) { .controls { grid-template-columns: 1fr; } }
+  label { display: block; margin: 4px 0 4px; font-weight: 600; font-size: 0.95rem; }
+  select { width: 100%; padding: 6px; font-size: 1rem; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+  .seg { display: flex; flex-wrap: wrap; gap: 6px; }
+  .seg button { font-size: 0.92rem; padding: 7px 10px; border-radius: 6px; cursor: pointer; border: 1px solid var(--maroon); background: #fff; color: var(--maroon); font-weight: 600; }
+  .seg button[aria-pressed="true"] { background: var(--maroon); color: #fff; box-shadow: 0 3px 0 var(--gold); }
+  button.plain { font-size: 0.9rem; padding: 6px 10px; border-radius: 6px; cursor: pointer; border: 1px solid var(--maroon); background: #fff; color: var(--maroon); font-weight: 600; margin-top: 8px; }
+  button:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid var(--maroon); outline-offset: 2px; }
+  .note { font-size: 0.88rem; color: var(--muted); margin: 4px 0 0; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+  @media (max-width: 860px) { .pair { grid-template-columns: 1fr; } }
+  table.xt { border-collapse: collapse; width: 100%; font-size: 0.95rem; font-variant-numeric: tabular-nums; }
+  table.xt th, table.xt td { border: 1px solid var(--line); padding: 6px 8px; text-align: right; }
+  table.xt th { background: var(--panel); text-align: center; font-weight: 600; }
+  table.xt th.rowh { text-align: left; }
+  table.xt td.cell { cursor: pointer; }
+  table.xt td.cell:hover { background: #fff8e0; }
+  table.xt td.sel { outline: 3px solid var(--asu-black); outline-offset: -3px; background: #fff3c4; }
+  table.xt td.tot { background: #f3f4f6; font-weight: 700; }
+  table.xt td.base { background: #fde9a6; font-weight: 700; }
+    .interp { border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; margin-top: 12px; }
+  .interp h3 { margin: 0 0 6px; font-size: 1rem; color: var(--maroon); }
+  .interp p { margin: 0 0 6px; padding: 4px 8px; border-radius: 4px; }
+  .interp p.on { background: #fff3c4; font-weight: 600; }
+  .chart h3 { margin: 0 0 4px; font-size: 1rem; }
+  .legend { font-size: 0.85rem; color: var(--muted); display: flex; gap: 12px; flex-wrap: wrap; margin: 4px 0 8px; }
+  .legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .swatch { display: inline-block; width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(0,0,0,.15); }
+  canvas { width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+  ol.explore { padding-left: 20px; }
+  ol.explore li { margin-bottom: 8px; }
+  .tip { background: #fff8e0; border-left: 4px solid var(--gold); padding: 10px 12px; border-radius: 4px; }
+  footer { padding: 10px 24px 20px; color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--line); text-align: center; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Crosstabulation: Summarizing Two Variables at Once</h1>
+  <p>ECN 221 Business Statistics · Instructor: Ehsan Asghari-Ghara</p>
+</header>
+
+<main>
+
+  <!-- 1 -->
+  <section aria-labelledby="h-idea">
+    <h2 id="h-idea"><span class="step">1</span>One table, three kinds of percentages</h2>
+    <p>A <strong>crosstabulation</strong> (two-way table) summarizes two categorical variables together. Here, a retailer records, for each sale in a month, the <em>store location</em> (the rows) and the <em>payment method</em> (the columns). Each cell counts the sales with that combination; the row totals and column totals at the edges summarize each variable on its own.</p>
+    <div class="callout">
+      <p style="margin:0 0 6px">The counts can be turned into percentages in three ways, and each answers a different question:</p>
+      <ul>
+        <li><strong>Row percentages</strong> divide each cell by its <em>row</em> total. Each row adds up to 100%. They answer: "Within each location, how do customers pay?"</li>
+        <li><strong>Column percentages</strong> divide each cell by its <em>column</em> total. Each column adds up to 100%. They answer: "Among customers who pay a certain way, where do they shop?"</li>
+        <li><strong>Percent of the total</strong> divides each cell by the grand total. All the cells together add up to 100%. It answers: "What share of all sales has this combination?"</li>
+      </ul>
+    </div>
+    <div class="warn">
+      <p style="margin:0"><strong>Is there a relationship between the two variables?</strong> Compare the row percentages across the rows. If every location has the same mix of payment methods, location and payment method are unrelated. If the mix changes from one location to another, the two variables are related.</p>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section aria-labelledby="h-how">
+    <h2 id="h-how"><span class="step">2</span>How the page works</h2>
+    <div class="callout">
+      <ol>
+        <li><strong>Choose a scenario and a month.</strong> "Show a different month" displays another month of sales at the same three stores: the same example with different counts.</li>
+        <li><strong>Switch between views:</strong> counts, row percentages, column percentages, or percent of the total. The table and the bar chart change together. The cells that each percentage is divided by are highlighted.</li>
+        <li><strong>Click any cell</strong> of the table. The box below the table describes that cell in all four ways, in plain words, and highlights the sentence that matches the current view.</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section aria-labelledby="h-run">
+    <h2 id="h-run"><span class="step">3</span>Explore the table</h2>
+    <div class="controls">
+      <div><label for="scen">Scenario</label>
+        <select autocomplete="off" id="scen">
+          <option value="related" selected>Payment method depends on the location</option>
+          <option value="unrelated">Payment method does not depend on the location</option>
+        </select>
+        <p class="note" id="scenNote"></p></div>
+      <div style="grid-column: span 2"><label>View</label>
+        <div class="seg" role="group" aria-label="Table view">
+          <button type="button" data-view="count" aria-pressed="true">Counts</button>
+          <button type="button" data-view="row" aria-pressed="false">Row percentages</button>
+          <button type="button" data-view="col" aria-pressed="false">Column percentages</button>
+          <button type="button" data-view="total" aria-pressed="false">Percent of total</button>
+        </div>
+        <p class="note" id="viewNote"></p></div>
+    </div>
+
+    <div class="pair">
+      <div>
+        <table class="xt" id="xt" aria-live="polite"></table>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:8px"><button class="plain" id="nextMonth" type="button" style="margin-top:0">Show a different month ▶</button><span class="note" id="monthLabel" aria-live="polite" style="margin:0"></span></div>
+        <div class="interp" aria-live="polite">
+          <h3 id="interpH">The selected cell, four ways</h3>
+          <p id="iCount"></p><p id="iRow"></p><p id="iCol"></p><p id="iTot"></p>
+        </div>
+      </div>
+      <div class="chart">
+        <h3 id="chartH"></h3>
+        <div class="legend" id="legend"></div>
+        <canvas id="cBar" width="520" height="380" role="img" aria-label="Bar chart of the crosstabulation in the current view"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section aria-labelledby="h-results">
+    <h2 id="h-results"><span class="step">4</span>Reading the results</h2>
+    <p>The same cell can produce three very different percentages, because each one divides by a different group. In January of the first scenario, 30 of the 150 Downtown sales were paid in cash: that is 20% of Downtown sales (row percentage), but 37.5% of all cash sales (column percentage), and 7.5% of all 400 sales (percent of the total). None of these is "the" answer; the question decides which one you need.</p>
+    <p>The row-percentage bars make relationships easy to spot. In the first scenario, the bars for the three locations have different mixes, month after month: Airport customers rarely pay cash and Mall customers use mobile wallets less. In the second scenario, the overall mix changes from month to month, but within any one month every location's bar has exactly the same mix (in January: 20% cash, 55% card and 25% mobile), so knowing the location tells you nothing about how a customer pays.</p>
+  </section>
+
+  <!-- 5 -->
+  <section aria-labelledby="h-explore">
+    <h2 id="h-explore"><span class="step">5</span>Explore further</h2>
+    <ol class="explore">
+      <li>In January of the first scenario, click the Downtown / Cash cell. Read its four descriptions. Which percentage answers "What share of Downtown customers pay cash?" Which answers "What share of cash customers shop Downtown?"</li>
+      <li>Switch to row percentages. Which rows add up to 100%? Now switch to column percentages. What adds up to 100% now?</li>
+      <li>Using the row percentages, at which location are customers most likely to pay with a mobile wallet? Why would the counts alone be misleading for this question?</li>
+      <li>Switch to the second scenario and look at the row-percentage chart. What do you notice about the three bars? What does that say about the relationship between location and payment method?</li>
+      <li>Click "Show a different month" several times in each scenario, watching the row-percentage chart. In the first scenario, which location has the smallest share of cash payments each month? In the second scenario, do the three bars ever differ from one another within a month?</li>
+      <li>In January of the first scenario, a manager says: "Half of our cash sales happen at the Mall, so Mall customers prefer cash." Use the row and column percentages to decide whether the conclusion follows.</li>
+    </ol>
+    <p class="tip"><strong>Key point:</strong> a crosstabulation can be turned into percentages by row, by column, or of the total, and each answers a different question. To check whether two categorical variables are related, compare the row (or column) percentages: if the mix is the same in every row, there is no relationship.</p>
+  </section>
+
+</main>
+
+<footer>ECN 221 Business Statistics · W. P. Carey School of Business, Arizona State University</footer>
+
+<script>
+(function () {
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const pc = v => isFinite(v) ? (100 * v).toFixed(1) + "%" : "–";
+
+  const ROWS = ["Downtown", "Mall", "Airport"], COLS = ["Cash", "Card", "Mobile wallet"];
+  const ROW_PHRASE = ["shopped Downtown", "shopped at the Mall", "shopped at the Airport"];
+  const ROW_GROUP = ["Downtown sales", "Mall sales", "Airport sales"];
+  const COL_PHRASE = ["paid with cash", "paid by card", "paid with a mobile wallet"];
+  const COL_GROUP = ["cash sales", "card sales", "mobile-wallet sales"];
+  const MONTHS = ["January", "February", "March", "April", "May", "June"];
+  const SCEN = {
+    // payment mix differs by location every month (Airport: little cash; Mall: few mobile wallets)
+    related: { months: [
+      [[30, 70, 50], [40, 90, 20], [10, 60, 30]],
+      [[36, 84, 60], [45, 105, 30], [12, 66, 42]],
+      [[26, 64, 50], [42, 84, 14], [8, 56, 16]],
+      [[40, 90, 70], [50, 120, 30], [15, 75, 30]],
+      [[24, 60, 36], [39, 78, 13], [6, 48, 26]],
+      [[33, 77, 55], [44, 99, 22], [9, 63, 18]] ] },
+    // within each month every location has exactly the same mix; the mix itself changes by month
+    unrelated: { months: [
+      [[32, 88, 40], [24, 66, 30], [24, 66, 30]],
+      [[60, 100, 40], [42, 70, 28], [30, 50, 20]],
+      [[30, 54, 36], [45, 81, 54], [25, 45, 30]],
+      [[21, 84, 35], [24, 96, 40], [18, 72, 30]],
+      [[35, 40, 25], [56, 64, 40], [49, 56, 35]],
+      [[18, 117, 45], [10, 65, 25], [12, 78, 30]] ] }
+  };
+  let scen = "related", month = 0, view = "count", sel = [0, 0];
+  let counts = SCEN.related.months[0];
+  function scenNote() {
+    if (scen === "related") return "The mix of payment methods differs from one location to another.";
+    const t = counts[0].reduce((a, b) => a + b, 0), m = counts[0].map(v => Math.round(100 * v / t));
+    return `This month, every location has the same mix: ${m[0]}% cash, ${m[1]}% card, ${m[2]}% mobile wallet.`;
+  }
+
+  const rowTot = i => counts[i].reduce((a, b) => a + b, 0);
+  const colTot = j => counts.reduce((a, r) => a + r[j], 0);
+  const grand = () => counts.flat().reduce((a, b) => a + b, 0);
+  const val = (i, j) => view === "count" ? counts[i][j] : view === "row" ? counts[i][j] / rowTot(i) : view === "col" ? counts[i][j] / colTot(j) : counts[i][j] / grand();
+
+  // ---------- table ----------
+  function drawTable() {
+    const N = grand();
+    let h = `<thead><tr><th class="rowh">Location \\ Payment</th>${COLS.map(c => `<th>${c}</th>`).join("")}<th>Total</th></tr></thead><tbody>`;
+    ROWS.forEach((r, i) => {
+      h += `<tr><th class="rowh">${r}</th>`;
+      COLS.forEach((_, j) => {
+        const s = (sel[0] === i && sel[1] === j) ? " sel" : "";
+        h += `<td class="cell${s}" data-i="${i}" data-j="${j}" tabindex="0">${view === "count" ? counts[i][j] : pc(val(i, j))}</td>`;
+      });
+      const rt = view === "count" ? rowTot(i) : view === "row" ? "100.0%" : view === "col" ? pc(rowTot(i) / N) : pc(rowTot(i) / N);
+      h += `<td class="tot${view === "row" ? " base" : ""}">${rt}</td></tr>`;
+    });
+    h += `<tr><th class="rowh">Total</th>`;
+    COLS.forEach((_, j) => { const ct = view === "count" ? colTot(j) : view === "col" ? "100.0%" : pc(colTot(j) / N); h += `<td class="tot${view === "col" ? " base" : ""}">${ct}</td>`; });
+    h += `<td class="tot${view === "total" ? " base" : ""}">${view === "count" ? N : view === "total" ? "100.0%" : pc(1)}</td></tr></tbody>`;
+    $("xt").innerHTML = h;
+    $("xt").querySelectorAll("td.cell").forEach(td => {
+      const pick = () => { sel = [+td.dataset.i, +td.dataset.j]; drawTable(); drawInterp(); };
+      td.addEventListener("click", pick);
+      td.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } });
+    });
+    $("viewNote").textContent = {
+      count: "Each cell is a number of sales. The totals at the edges summarize each variable on its own.",
+      row: "Each cell is divided by its row total (highlighted), so every row adds up to 100%.",
+      col: "Each cell is divided by its column total (highlighted), so every column adds up to 100%.",
+      total: "Each cell is divided by the grand total (highlighted), so all nine cells add up to 100%."
+    }[view];
+  }
+  function drawInterp() {
+    const [i, j] = sel, c = counts[i][j], rt = rowTot(i), ct = colTot(j), N = grand();
+    $("interpH").textContent = `The ${ROWS[i]} / ${COLS[j]} cell, four ways`;
+    $("iCount").textContent = `Count: ${c} of the ${N} sales were made by customers who ${ROW_PHRASE[i]} and ${COL_PHRASE[j]}.`;
+    $("iRow").textContent = `Row percentage: of the ${rt} ${ROW_GROUP[i]}, ${c} (${pc(c / rt)}) were paid ${COL_PHRASE[j].replace(/^paid /, "")}.`;
+    $("iCol").textContent = `Column percentage: of the ${ct} ${COL_GROUP[j]}, ${c} (${pc(c / ct)}) were made by customers who ${ROW_PHRASE[i]}.`;
+    $("iTot").textContent = `Percent of total: ${c} of all ${N} sales, or ${pc(c / N)}, combine ${ROWS[i]} and ${COLS[j].toLowerCase()}.`;
+    const on = { count: "iCount", row: "iRow", col: "iCol", total: "iTot" }[view];
+    for (const id of ["iCount", "iRow", "iCol", "iTot"]) $(id).classList.toggle("on", id === on);
+  }
+
+  // ---------- chart ----------
+  function drawChart() {
+    const cv = $("cBar"), ctx = cv.getContext("2d"); ctx.clearRect(0, 0, cv.width, cv.height);
+    const P = { l: 54, r: 14, t: 14, b: 44 }, w = cv.width - P.l - P.r, h = cv.height - P.t - P.b;
+    const colC = [css("--c0"), css("--c1"), css("--c2")], rowC = [css("--r0"), css("--r1"), css("--r2")];
+    const stacked = view === "row" || view === "col";
+    // groups along the x axis, segments within each group
+    const groups = view === "col" ? COLS : ROWS, segs = view === "col" ? ROWS : COLS, segC = view === "col" ? rowC : colC;
+    const v = (g, s) => view === "col" ? val(s, g) : val(g, s);
+    const ymax = stacked ? 1 : view === "count" ? Math.max(10, Math.ceil(Math.max(...counts.flat()) * 1.15 / 10) * 10) : Math.max(0.1, Math.ceil(Math.max(...counts.flat()) / grand() * 1.15 * 20) / 20);
+    const y = t => P.t + h - t / ymax * h;
+    ctx.strokeStyle = "#8a94a0"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(P.l, P.t); ctx.lineTo(P.l, P.t + h); ctx.lineTo(P.l + w, P.t + h); ctx.stroke();
+    ctx.fillStyle = css("--muted"); ctx.font = "12px sans-serif"; ctx.textAlign = "right";
+    const yt = view === "count" ? (ymax > 100 ? 20 : 10) : (stacked ? 0.25 : ymax > 0.3 ? 0.1 : 0.05);
+    for (let t = 0; t <= ymax + 1e-9; t += yt) { ctx.fillText(view === "count" ? t : Math.round(t * 100) + "%", P.l - 5, y(t) + 4); ctx.save(); ctx.strokeStyle = "#eef0f3"; ctx.beginPath(); ctx.moveTo(P.l + 1, y(t)); ctx.lineTo(P.l + w, y(t)); ctx.stroke(); ctx.restore(); }
+    const gw = w / groups.length;
+    groups.forEach((gname, g) => {
+      const gx = P.l + g * gw;
+      if (stacked) {
+        const bw = gw * 0.55, bx = gx + (gw - bw) / 2; let acc = 0;
+        segs.forEach((_, s) => {
+          const t = v(g, s); if (!isFinite(t)) return;
+          ctx.fillStyle = segC[s]; ctx.fillRect(bx, y(acc + t), bw, y(acc) - y(acc + t));
+          ctx.strokeStyle = "#fff"; ctx.lineWidth = 1.5; ctx.strokeRect(bx, y(acc + t), bw, y(acc) - y(acc + t));
+          if (t >= 0.06) { ctx.fillStyle = (segC[s] === css("--c0") || segC[s] === css("--c2")) ? "#fff" : css("--asu-black"); ctx.font = "bold 12px sans-serif"; ctx.textAlign = "center"; ctx.fillText(pc(t), bx + bw / 2, y(acc + t / 2) + 4); }
+          acc += t;
+        });
+      } else {
+        const bw = gw * 0.8 / segs.length;
+        segs.forEach((_, s) => {
+          const t = v(g, s), bx = gx + gw * 0.1 + s * bw;
+          ctx.fillStyle = segC[s]; ctx.fillRect(bx + 1, y(t), bw - 2, y(0) - y(t));
+          ctx.fillStyle = css("--text"); ctx.font = "11px sans-serif"; ctx.textAlign = "center"; ctx.fillText(view === "count" ? t : pc(t), bx + bw / 2, y(t) - 4);
+        });
+      }
+      ctx.fillStyle = css("--text"); ctx.font = "bold 13px sans-serif"; ctx.textAlign = "center"; ctx.fillText(gname, gx + gw / 2, P.t + h + 18);
+    });
+    ctx.fillStyle = css("--muted"); ctx.font = "12px sans-serif"; ctx.textAlign = "center";
+    ctx.fillText(view === "col" ? "payment method" : "store location", P.l + w / 2, P.t + h + 36);
+    $("legend").innerHTML = segs.map((s, k) => `<span><span class="swatch" style="background:${segC[k]}"></span>${s}</span>`).join("");
+    $("chartH").textContent = {
+      count: "Number of sales by location and payment method",
+      row: "How customers pay, within each location (each bar = 100%)",
+      col: "Where customers shop, within each payment method (each bar = 100%)",
+      total: "Share of all sales in each combination"
+    }[view];
+  }
+
+  function render() { drawTable(); drawInterp(); drawChart(); }
+  document.querySelectorAll(".seg button").forEach(b => b.addEventListener("click", () => {
+    view = b.dataset.view; document.querySelectorAll(".seg button").forEach(x => x.setAttribute("aria-pressed", String(x === b))); render();
+  }));
+  function load() { counts = SCEN[scen].months[month]; $("monthLabel").textContent = `${MONTHS[month]} (${month + 1} of ${MONTHS.length})`; $("scenNote").textContent = scenNote(); render(); }
+  $("scen").addEventListener("change", e => { scen = e.target.value; load(); });
+  $("nextMonth").addEventListener("click", () => { month = (month + 1) % MONTHS.length; load(); });
+  load();
+})();
+</script>
+</body>
+</html>
