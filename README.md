@@ -3,6 +3,8 @@
 Self-contained HTML visualizations for ECN 221 Business Statistics (Arizona State University), embedded in Canvas via iframe.
 
 - `index.html` — landing page listing all visualizations
+- `dice-explorer.html` — Classical vs. Relative Frequency Probability: Rolling Two Dice
+- `relationships-explorer.html` — Probability Relationships: Complements, Unions, Conditional Probability and Independence
 - `hypergeometric-explorer.html` — Binomial vs. Hypergeometric: Sampling With and Without Replacement
 - `continuous-explorer.html` — Continuous Distributions: Probability as Area
 - `clt-explorer.html` — Central Limit Theorem

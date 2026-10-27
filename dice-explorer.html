@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Classical vs. Relative Frequency – ECN 221</title>
+<style>
+  :root {
+    --maroon: #8C1D40; --gold: #FFC627; --asu-gray: #5C6670; --asu-black: #191919;
+    --text: #191919; --muted: #5C6670; --line: #d9dee5; --panel: #f7f7f7;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--text); background: #fff; line-height: 1.55; font-size: 16px; }
+  header { padding: 18px 24px 14px; background: var(--maroon); color: #fff; border-bottom: 6px solid var(--gold); }
+  header h1 { margin: 0 0 4px; font-size: 1.5rem; }
+  header p { margin: 0; color: #f3e6ea; font-size: 0.95rem; }
+  main { max-width: 1100px; margin: 0 auto; padding: 8px 24px 32px; }
+  section { padding: 22px 0; border-bottom: 1px solid var(--line); }
+  section:last-of-type { border-bottom: none; }
+  h2 { font-size: 1.25rem; margin: 0 0 10px; color: var(--maroon); }
+  h2 .step { display: inline-block; background: var(--maroon); color: #fff; border-radius: 50%; width: 28px; height: 28px; line-height: 28px; text-align: center; font-size: 0.95rem; margin-right: 8px; }
+  p { margin: 0 0 10px; }
+  .formula { font-family: Georgia, "Times New Roman", serif; font-size: 1.05rem; }
+  .callout { background: var(--panel); border-left: 4px solid var(--maroon); padding: 12px 16px; border-radius: 4px; margin: 10px 0; }
+  .callout ol, .callout ul { margin: 6px 0 0; padding-left: 22px; }
+  .callout li { margin-bottom: 8px; }
+  .warn { background: #fff8e0; border-left: 4px solid var(--gold); padding: 12px 16px; border-radius: 4px; margin: 10px 0; }
+  .twocol { display: grid; grid-template-columns: 320px 1fr; gap: 24px; align-items: start; }
+  @media (max-width: 860px) { .twocol { grid-template-columns: 1fr; } }
+  fieldset { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; margin: 0 0 14px; background: var(--panel); }
+  legend { font-weight: 600; padding: 0 6px; color: var(--maroon); }
+  label { display: block; margin: 8px 0 4px; font-weight: 600; font-size: 0.95rem; }
+  select, input[type=range] { width: 100%; }
+  select { padding: 6px; font-size: 1rem; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+  input[type=range] { accent-color: var(--maroon); }
+  .note { font-size: 0.88rem; color: var(--muted); margin: 4px 0 0; }
+  .btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  button { font-size: 0.95rem; padding: 8px 12px; border-radius: 6px; cursor: pointer; border: 1px solid var(--maroon); background: var(--maroon); color: #fff; font-weight: 600; }
+  button.primary { font-size: 1.05rem; padding: 12px 16px; box-shadow: 0 3px 0 var(--gold); width: 100%; }
+  button.secondary { background: #fff; color: var(--maroon); }
+  button:hover { filter: brightness(1.08); }
+  button:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid var(--maroon); outline-offset: 2px; }
+  .anim-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: end; margin-top: 14px; }
+  .anim-row select { width: 110px; }
+  .chart { margin-bottom: 14px; }
+  .chart h3 { margin: 0 0 4px; font-size: 1rem; }
+  .legend { font-size: 0.85rem; color: var(--muted); display: flex; gap: 14px; flex-wrap: wrap; margin: 4px 0 8px; }
+  .legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .swatch { display: inline-block; width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(0,0,0,.15); }
+  canvas { width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+  .gridrow { display: grid; grid-template-columns: 1.1fr 1fr; gap: 16px; align-items: start; }
+  @media (max-width: 860px) { .gridrow { grid-template-columns: 1fr; } }
+  .kvbox { border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; background: #fff; }
+  .kvbox h3 { margin: 0 0 6px; font-size: 1rem; color: var(--maroon); }
+  .kv { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; font-size: 0.95rem; }
+  .kv span { color: var(--muted); }
+  .kv b { font-variant-numeric: tabular-nums; text-align: right; }
+  .calc { font-family: Georgia, "Times New Roman", serif; font-size: 1rem; background: var(--panel); border-radius: 6px; padding: 8px 12px; margin-top: 8px; line-height: 1.7; }
+  .tally { font-size: 1.05rem; font-weight: 700; margin: 8px 0; }
+  .tally b { color: var(--maroon); font-variant-numeric: tabular-nums; }
+  ol.explore { padding-left: 20px; }
+  ol.explore li { margin-bottom: 8px; }
+  .tip { background: #fff8e0; border-left: 4px solid var(--gold); padding: 10px 12px; border-radius: 4px; }
+  footer { padding: 10px 24px 20px; color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--line); text-align: center; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Classical vs. Relative Frequency Probability: Rolling Two Dice</h1>
+  <p>ECN 221 Business Statistics · Instructor: Ehsan Asghari-Ghara</p>
+</header>
+
+<main>
+
+  <!-- 1 -->
+  <section aria-labelledby="h-idea">
+    <h2 id="h-idea"><span class="step">1</span>Two ways to assign a probability</h2>
+    <p>Roll two fair dice. What is the probability that the two numbers add up to 7? There are two ways to answer.</p>
+    <div class="callout">
+      <ul>
+        <li><strong>Classical probability.</strong> List every possible outcome. If all of them are <em>equally likely</em>, the probability of an event is the share of outcomes in which it happens:
+          <p class="formula" style="margin:6px 0 0">P(E) = (number of outcomes in E) / (total number of outcomes)</p>
+          Two dice have 6 × 6 = 36 equally likely outcomes (the multiplication rule of counting), and 6 of them add up to 7, so P(sum = 7) = 6/36 = 1/6. No dice need to be rolled.</li>
+        <li><strong>Relative frequency.</strong> Repeat the experiment many times and see how often the event happens:
+          <p class="formula" style="margin:6px 0 0">P(E) ≈ (number of times E happened) / (number of trials)</p>
+          This is how most business probabilities are found, because the outcomes are rarely equally likely: the share of customers who return a product, the share of loans that default, the share of flights that leave late.</li>
+      </ul>
+    </div>
+    <div class="warn">
+      <p style="margin:0"><strong>How the two connect:</strong> with only a few trials, the relative frequency can be far from the true probability. As the number of trials grows, it settles down closer and closer to it. This is the <strong>law of large numbers</strong>, and it is why the relative frequency from a large amount of data is a reliable estimate of a probability.</p>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section aria-labelledby="h-how">
+    <h2 id="h-how"><span class="step">2</span>How the page works</h2>
+    <div class="callout">
+      <ol>
+        <li><strong>Pick an event.</strong> The grid shows all 36 outcomes of rolling two dice, one cell for each pair (first die, second die). The cells that belong to the event are shaded gold, and the classical probability is the number of gold cells divided by 36.</li>
+        <li><strong>Roll the dice.</strong> The computer rolls two dice over and over. Each roll lights up its cell, and the small number in the corner of each cell counts how many times that outcome has come up.</li>
+        <li><strong>Watch the relative frequency.</strong> After every roll, the chart plots the share of rolls so far in which the event happened. The dashed line is the classical probability. Watch where the line goes as the rolls pile up.</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section aria-labelledby="h-run">
+    <h2 id="h-run"><span class="step">3</span>Roll the dice</h2>
+    <div class="twocol">
+      <div>
+        <fieldset>
+          <legend>Event</legend>
+          <label for="ev">Event E</label>
+          <select autocomplete="off" id="ev">
+            <option value="sum7" selected>The sum is 7</option>
+            <option value="sumk">The sum equals k (choose k)</option>
+            <option value="doubles">Doubles: both dice show the same number</option>
+            <option value="ge10">The sum is at least 10</option>
+            <option value="six">At least one die shows a 6</option>
+            <option value="even">The sum is even</option>
+          </select>
+          <div id="kRow" style="display:none"><label for="k">k = <output id="kOut" for="k">8</output></label><input autocomplete="off" type="range" id="k" min="2" max="12" value="8" step="1"></div>
+        </fieldset>
+        <fieldset>
+          <legend>Rolls</legend>
+          <label for="reps">Number of rolls</label>
+          <select autocomplete="off" id="reps">
+            <option value="100">100</option>
+            <option value="1000" selected>1,000</option>
+            <option value="10000">10,000</option>
+          </select>
+          <div class="anim-row">
+            <button id="anim" type="button" class="primary" aria-pressed="false">▶ Roll one at a time</button>
+            <div>
+              <label for="speed" style="margin-top:0">Speed</label>
+              <select autocomplete="off" id="speed">
+                <option value="600">Slow</option>
+                <option value="220" selected>Medium</option>
+                <option value="60">Fast</option>
+              </select>
+            </div>
+          </div>
+          <p class="note">The rolls start one at a time, then speed up after the first 30.</p>
+          <div class="btns">
+            <button id="draw" type="button" class="secondary">Roll all at once</button>
+            <button id="clear" type="button" class="secondary">Clear</button>
+          </div>
+        </fieldset>
+        <div class="kvbox" aria-live="polite">
+          <h3>Classical vs. relative frequency</h3>
+          <div class="kv">
+            <span>Classical probability</span><b id="classical">–</b>
+            <span>Rolls so far</span><b id="nRolls">0</b>
+            <span>Times E happened</span><b id="nHits">–</b>
+            <span>Relative frequency</span><b id="relFreq">–</b>
+            <span>Difference</span><b id="diff">–</b>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="gridrow">
+          <div class="chart">
+            <h3>All 36 outcomes</h3>
+            <div class="legend">
+              <span><span class="swatch" style="background:var(--gold)"></span>outcome in E</span>
+              <span>black outline = latest roll</span>
+            </div>
+            <canvas id="cGrid" width="440" height="440" role="img" aria-label="Grid of the 36 outcomes of two dice with the event's outcomes shaded"></canvas>
+          </div>
+          <div>
+            <div class="chart">
+              <h3>Latest roll</h3>
+              <canvas id="cDice" width="300" height="140" role="img" aria-label="The two dice from the latest roll"></canvas>
+            </div>
+            <div class="calc" id="classCalc" aria-live="polite"></div>
+          </div>
+        </div>
+        <div class="chart" style="margin-top:14px">
+          <h3>Relative frequency of E as the rolls pile up</h3>
+          <div class="legend">
+            <span><span class="swatch" style="background:var(--asu-black)"></span>relative frequency so far</span>
+            <span><span class="swatch" style="background:var(--maroon)"></span>dashed: classical probability</span>
+          </div>
+          <canvas id="cRun" width="900" height="260" role="img" aria-label="Running relative frequency of the event compared with the classical probability"></canvas>
+          <p class="tally" id="tally" aria-live="polite">No rolls yet.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section aria-labelledby="h-results">
+    <h2 id="h-results"><span class="step">4</span>Reading the results</h2>
+    <p>The classical probability comes from counting, before any dice are rolled; it is exact, but it only works because all 36 outcomes are equally likely. The relative frequency comes from data. Early on it swings widely: after 10 rolls it can easily be 0 or 0.4 for an event whose probability is 1/6. As the rolls pile up, the swings shrink and the line settles onto the dashed line. With 100 rolls it is typically within about 0.07 of the classical value; with 10,000 rolls, within about 0.007. Ten times the accuracy costs a hundred times the data.</p>
+    <p>The counts in the grid tell the same story outcome by outcome: each of the 36 cells comes up about 1/36 of the time in the long run, which is exactly the "equally likely" assumption that the classical definition relies on.</p>
+  </section>
+
+  <!-- 5 -->
+  <section aria-labelledby="h-explore">
+    <h2 id="h-explore"><span class="step">5</span>Explore further</h2>
+    <ol class="explore">
+      <li>Choose "The sum is 7". Count the gold cells and write the classical probability. Then roll slowly for 20 rolls and stop. How close is the relative frequency? Clear and repeat: do you get the same answer?</li>
+      <li>Choose "The sum equals k" and try k = 2, 7 and 12. Why is 7 the most likely sum, even though each die is fair? Count the cells.</li>
+      <li>Roll 100 times several times and write down the relative frequency each time. Then do the same with 10,000 rolls. How much do the results vary in each case?</li>
+      <li>Choose "At least one die shows a 6". Count the gold cells. Now count the cells that are not gold: what event do they make up? Use the complement rule to check: P(at least one 6) = 1 − P(no 6) = 1 − 25/36.</li>
+      <li>A student argues: "There are 11 possible sums, 2 through 12, so P(sum = 7) = 1/11." Roll 10,000 times. Which answer does the relative frequency support, 1/11 or 1/6? What is wrong with the student's reasoning?</li>
+      <li>Think of a business probability, such as the chance that a customer returns a purchase. Could you find it with the classical definition? Why does it have to come from relative frequency?</li>
+    </ol>
+    <p class="tip"><strong>Key point:</strong> the classical definition counts equally likely outcomes; the relative frequency definition counts what actually happens over many trials. When the outcomes really are equally likely, the two agree in the long run, and the law of large numbers says the relative frequency gets closer to the true probability as the number of trials grows.</p>
+  </section>
+
+</main>
+
+<footer>ECN 221 Business Statistics · W. P. Carey School of Business, Arizona State University</footer>
+
+<script>
+(function () {
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const f4 = v => v.toFixed(4);
+  const gcd = (a, b) => b ? gcd(b, a % b) : a;
+
+  // ---------- events ----------
+  const EVENTS = {
+    sum7:    { name: "the sum is 7", test: (a, b) => a + b === 7 },
+    sumk:    { name: null, test: (a, b) => a + b === +$("k").value },
+    doubles: { name: "doubles", test: (a, b) => a === b },
+    ge10:    { name: "the sum is at least 10", test: (a, b) => a + b >= 10 },
+    six:     { name: "at least one die shows a 6", test: (a, b) => a === 6 || b === 6 },
+    even:    { name: "the sum is even", test: (a, b) => (a + b) % 2 === 0 }
+  };
+  let ev = "sum7";
+  const evName = () => ev === "sumk" ? `the sum is ${$("k").value}` : EVENTS[ev].name;
+  const inE = (a, b) => EVENTS[ev].test(a, b);
+  const favorable = () => { let c = 0; for (let a = 1; a <= 6; a++) for (let b = 1; b <= 6; b++) if (inE(a, b)) c++; return c; };
+
+  // ---------- state ----------
+  let counts = [], n = 0, hits = 0, series = [], last = null, timer = null, ticks = 0;
+  const reset = () => { counts = Array.from({ length: 7 }, () => new Array(7).fill(0)); n = 0; hits = 0; series = []; last = null; ticks = 0; };
+
+  // ---------- drawing ----------
+  function drawGrid() {
+    const cv = $("cGrid"), ctx = cv.getContext("2d"); ctx.clearRect(0, 0, cv.width, cv.height);
+    const L = 56, T = 56, cell = 62;
+    ctx.fillStyle = css("--text"); ctx.font = "bold 13px sans-serif"; ctx.textAlign = "center";
+    ctx.fillText("First die", L + 3 * cell, 18);
+    ctx.save(); ctx.translate(16, T + 3 * cell); ctx.rotate(-Math.PI / 2); ctx.fillText("Second die", 0, 0); ctx.restore();
+    ctx.font = "bold 14px sans-serif";
+    for (let i = 1; i <= 6; i++) { ctx.fillText(i, L + (i - 0.5) * cell, 44); ctx.fillText(i, 40, T + (i - 0.5) * cell + 5); }
+    for (let a = 1; a <= 6; a++) for (let b = 1; b <= 6; b++) {
+      const x = L + (a - 1) * cell, y = T + (b - 1) * cell;
+      ctx.fillStyle = inE(a, b) ? css("--gold") : "#f1f3f5";
+      ctx.fillRect(x + 2, y + 2, cell - 4, cell - 4);
+      ctx.strokeStyle = "#c9d0d7"; ctx.lineWidth = 1; ctx.strokeRect(x + 2, y + 2, cell - 4, cell - 4);
+      ctx.fillStyle = css("--text"); ctx.font = "13px sans-serif"; ctx.textAlign = "center";
+      ctx.fillText(`(${a}, ${b})`, x + cell / 2, y + cell / 2 - 2);
+      ctx.fillStyle = css("--muted"); ctx.font = "11px sans-serif"; ctx.fillText(`sum ${a + b}`, x + cell / 2, y + cell / 2 + 13);
+      if (n) { ctx.fillStyle = css("--maroon"); ctx.font = "bold 10px sans-serif"; ctx.textAlign = "right"; ctx.fillText(counts[a][b], x + cell - 6, y + 13); }
+      if (last && last[0] === a && last[1] === b) { ctx.strokeStyle = css("--asu-black"); ctx.lineWidth = 3.5; ctx.strokeRect(x + 1, y + 1, cell - 2, cell - 2); }
+    }
+  }
+  function die(ctx, x, y, s, v, hit) {
+    ctx.fillStyle = hit ? css("--gold") : "#fff"; ctx.strokeStyle = css("--asu-black"); ctx.lineWidth = 2;
+    const r = 12; ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + s, y, x + s, y + s, r); ctx.arcTo(x + s, y + s, x, y + s, r); ctx.arcTo(x, y + s, x, y, r); ctx.arcTo(x, y, x + s, y, r); ctx.closePath(); ctx.fill(); ctx.stroke();
+    const P = { 1: [[.5, .5]], 2: [[.27, .27], [.73, .73]], 3: [[.27, .27], [.5, .5], [.73, .73]], 4: [[.27, .27], [.73, .27], [.27, .73], [.73, .73]], 5: [[.27, .27], [.73, .27], [.5, .5], [.27, .73], [.73, .73]], 6: [[.27, .25], [.73, .25], [.27, .5], [.73, .5], [.27, .75], [.73, .75]] };
+    ctx.fillStyle = css("--asu-black"); for (const [px, py] of P[v]) { ctx.beginPath(); ctx.arc(x + px * s, y + py * s, s * 0.08, 0, 2 * Math.PI); ctx.fill(); }
+  }
+  function drawDice() {
+    const cv = $("cDice"), ctx = cv.getContext("2d"); ctx.clearRect(0, 0, cv.width, cv.height);
+    if (!last) { ctx.fillStyle = css("--muted"); ctx.font = "14px sans-serif"; ctx.textAlign = "center"; ctx.fillText("No rolls yet.", cv.width / 2, cv.height / 2); return; }
+    const hit = inE(last[0], last[1]);
+    die(ctx, 30, 20, 90, last[0], hit); die(ctx, 180, 20, 90, last[1], hit);
+    ctx.fillStyle = css("--text"); ctx.font = "bold 13px sans-serif"; ctx.textAlign = "center";
+    ctx.fillText(`sum ${last[0] + last[1]} · ${hit ? "E happened" : "E did not happen"}`, cv.width / 2, 132);
+  }
+  function drawRun() {
+    const cv = $("cRun"), ctx = cv.getContext("2d"); ctx.clearRect(0, 0, cv.width, cv.height);
+    const P = { l: 50, r: 20, t: 14, b: 40 }, w = cv.width - P.l - P.r, h = cv.height - P.t - P.b;
+    const pc = favorable() / 36, target = +$("reps").value, ymax = Math.min(1, Math.max(0.4, Math.ceil(pc * 2.2 * 10) / 10));
+    const x = i => P.l + (i / target) * w, y = v => P.t + h - (v / ymax) * h;
+    ctx.strokeStyle = "#8a94a0"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(P.l, P.t); ctx.lineTo(P.l, P.t + h); ctx.lineTo(P.l + w, P.t + h); ctx.stroke();
+    ctx.fillStyle = css("--muted"); ctx.font = "12px sans-serif"; ctx.textAlign = "right";
+    for (let t = 0; t <= ymax + 1e-9; t += ymax > 0.5 ? 0.2 : 0.1) { ctx.fillText(t.toFixed(1), P.l - 6, y(t) + 4); ctx.save(); ctx.strokeStyle = "#eef0f3"; ctx.beginPath(); ctx.moveTo(P.l + 1, y(t)); ctx.lineTo(P.l + w, y(t)); ctx.stroke(); ctx.restore(); }
+    ctx.textAlign = "center"; for (const f of [0, 0.25, 0.5, 0.75, 1]) ctx.fillText(Math.round(f * target).toLocaleString(), x(f * target), P.t + h + 15);
+    ctx.fillText("number of rolls", P.l + w / 2, P.t + h + 32);
+    ctx.save(); ctx.strokeStyle = css("--maroon"); ctx.lineWidth = 2; ctx.setLineDash([6, 4]); ctx.beginPath(); ctx.moveTo(P.l, y(pc)); ctx.lineTo(P.l + w, y(pc)); ctx.stroke(); ctx.restore();
+    ctx.fillStyle = css("--maroon"); ctx.font = "bold 12px sans-serif"; ctx.textAlign = "right"; ctx.fillText(`classical = ${favorable()}/36 = ${pc.toFixed(3)}`, P.l + w - 4, y(pc) - 6);
+    if (series.length) {
+      ctx.save(); ctx.beginPath(); ctx.rect(P.l, P.t, w, h); ctx.clip();   // early values above the top run off the chart instead of flattening
+      ctx.strokeStyle = css("--asu-black"); ctx.lineWidth = 1.8; ctx.beginPath();
+      const step = Math.max(1, Math.floor(series.length / 1500));
+      for (let i = 0; i < series.length; i += step) i ? ctx.lineTo(x(i + 1), y(series[i])) : ctx.moveTo(x(1), y(series[0]));
+      ctx.lineTo(x(series.length), y(series[series.length - 1])); ctx.stroke(); ctx.restore();
+    } else { ctx.fillStyle = css("--muted"); ctx.font = "14px sans-serif"; ctx.textAlign = "center"; ctx.fillText("Click ▶ Roll to start.", P.l + w / 2, P.t + h / 2 - 12); }
+  }
+  function updateText() {
+    const fav = favorable(), pc = fav / 36, g = gcd(fav, 36);
+    $("kRow").style.display = ev === "sumk" ? "" : "none"; $("kOut").textContent = $("k").value;
+    $("classical").textContent = `${fav}/36 = ${f4(pc)}`;
+    $("classCalc").innerHTML = `<b>Classical probability</b><br>P(${evName()}) = (outcomes in E) / (all outcomes) = ${fav} / 36` + (g > 1 && fav ? ` = ${fav / g}/${36 / g}` : "") + ` = <b>${f4(pc)}</b>`;
+    $("nRolls").textContent = n.toLocaleString();
+    if (n) {
+      const rf = hits / n;
+      $("nHits").textContent = hits.toLocaleString(); $("relFreq").textContent = `${hits.toLocaleString()}/${n.toLocaleString()} = ${f4(rf)}`; $("diff").textContent = (rf - pc >= 0 ? "+" : "−") + f4(Math.abs(rf - pc));
+      $("tally").innerHTML = `After <b>${n.toLocaleString()}</b> rolls, ${evName()} happened <b>${hits.toLocaleString()}</b> times: relative frequency <b>${f4(rf)}</b> vs. classical <b>${f4(pc)}</b>.`;
+    } else { $("nHits").textContent = "–"; $("relFreq").textContent = "–"; $("diff").textContent = "–"; $("tally").textContent = "No rolls yet."; }
+  }
+  function render() { drawGrid(); drawDice(); drawRun(); updateText(); }
+
+  // ---------- actions ----------
+  function rollOne() { const a = 1 + Math.floor(Math.random() * 6), b = 1 + Math.floor(Math.random() * 6); counts[a][b]++; n++; if (inE(a, b)) hits++; series.push(hits / n); last = [a, b]; }
+  function roll(k) { for (let i = 0; i < k; i++) rollOne(); render(); }
+  function stop() { if (timer) { clearInterval(timer); timer = null; } $("anim").textContent = "▶ Roll one at a time"; $("anim").setAttribute("aria-pressed", "false"); }
+  const perTick = t => t < 30 ? 1 : t < 60 ? 3 : t < 100 ? 10 : 40;
+  function start() {
+    $("anim").textContent = "⏹ Stop"; $("anim").setAttribute("aria-pressed", "true");
+    const target = +$("reps").value;
+    timer = setInterval(() => { const k = Math.min(perTick(ticks++), target - n); if (k > 0) roll(k); if (n >= target) stop(); }, +$("speed").value);
+  }
+  function clearAll() { stop(); reset(); render(); }
+  $("anim").addEventListener("click", () => { if (timer) stop(); else { if (n >= +$("reps").value) clearAll(); start(); } });
+  $("draw").addEventListener("click", () => { clearAll(); roll(+$("reps").value); });
+  $("clear").addEventListener("click", clearAll);
+  $("reps").addEventListener("change", clearAll);
+  $("speed").addEventListener("change", () => { if (timer) { clearInterval(timer); timer = null; const t = ticks; start(); ticks = t; } });
+  $("ev").addEventListener("change", e => { ev = e.target.value; clearAll(); });
+  $("k").addEventListener("input", () => { clearAll(); });
+
+  clearAll();
+})();
+</script>
+</body>
+</html>

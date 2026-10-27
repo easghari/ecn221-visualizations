@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Probability Relationships – ECN 221</title>
+<style>
+  :root {
+    --maroon: #8C1D40; --gold: #FFC627; --asu-gray: #5C6670; --asu-black: #191919;
+    --text: #191919; --muted: #5C6670; --line: #d9dee5; --panel: #f7f7f7;
+    --both: #FFC627; --aonly: #8C1D40; --bonly: #5C6670; --neither: #e3e7ec;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--text); background: #fff; line-height: 1.55; font-size: 16px; }
+  header { padding: 18px 24px 14px; background: var(--maroon); color: #fff; border-bottom: 6px solid var(--gold); }
+  header h1 { margin: 0 0 4px; font-size: 1.5rem; }
+  header p { margin: 0; color: #f3e6ea; font-size: 0.95rem; }
+  main { max-width: 1100px; margin: 0 auto; padding: 8px 24px 32px; }
+  section { padding: 22px 0; border-bottom: 1px solid var(--line); }
+  section:last-of-type { border-bottom: none; }
+  h2 { font-size: 1.25rem; margin: 0 0 10px; color: var(--maroon); }
+  h2 .step { display: inline-block; background: var(--maroon); color: #fff; border-radius: 50%; width: 28px; height: 28px; line-height: 28px; text-align: center; font-size: 0.95rem; margin-right: 8px; }
+  p { margin: 0 0 10px; }
+  .formula { font-family: Georgia, "Times New Roman", serif; font-size: 1.05rem; }
+  .callout { background: var(--panel); border-left: 4px solid var(--maroon); padding: 12px 16px; border-radius: 4px; margin: 10px 0; }
+  .callout ol, .callout ul { margin: 6px 0 0; padding-left: 22px; }
+  .callout li { margin-bottom: 8px; }
+  .warn { background: #fff8e0; border-left: 4px solid var(--gold); padding: 12px 16px; border-radius: 4px; margin: 10px 0; }
+  .controls { display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr; gap: 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; }
+  @media (max-width: 860px) { .controls { grid-template-columns: 1fr; } }
+  label { display: block; margin: 4px 0 4px; font-weight: 600; font-size: 0.95rem; }
+  input[type=range] { width: 100%; accent-color: var(--maroon); }
+  select { width: 100%; padding: 6px; font-size: 1rem; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+  select:focus-visible, input:focus-visible { outline: 3px solid var(--maroon); outline-offset: 2px; }
+  .note { font-size: 0.88rem; color: var(--muted); margin: 4px 0 0; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 860px) { .pair { grid-template-columns: 1fr; } }
+  .chart h3 { margin: 0 0 4px; font-size: 1rem; }
+  .legend { font-size: 0.85rem; color: var(--muted); display: flex; gap: 12px; flex-wrap: wrap; margin: 4px 0 8px; }
+  .legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .dot { display: inline-block; width: 13px; height: 13px; border-radius: 50%; border: 1px solid rgba(0,0,0,.2); }
+  canvas { width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+  .exprbar { display: grid; grid-template-columns: 1fr 2fr; gap: 16px; align-items: start; margin-top: 16px; }
+  @media (max-width: 860px) { .exprbar { grid-template-columns: 1fr; } }
+  .calc { font-family: Georgia, "Times New Roman", serif; font-size: 1.05rem; background: var(--panel); border-radius: 6px; padding: 10px 14px; line-height: 1.7; }
+  .calc .plain { font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 0.92rem; color: var(--muted); }
+  table.joint { border-collapse: collapse; width: 100%; font-size: 0.95rem; font-variant-numeric: tabular-nums; margin-top: 8px; }
+  table.joint th, table.joint td { border: 1px solid var(--line); padding: 6px 10px; text-align: center; }
+  table.joint th { background: var(--panel); font-weight: 600; }
+  table.joint td.hl { background: var(--gold); font-weight: 700; }
+  table.joint td.cond { outline: 3px solid var(--asu-black); outline-offset: -3px; }
+  .checks { border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; margin-top: 14px; }
+  .checks h3 { margin: 0 0 6px; font-size: 1rem; color: var(--maroon); }
+  .checks p { margin: 0 0 6px; }
+  .yes { color: #1e7b34; font-weight: 700; } .no { color: var(--maroon); font-weight: 700; }
+  ol.explore { padding-left: 20px; }
+  ol.explore li { margin-bottom: 8px; }
+  .tip { background: #fff8e0; border-left: 4px solid var(--gold); padding: 10px 12px; border-radius: 4px; }
+  footer { padding: 10px 24px 20px; color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--line); text-align: center; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Probability Relationships: Complements, Unions, Conditional Probability and Independence</h1>
+  <p>ECN 221 Business Statistics · Instructor: Ehsan Asghari-Ghara</p>
+</header>
+
+<main>
+
+  <!-- 1 -->
+  <section aria-labelledby="h-idea">
+    <h2 id="h-idea"><span class="step">1</span>How probabilities of related events fit together</h2>
+    <p>A store tracks 100 customers. Event <em>A</em>: the customer saw the store's online ad. Event <em>B</em>: the customer made a purchase. Each customer either is or is not in <em>A</em>, and either is or is not in <em>B</em>, so every customer falls into exactly one of four groups: both, <em>A</em> only, <em>B</em> only, or neither. All the probability relationships come from counting these groups.</p>
+    <div class="callout">
+      <ul>
+        <li><strong>Complement.</strong> "Not <em>A</em>" is everything outside <em>A</em>: <span class="formula">P(not A) = 1 − P(A)</span>.</li>
+        <li><strong>Intersection.</strong> "<em>A</em> and <em>B</em>" means both happen: the customers who saw the ad <em>and</em> bought. Its probability, P(A and B), is a <strong>joint probability</strong>.</li>
+        <li><strong>Union and the addition rule.</strong> "<em>A</em> or <em>B</em>" means at least one happens. Adding P(A) and P(B) counts the customers in both events twice, so the overlap is subtracted once: <span class="formula">P(A or B) = P(A) + P(B) − P(A and B)</span>.</li>
+        <li><strong>Mutually exclusive events</strong> cannot happen together: P(A and B) = 0. Only then does the addition rule simplify to P(A) + P(B).</li>
+        <li><strong>Conditional probability.</strong> "<em>A</em> given <em>B</em>" restricts attention to the customers in <em>B</em> and asks what share of <em>them</em> are in <em>A</em>: <span class="formula">P(A | B) = P(A and B) / P(B)</span>. Rearranged, this is the <strong>multiplication rule</strong>: P(A and B) = P(B) · P(A | B).</li>
+        <li><strong>Independent events.</strong> Knowing that one happened does not change the probability of the other: <span class="formula">P(B | A) = P(B)</span>, or equivalently <span class="formula">P(A and B) = P(A) · P(B)</span>.</li>
+      </ul>
+    </div>
+    <div class="warn">
+      <p style="margin:0"><strong>Two common mix-ups:</strong> P(A | B) is not the same as P(B | A) (the share of buyers who saw the ad is not the share of ad-viewers who bought), and mutually exclusive is not the same as independent. In fact, two mutually exclusive events with positive probabilities are never independent: if one happens, you know for certain the other did not.</p>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section aria-labelledby="h-how">
+    <h2 id="h-how"><span class="step">2</span>How the page works</h2>
+    <div class="callout">
+      <ol>
+        <li><strong>Set up the two events.</strong> Pick a scenario, or set P(A), P(B) and P(A and B) yourself with the sliders. The same 100 customers are shown three ways: as dots, as a Venn diagram, and as a joint probability table.</li>
+        <li><strong>Choose a probability to compute.</strong> The customers, the region of the Venn diagram and the cells of the table that make up that probability light up, and the calculation is written out with the numbers.</li>
+        <li><strong>Check the relationship.</strong> The box at the bottom tests, with the current numbers, whether <em>A</em> and <em>B</em> are mutually exclusive and whether they are independent.</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section aria-labelledby="h-run">
+    <h2 id="h-run"><span class="step">3</span>Explore the relationships</h2>
+    <div class="controls">
+      <div><label for="scen">Scenario</label>
+        <select autocomplete="off" id="scen">
+          <option value="ad" selected>A = saw the ad, B = made a purchase</option>
+          <option value="indep">Same events, but the ad has no effect</option>
+          <option value="excl">A = paid with cash, B = paid by card</option>
+        </select>
+        <p class="note" id="scenNote"></p></div>
+      <div><label for="pA">P(A) = <output id="pAOut" for="pA">0.40</output></label><input autocomplete="off" type="range" id="pA" min="0" max="100" value="40" step="1"></div>
+      <div><label for="pB">P(B) = <output id="pBOut" for="pB">0.25</output></label><input autocomplete="off" type="range" id="pB" min="0" max="100" value="25" step="1"></div>
+      <div><label for="pAB">P(A and B) = <output id="pABOut" for="pAB">0.15</output></label><input autocomplete="off" type="range" id="pAB" min="0" max="25" value="15" step="1">
+        <p class="note" id="abRange"></p></div>
+    </div>
+
+    <div class="pair">
+      <div class="chart">
+        <h3>100 customers</h3>
+        <div class="legend" id="dotLegend"></div>
+        <canvas id="cDots" width="440" height="440" role="img" aria-label="One hundred customers colored by which events they belong to"></canvas>
+      </div>
+      <div class="chart">
+        <h3>Venn diagram (circle sizes and overlap drawn to scale)</h3>
+        <div class="legend"><span><span class="dot" style="background:var(--gold)"></span>the region being computed</span><span>thick outline = the event being conditioned on</span></div>
+        <canvas id="cVenn" width="440" height="330" role="img" aria-label="Venn diagram of events A and B with the selected region shaded"></canvas>
+        <table class="joint" id="joint" aria-live="polite"></table>
+      </div>
+    </div>
+
+    <div class="exprbar">
+      <div><label for="expr">Probability to compute</label>
+        <select autocomplete="off" id="expr">
+          <option value="A">P(A)</option>
+          <option value="notA">P(not A): the complement</option>
+          <option value="and">P(A and B): the joint probability</option>
+          <option value="or" selected>P(A or B): the addition rule</option>
+          <option value="AgB">P(A | B): conditional on B</option>
+          <option value="BgA">P(B | A): conditional on A</option>
+        </select></div>
+      <div class="calc" id="calc" aria-live="polite"></div>
+    </div>
+
+    <div class="checks" aria-live="polite">
+      <h3>Are A and B mutually exclusive? Are they independent?</h3>
+      <p id="chkME"></p>
+      <p id="chkInd"></p>
+      <p class="note" id="chkNote"></p>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section aria-labelledby="h-results">
+    <h2 id="h-results"><span class="step">4</span>Reading the results</h2>
+    <p>Every probability on this page is a count of customers divided by a count of customers. For P(A), P(A and B) and P(A or B), the denominator is all 100 customers. For a conditional probability, the denominator shrinks: P(B | A) only looks at the customers in <em>A</em>, which is why the other dots fade out. That shrinking of the "sample space" is the whole idea of conditioning.</p>
+    <p>With the ad scenario, 15 of the 40 ad viewers bought (37.5%), while only 25% of all customers bought: seeing the ad and buying are dependent, and the ad appears to be associated with more purchases. In the "no effect" scenario, 10 of the 40 ad viewers bought, exactly the overall 25%, so the events are independent. In the cash/card scenario, no customer is in both groups: the events are mutually exclusive, and therefore dependent, because knowing a customer paid with cash tells you for certain they did not pay by card.</p>
+  </section>
+
+  <!-- 5 -->
+  <section aria-labelledby="h-explore">
+    <h2 id="h-explore"><span class="step">5</span>Explore further</h2>
+    <ol class="explore">
+      <li>With the ad scenario, choose P(A or B). Count the gold dots. Why is P(A) + P(B) = 0.65 the wrong answer? Which customers would be counted twice?</li>
+      <li>Choose P(B | A) and then P(B). Does seeing the ad change the chance that a customer buys? By how much?</li>
+      <li>Compare P(A | B) with P(B | A). Describe each one in a sentence about customers. Why are they different numbers?</li>
+      <li>Switch to "the ad has no effect". Compare P(B | A) with P(B), and P(A and B) with P(A) · P(B). What does independence mean in words here?</li>
+      <li>Switch to "paid with cash / paid by card". What is P(A and B)? Does the addition rule still need the subtraction? Are the two events independent?</li>
+      <li>Keep P(A) = 0.40 and P(B) = 0.25 and slide P(A and B) from its smallest to its largest value. At which value are A and B independent? What do the dots look like at the two extremes?</li>
+      <li>Choose P(not A). Check the complement rule by counting the dots that are not in A.</li>
+    </ol>
+    <p class="tip"><strong>Key point:</strong> complements, unions, intersections and conditional probabilities are all ways of counting the same four groups of customers. The addition rule subtracts the overlap so it is not counted twice; a conditional probability changes the denominator to the group you know about; and independence means that knowing one event happened leaves the probability of the other unchanged.</p>
+  </section>
+
+</main>
+
+<footer>ECN 221 Business Statistics · W. P. Carey School of Business, Arizona State University</footer>
+
+<script>
+(function () {
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const f2 = v => v.toFixed(2), f3 = v => v.toFixed(3);
+
+  const SCEN = {
+    ad:    { A: "saw the ad", B: "made a purchase", nA: 40, nB: 25, nAB: 15, note: "Ad viewers buy more often than other customers." },
+    indep: { A: "saw the ad", B: "made a purchase", nA: 40, nB: 25, nAB: 10, note: "Ad viewers buy at exactly the same rate as everyone else." },
+    excl:  { A: "paid with cash", B: "paid by card", nA: 30, nB: 55, nAB: 0, note: "Each customer paid one way only, so nobody is in both events. (15 customers did not buy and paid nothing.)" }
+  };
+  let names = { A: "saw the ad", B: "made a purchase" }, nA = 40, nB = 25, nAB = 15, expr = "or";
+  const N = 100;
+  const lo = () => Math.max(0, nA + nB - N), hi = () => Math.min(nA, nB);
+
+  // ---------- region membership ----------
+  // groups: 0 = both, 1 = A only, 2 = B only, 3 = neither
+  const groupOf = i => i < nAB ? 0 : i < nA ? 1 : i < nA + (nB - nAB) ? 2 : 3;
+  const inA = g => g === 0 || g === 1, inB = g => g === 0 || g === 2;
+  // which groups are "selected" (counted in the numerator) and which make up the denominator
+  function selection() {
+    switch (expr) {
+      case "A":    return { num: g => inA(g), den: () => true };
+      case "notA": return { num: g => !inA(g), den: () => true };
+      case "and":  return { num: g => g === 0, den: () => true };
+      case "or":   return { num: g => g !== 3, den: () => true };
+      case "AgB":  return { num: g => g === 0, den: g => inB(g), cond: "B" };
+      case "BgA":  return { num: g => g === 0, den: g => inA(g), cond: "A" };
+    }
+  }
+  const COLORS = () => [css("--both"), css("--aonly"), css("--bonly"), css("--neither")];
+
+  // ---------- dots ----------
+  function drawDots() {
+    const cv = $("cDots"), ctx = cv.getContext("2d"); ctx.clearRect(0, 0, cv.width, cv.height);
+    const sel = selection(), C = COLORS(), cell = 42, x0 = 10, y0 = 10, r = 15;
+    for (let i = 0; i < N; i++) {
+      const g = groupOf(i), cx = x0 + (i % 10) * cell + cell / 2, cy = y0 + Math.floor(i / 10) * cell + cell / 2;
+      const inDen = sel.den(g), inNum = sel.num(g);
+      ctx.globalAlpha = !inDen ? 0.08 : inNum ? 1 : 0.35;
+      ctx.fillStyle = C[g]; ctx.beginPath(); ctx.arc(cx, cy, r, 0, 2 * Math.PI); ctx.fill();
+      ctx.strokeStyle = "rgba(0,0,0,0.25)"; ctx.lineWidth = 1; ctx.stroke();
+      ctx.globalAlpha = 1;
+      if (inNum && inDen) { ctx.strokeStyle = css("--asu-black"); ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(cx, cy, r + 2.5, 0, 2 * Math.PI); ctx.stroke(); }
+    }
+    $("dotLegend").innerHTML =
+      `<span><span class="dot" style="background:var(--both)"></span>both (${nAB})</span>` +
+      `<span><span class="dot" style="background:var(--aonly)"></span>${names.A} only (${nA - nAB})</span>` +
+      `<span><span class="dot" style="background:var(--bonly)"></span>${names.B} only (${nB - nAB})</span>` +
+      `<span><span class="dot" style="background:var(--neither)"></span>neither (${N - nA - nB + nAB})</span>` +
+      `<span>black ring = counted in the numerator</span>`;
+  }
+
+  // ---------- Venn ----------
+  function lensArea(r1, r2, d) {
+    if (d >= r1 + r2) return 0;
+    if (d <= Math.abs(r1 - r2)) return Math.PI * Math.min(r1, r2) ** 2;
+    const a = r1 * r1 * Math.acos((d * d + r1 * r1 - r2 * r2) / (2 * d * r1)), b = r2 * r2 * Math.acos((d * d + r2 * r2 - r1 * r1) / (2 * d * r2));
+    return a + b - 0.5 * Math.sqrt((-d + r1 + r2) * (d + r1 - r2) * (d - r1 + r2) * (d + r1 + r2));
+  }
+  function vennGeom() {
+    const W = 440, H = 330, rect = { x: 14, y: 14, w: W - 28, h: H - 28 };
+    // radii proportional to sqrt(P); a common scale keeps both circles inside the rectangle
+    const pA = nA / N, pB = nB / N, maxP = Math.max(pA, pB, 0.01);
+    const rMax = Math.min(rect.h / 2 - 12, rect.w / 4);
+    const k = rMax / Math.sqrt(maxP);
+    const r1 = k * Math.sqrt(pA), r2 = k * Math.sqrt(pB);
+    const target = Math.PI * k * k * (nAB / N);       // overlap area on the same scale
+    let dLo = Math.abs(r1 - r2), dHi = r1 + r2, d;
+    if (nAB <= 0 || r1 === 0 || r2 === 0) d = r1 + r2 + 10;
+    else if (nAB >= Math.min(nA, nB)) d = Math.abs(r1 - r2);
+    else { for (let i = 0; i < 60; i++) { const m = (dLo + dHi) / 2; if (lensArea(r1, r2, m) > target) dLo = m; else dHi = m; } d = (dLo + dHi) / 2; }
+    const span = r1 + d + r2, cx = rect.x + rect.w / 2, cy = rect.y + rect.h / 2;
+    let ax = cx - span / 2 + r1, bx = ax + d;
+    // keep both circles inside the rectangle horizontally
+    const leftEdge = Math.min(ax - r1, bx - r2), rightEdge = Math.max(ax + r1, bx + r2), shift = (rect.x + rect.w / 2) - (leftEdge + rightEdge) / 2;
+    ax += shift; bx += shift;
+    return { rect, A: { x: ax, y: cy, r: r1 }, B: { x: bx, y: cy, r: r2 } };
+  }
+  function drawVenn() {
+    const cv = $("cVenn"), ctx = cv.getContext("2d"); ctx.clearRect(0, 0, cv.width, cv.height);
+    const G = vennGeom(), sel = selection();
+    const circle = (c, c2) => { (c2 || ctx).beginPath(); (c2 || ctx).arc(c.x, c.y, Math.max(c.r, 0.01), 0, 2 * Math.PI); };
+    // sample space
+    ctx.fillStyle = "#fbfbfc"; ctx.fillRect(G.rect.x, G.rect.y, G.rect.w, G.rect.h);
+    // shaded region on an offscreen canvas
+    const off = document.createElement("canvas"); off.width = cv.width; off.height = cv.height; const o = off.getContext("2d");
+    o.fillStyle = css("--gold");
+    const fillA = () => { circle(G.A, o); o.fill(); }, fillB = () => { circle(G.B, o); o.fill(); };
+    const intersect = () => { o.save(); circle(G.A, o); o.clip(); fillB(); o.restore(); };
+    if (expr === "A") fillA();
+    else if (expr === "notA") { o.fillRect(G.rect.x, G.rect.y, G.rect.w, G.rect.h); o.globalCompositeOperation = "destination-out"; fillA(); o.globalCompositeOperation = "source-over"; }
+    else if (expr === "and" || expr === "AgB" || expr === "BgA") intersect();
+    else if (expr === "or") { fillA(); fillB(); }
+    ctx.drawImage(off, 0, 0);
+    // circles
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = css("--aonly"); circle(G.A); ctx.stroke();
+    ctx.strokeStyle = css("--bonly"); circle(G.B); ctx.stroke();
+    // conditioning: fade everything outside the condition and outline it
+    if (sel.cond) {
+      const c = sel.cond === "A" ? G.A : G.B;
+      const off2 = document.createElement("canvas"); off2.width = cv.width; off2.height = cv.height; const o2 = off2.getContext("2d");
+      o2.fillStyle = "rgba(255,255,255,0.78)"; o2.fillRect(G.rect.x, G.rect.y, G.rect.w, G.rect.h);
+      o2.globalCompositeOperation = "destination-out"; circle(c, o2); o2.fill();
+      ctx.drawImage(off2, 0, 0);
+      ctx.strokeStyle = css("--asu-black"); ctx.lineWidth = 4; circle(c); ctx.stroke();
+    }
+    ctx.strokeStyle = "#8a94a0"; ctx.lineWidth = 1.5; ctx.strokeRect(G.rect.x, G.rect.y, G.rect.w, G.rect.h);
+    // labels: full names in the corners, a letter beside each circle
+    ctx.font = "bold 13px sans-serif";
+    ctx.textAlign = "left"; ctx.fillStyle = css("--aonly"); ctx.fillText(`A: ${names.A}`, G.rect.x + 8, G.rect.y + G.rect.h - 10);
+    ctx.textAlign = "right"; ctx.fillStyle = css("--bonly"); ctx.fillText(`B: ${names.B}`, G.rect.x + G.rect.w - 8, G.rect.y + G.rect.h - 10);
+    ctx.font = "bold 20px sans-serif"; ctx.textAlign = "center";
+    if (G.A.r > 0) { const d = (G.A.r + 14) * 0.707; ctx.fillStyle = css("--aonly"); ctx.fillText("A", Math.max(G.rect.x + 14, G.A.x - d), Math.max(G.rect.y + 40, G.A.y - d + 7)); }
+    if (G.B.r > 0) { const d = (G.B.r + 14) * 0.707; ctx.fillStyle = css("--bonly"); ctx.fillText("B", Math.min(G.rect.x + G.rect.w - 14, G.B.x + d), Math.max(G.rect.y + 40, G.B.y - d + 7)); }
+    ctx.fillStyle = css("--muted"); ctx.font = "12px sans-serif"; ctx.textAlign = "left"; ctx.fillText("all 100 customers", G.rect.x + 6, G.rect.y + 16);
+  }
+
+  // ---------- joint table ----------
+  function drawTable() {
+    const p = v => f2(v / N), cA_B = nAB, cA_nB = nA - nAB, cnA_B = nB - nAB, cnA_nB = N - nA - nB + nAB;
+    const sel = selection(), hl = g => sel.num(g) && sel.den(g) ? " hl" : "";
+    const cond = which => sel.cond === which ? " cond" : "";
+    $("joint").innerHTML =
+      `<thead><tr><th></th><th>B: ${names.B}</th><th>not B</th><th>Total</th></tr></thead><tbody>` +
+      `<tr><th>A: ${names.A}</th><td class="${hl(0)}">${p(cA_B)}</td><td class="${hl(1)}">${p(cA_nB)}</td><td class="${expr === "A" ? "hl" : ""}${cond("A")}">${p(nA)}</td></tr>` +
+      `<tr><th>not A</th><td class="${hl(2)}">${p(cnA_B)}</td><td class="${hl(3)}">${p(cnA_nB)}</td><td class="${expr === "notA" ? "hl" : ""}">${p(N - nA)}</td></tr>` +
+      `<tr><th>Total</th><td class="${cond("B")}">${p(nB)}</td><td>${p(N - nB)}</td><td>1.00</td></tr></tbody>`;
+  }
+
+  // ---------- calculation and checks ----------
+  function drawCalc() {
+    const pA = nA / N, pB = nB / N, pAB = nAB / N, A = names.A, B = names.B;
+    let html;
+    switch (expr) {
+      case "A": html = `P(A) = ${nA}/100 = <b>${f2(pA)}</b><br><span class="plain">${nA} of the 100 customers ${A}.</span>`; break;
+      case "notA": html = `P(not A) = 1 − P(A) = 1 − ${f2(pA)} = <b>${f2(1 - pA)}</b><br><span class="plain">${N - nA} of the 100 customers are outside A, where A means the customer ${A}.</span>`; break;
+      case "and": html = `P(A and B) = ${nAB}/100 = <b>${f2(pAB)}</b><br><span class="plain">${nAB} customers ${A} <em>and</em> ${B}.</span>`; break;
+      case "or": html = `P(A or B) = P(A) + P(B) − P(A and B) = ${f2(pA)} + ${f2(pB)} − ${f2(pAB)} = <b>${f2(pA + pB - pAB)}</b><br><span class="plain">${nA + nB - nAB} customers are in A, in B, or in both. ` + (nAB > 0 ? `Adding P(A) and P(B) alone would give ${f2(pA + pB)}, counting the ${nAB} customers in both events twice.` : `No customer is in both events, so nothing is counted twice and P(A or B) = P(A) + P(B).`) + `</span>`; break;
+      case "AgB": html = nB ? `P(A | B) = P(A and B) / P(B) = ${f2(pAB)} / ${f2(pB)} = <b>${f3(pAB / pB)}</b><br><span class="plain">Look only at the ${nB} customers who ${B}: ${nAB} of them ${A}, and ${nAB}/${nB} = ${f3(pAB / pB)}.</span>` : `P(A | B) is undefined when P(B) = 0: there are no customers in B to look at.`; break;
+      case "BgA": html = nA ? `P(B | A) = P(A and B) / P(A) = ${f2(pAB)} / ${f2(pA)} = <b>${f3(pAB / pA)}</b><br><span class="plain">Look only at the ${nA} customers who ${A}: ${nAB} of them ${B}, and ${nAB}/${nA} = ${f3(pAB / pA)}.</span>` : `P(B | A) is undefined when P(A) = 0: there are no customers in A to look at.`; break;
+    }
+    $("calc").innerHTML = html;
+  }
+  function drawChecks() {
+    const pA = nA / N, pB = nB / N, pAB = nAB / N, prod = pA * pB, A = names.A, B = names.B;
+    $("chkME").innerHTML = nAB === 0
+      ? `<span class="yes">Mutually exclusive.</span> P(A and B) = 0: no customer both ${A} and ${B}.`
+      : `<span class="no">Not mutually exclusive.</span> P(A and B) = ${f2(pAB)}: ${nAB} customers are in both events.`;
+    const indep = Math.abs(pAB - prod) < 1e-9;
+    let s = indep
+      ? `<span class="yes">Independent.</span> P(A and B) = ${f2(pAB)} equals P(A) · P(B) = ${f2(pA)} × ${f2(pB)} = ${f3(prod)}.`
+      : `<span class="no">Not independent.</span> P(A and B) = ${f2(pAB)}, but P(A) · P(B) = ${f2(pA)} × ${f2(pB)} = ${f3(prod)}.`;
+    if (nA > 0 && nA < N) s += ` Equivalently, P(B | A) = ${f3(pAB / pA)} ${indep ? "equals" : "differs from"} P(B) = ${f2(pB)}: ` +
+      (indep ? `knowing a customer ${A} does not change the chance they ${B}.` : `knowing a customer ${A} ${pAB / pA > pB ? "raises" : "lowers"} the chance they ${B}.`);
+    $("chkInd").innerHTML = s;
+    $("chkNote").textContent = (nAB === 0 && nA > 0 && nB > 0) ? "Notice: these events are mutually exclusive and therefore not independent. If a customer is in A, you know for certain they are not in B." : "";
+  }
+
+  // ---------- controls ----------
+  function syncSliders() {
+    nAB = Math.min(Math.max(nAB, lo()), hi());
+    const ab = $("pAB"); ab.min = lo(); ab.max = hi(); ab.value = nAB;
+    $("pA").value = nA; $("pB").value = nB;
+    $("pAOut").textContent = f2(nA / N); $("pBOut").textContent = f2(nB / N); $("pABOut").textContent = f2(nAB / N);
+    $("abRange").textContent = `Possible values: ${f2(lo() / N)} to ${f2(hi() / N)}. Independent at ${f3(nA * nB / N / N)}.`;
+  }
+  function render() { syncSliders(); drawDots(); drawVenn(); drawTable(); drawCalc(); drawChecks(); }
+  function loadScenario(k) { const S = SCEN[k]; names = { A: S.A, B: S.B }; nA = S.nA; nB = S.nB; nAB = S.nAB; $("scenNote").textContent = S.note; render(); }
+  $("scen").addEventListener("change", e => loadScenario(e.target.value));
+  $("pA").addEventListener("input", e => { nA = +e.target.value; $("scenNote").textContent = "Custom values."; render(); });
+  $("pB").addEventListener("input", e => { nB = +e.target.value; $("scenNote").textContent = "Custom values."; render(); });
+  $("pAB").addEventListener("input", e => { nAB = +e.target.value; $("scenNote").textContent = "Custom values."; render(); });
+  $("expr").addEventListener("change", e => { expr = e.target.value; render(); });
+
+  loadScenario("ad");
+})();
+</script>
+</body>
+</html>
