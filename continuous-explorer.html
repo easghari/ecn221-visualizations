@@ -84,12 +84,9 @@
       <p class="formula" style="margin:0 0 6px">P(a ≤ X ≤ b) = area under f(x) from a to b = F(b) − F(a)</p>
       <p style="margin:0">where <em>F</em>(<em>x</em>) = P(<em>X</em> ≤ <em>x</em>) is the <strong>cumulative distribution function</strong>, the area to the left of <em>x</em>. Because single points have zero area, ≤ and &lt; give the same answer: P(a ≤ X ≤ b) = P(a &lt; X &lt; b).</p>
     </div>
-    <p>Two continuous distributions carry this chapter:</p>
+    <p>The most important continuous distribution, and the one this page is built around, is the <strong>normal distribution</strong>:</p>
     <div class="callout">
-      <ul>
-        <li><strong>Uniform on [α, β].</strong> Every value in the range is equally likely, so the density is flat: <span class="formula">f(x) = 1 / (β − α)</span> for α ≤ x ≤ β and 0 elsewhere. Areas are rectangles: <span class="formula">P(a ≤ X ≤ b) = (b − a) / (β − α)</span>. Mean (α + β)/2, standard deviation (β − α)/√12.</li>
-        <li><strong>Normal with mean μ and standard deviation σ.</strong> The bell curve, symmetric about μ, with σ setting how wide it is. There is no simple formula for its areas, so we convert to the <strong>standard normal</strong> <em>Z</em> ~ N(0, 1) using the <strong>z-score</strong> <span class="formula">z = (x − μ) / σ</span>, which says how many standard deviations <em>x</em> is from the mean, and look up or compute <span class="formula">P(X ≤ x) = P(Z ≤ z) = Φ(z)</span>. One table serves every normal distribution.</li>
-      </ul>
+      <p style="margin:0">A normal distribution with mean μ and standard deviation σ is the bell curve, symmetric about μ, with σ setting how wide it is. There is no simple formula for its areas, so we convert to the <strong>standard normal</strong> <em>Z</em> ~ N(0, 1) using the <strong>z-score</strong> <span class="formula">z = (x − μ) / σ</span>, which says how many standard deviations <em>x</em> is from the mean, and look up or compute <span class="formula">P(X ≤ x) = P(Z ≤ z) = Φ(z)</span>. One table serves every normal distribution.</p>
     </div>
     <div class="warn">
       <p style="margin:0"><strong>The empirical rule</strong> for any normal distribution: about <strong>68%</strong> of values fall within one standard deviation of the mean, about <strong>95%</strong> within two, and about <strong>99.7%</strong> within three. It is just three areas under the bell curve, and you can check it by simulation in <a href="#panelC">panel C</a>.</p>
@@ -101,7 +98,7 @@
     <h2 id="h-how"><span class="step">2</span>How the three panels work</h2>
     <div class="callout">
       <ol>
-        <li><strong><a href="#panelA">Panel A</a>: probability as area.</strong> Choose a distribution and set its parameters. Then drag the gold handles on the axis (or use the sliders) to pick an interval. The area under the density between the handles fills in and the probability is printed, along with the calculation that produced it. The chart below it shows the same probability as a <em>rise</em> in the CDF. Switch to "find x for a given probability" to run the calculation backward, from a probability to a cutoff value.</li>
+        <li><strong><a href="#panelA">Panel A</a>: probability as area.</strong> Set the mean and standard deviation of a normal distribution. Then drag the gold handles on the axis (or use the sliders) to pick an interval. The area under the density between the handles fills in and the probability is printed, along with the calculation that produced it. The chart below it shows the same probability as a <em>rise</em> in the CDF. Switch to "find x for a given probability" to run the calculation backward, from a probability to a cutoff value.</li>
         <li><strong><a href="#panelB">Panel B</a>: every normal is the standard normal in disguise.</strong> Pick any μ and σ and a value <em>x</em>. The top chart shades the area to the left (or right) of <em>x</em> under N(μ, σ); the bottom chart shades the area to the left (or right) of <em>z</em> = (<em>x</em> − μ)/σ under N(0, 1). The two areas are always identical. That is why one z-table is enough.</li>
         <li><strong><a href="#panelC">Panel C</a>: the empirical rule, checked.</strong> Draw hundreds of values from a normal distribution, drop them under the curve, and count how many land within 1, 2 and 3 standard deviations of the mean. Compare the counts with 68%, 95% and 99.7%.</li>
       </ol>
@@ -116,24 +113,11 @@
     <div class="twocol">
       <div>
         <fieldset>
-          <legend>Distribution</legend>
-          <label for="dist">Family</label>
-          <select autocomplete="off" id="dist">
-            <option value="normal" selected>Normal N(μ, σ)</option>
-            <option value="uniform">Uniform on [α, β]</option>
-          </select>
-          <div id="normParams">
-            <label for="muA">Mean μ = <output id="muAOut" for="muA">50</output></label>
-            <input autocomplete="off" type="range" id="muA" min="20" max="80" value="50" step="1">
-            <label for="sdA">Standard deviation σ = <output id="sdAOut" for="sdA">10</output></label>
-            <input autocomplete="off" type="range" id="sdA" min="2" max="25" value="10" step="1">
-          </div>
-          <div id="unifParams" style="display:none">
-            <label for="loA">Lower end α = <output id="loAOut" for="loA">20</output></label>
-            <input autocomplete="off" type="range" id="loA" min="0" max="90" value="20" step="1">
-            <label for="hiA">Upper end β = <output id="hiAOut" for="hiA">80</output></label>
-            <input autocomplete="off" type="range" id="hiA" min="10" max="100" value="80" step="1">
-          </div>
+          <legend>Normal distribution N(μ, σ)</legend>
+          <label for="muA">Mean μ = <output id="muAOut" for="muA">50</output></label>
+          <input autocomplete="off" type="range" id="muA" min="20" max="80" value="50" step="1">
+          <label for="sdA">Standard deviation σ = <output id="sdAOut" for="sdA">10</output></label>
+          <input autocomplete="off" type="range" id="sdA" min="2" max="25" value="10" step="1">
           <p class="note" id="distDesc"></p>
         </fieldset>
         <fieldset style="margin-top:14px">
@@ -245,7 +229,7 @@
   <!-- 4. Reading -->
   <section aria-labelledby="h-results">
     <h2 id="h-results"><span class="step">4</span>Reading the results</h2>
-    <p><strong>Panel A.</strong> For the uniform distribution the shaded area is a rectangle, so the probability is just its width divided by the total width, and the CDF is a straight ramp. For the normal distribution there is no formula for the area; the calculation box shows the real procedure: convert the endpoints to z-scores, look up Φ for each, subtract. Try pushing the two handles together: the area, and the probability, go to zero, which is what P(X = a) = 0 means.</p>
+    <p><strong>Panel A.</strong> There is no formula for the area under a normal curve; the calculation box shows the real procedure: convert the endpoints to z-scores, look up Φ for each, subtract. Try pushing the two handles together: the area, and the probability, go to zero, which is what P(X = a) = 0 means.</p>
     <p><strong>Panel B.</strong> The z-score is a change of units. It measures distance from the mean in standard deviations, so N(100, 15) at x = 120 and N(0, 1) at z = 1.33 are the same point in the same distribution, described in two different rulers. Any question about any normal distribution becomes a question about the one standard normal.</p>
     <p><strong>Panel C.</strong> The 68 / 95 / 99.7 numbers are not a separate fact to memorize; they are the areas under the standard normal between ±1, ±2 and ±3. With 500 draws the observed shares wander a couple of percentage points from the exact areas; with 10,000 they settle onto them. That gap between observed and exact is the same sampling variability that the later chapters are built on.</p>
   </section>
@@ -254,8 +238,6 @@
   <section aria-labelledby="h-explore">
     <h2 id="h-explore"><span class="step">5</span>Explore further</h2>
     <ol class="explore">
-      <li>Panel A, uniform on [20, 80]: set a = 30 and b = 45. Then move both handles 10 units to the right. Does the probability change? Now try the same thing with the normal distribution. Why does it change there?</li>
-      <li>Panel A, uniform: make the range very narrow, say [48, 52]. Read the height of the density off the axis. It is greater than 1. Why is that not a problem, if probabilities can never exceed 1?</li>
       <li>Panel A, normal μ = 50, σ = 10: find P(40 ≤ X ≤ 60), P(30 ≤ X ≤ 70) and P(20 ≤ X ≤ 80). You have just rediscovered the empirical rule.</li>
       <li>Panel A, "find x" mode with μ = 50, σ = 10: find the cutoff for the top 10% (p = 0.90), then the top 1%. How does the answer relate to the z-values 1.28 and 2.33?</li>
       <li>Panel B: set μ = 100, σ = 15, x = 130, then change σ to 30 while leaving x at 130. The shaded area grows, yet x did not move. Explain in terms of z.</li>
@@ -307,12 +289,12 @@
   // =====================================================================
   // Panel A
   // =====================================================================
-  let dist = "normal", muA = 50, sdA = 10, loA = 20, hiA = 80, mode = "between", a = 40, b = 65, pIn = 0.90;
+  let muA = 50, sdA = 10, mode = "between", a = 40, b = 65, pIn = 0.90;
   const A = {
-    range: () => dist === "normal" ? [muA - 4 * sdA, muA + 4 * sdA] : [loA - 0.15 * (hiA - loA) - 1, hiA + 0.15 * (hiA - loA) + 1],
-    pdf: v => dist === "normal" ? phi((v - muA) / sdA) / sdA : (v >= loA && v <= hiA ? 1 / (hiA - loA) : 0),
-    cdf: v => dist === "normal" ? Phi((v - muA) / sdA) : (v < loA ? 0 : v > hiA ? 1 : (v - loA) / (hiA - loA)),
-    inv: p => dist === "normal" ? muA + sdA * PhiInv(p) : loA + p * (hiA - loA)
+    range: () => [muA - 4 * sdA, muA + 4 * sdA],
+    pdf: v => phi((v - muA) / sdA) / sdA,
+    cdf: v => Phi((v - muA) / sdA),
+    inv: p => muA + sdA * PhiInv(p)
   };
   function clampHandles() { const [lo, hi] = A.range(); a = Math.min(Math.max(a, lo), hi); b = Math.min(Math.max(b, lo), hi); if (mode === "between" && b < a) { const t = a; a = b; b = t; } }
   function syncSlidersA() {
@@ -320,15 +302,12 @@
     for (const id of ["a", "b"]) { const el = $(id); el.min = lo.toFixed(2); el.max = hi.toFixed(2); el.step = ((hi - lo) / 200).toFixed(3); }
     $("a").value = a; $("b").value = b; $("aOut").textContent = f2(a); $("bOut").textContent = f2(b);
     $("handleA").style.display = mode === "inv" ? "none" : ""; $("handleB").style.display = mode === "between" ? "" : "none"; $("handleP").style.display = mode === "inv" ? "" : "none";
-    $("normParams").style.display = dist === "normal" ? "" : "none"; $("unifParams").style.display = dist === "uniform" ? "" : "none";
-    $("muAOut").textContent = muA; $("sdAOut").textContent = sdA; $("loAOut").textContent = loA; $("hiAOut").textContent = hiA; $("pOut").textContent = f2(pIn);
-    $("distDesc").textContent = dist === "normal"
-      ? `Bell-shaped, centered at ${muA}, with most values within ${muA - 3 * sdA} to ${muA + 3 * sdA}.`
-      : `Flat between ${loA} and ${hiA}; density height 1/(β − α) = ${f4(1 / (hiA - loA))}. Mean ${(loA + hiA) / 2}, SD ${f3((hiA - loA) / Math.sqrt(12))}.`;
+    $("muAOut").textContent = muA; $("sdAOut").textContent = sdA; $("pOut").textContent = f2(pIn);
+    $("distDesc").textContent = `Bell-shaped, centered at ${muA}, with most values within ${muA - 3 * sdA} to ${muA + 3 * sdA}.`;
   }
   function drawA() {
     clampHandles(); syncSlidersA();
-    const [lo, hi] = A.range(), ymax = (dist === "normal" ? phi(0) / sdA : 1 / (hiA - loA)) * 1.15;
+    const [lo, hi] = A.range(), ymax = phi(0) / sdA * 1.15;
     let xa = a, xb = b;
     if (mode === "inv") { xa = A.inv(pIn); }
     // ---- pdf
@@ -337,25 +316,18 @@
     if (mode === "between") area(f, A.pdf, xa, xb, gold, 0.75);
     else if (mode === "left" || mode === "inv") area(f, A.pdf, lo, xa, gold, 0.75);
     else area(f, A.pdf, xa, hi, gold, 0.75);
-    if (dist === "uniform") { const { ctx, x, y, h } = f; ctx.strokeStyle = css("--curve"); ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x(lo), y(0)); ctx.lineTo(x(loA), y(0)); ctx.lineTo(x(loA), y(1 / (hiA - loA))); ctx.lineTo(x(hiA), y(1 / (hiA - loA))); ctx.lineTo(x(hiA), y(0)); ctx.lineTo(x(hi), y(0)); ctx.stroke(); }
-    else curve(f, A.pdf, lo, hi, css("--curve"), 3);
+    curve(f, A.pdf, lo, hi, css("--curve"), 3);
     if (mode === "between") { handle(f, xa, "a = " + f2(xa), gold); handle(f, xb, "b = " + f2(xb), gold); }
     else if (mode === "inv") handle(f, xa, "x = " + f2(xa), gold);
     else handle(f, xa, "a = " + f2(xa), gold);
     // ---- probability text
     let p, calc;
-    if (dist === "normal") {
+    {
       const z = v => (v - muA) / sdA;
       if (mode === "between") { p = Phi(z(xb)) - Phi(z(xa)); calc = `z<sub>a</sub> = (${f2(xa)} − ${muA}) / ${sdA} = ${f2(z(xa))}, &nbsp; z<sub>b</sub> = (${f2(xb)} − ${muA}) / ${sdA} = ${f2(z(xb))}<br>P(${f2(xa)} ≤ X ≤ ${f2(xb)}) = Φ(${f2(z(xb))}) − Φ(${f2(z(xa))}) = ${f4(Phi(z(xb)))} − ${f4(Phi(z(xa)))} = <b>${f4(p)}</b>`; }
       else if (mode === "left") { p = Phi(z(xa)); calc = `z = (${f2(xa)} − ${muA}) / ${sdA} = ${f2(z(xa))}<br>P(X ≤ ${f2(xa)}) = Φ(${f2(z(xa))}) = <b>${f4(p)}</b>`; }
       else if (mode === "right") { p = 1 - Phi(z(xa)); calc = `z = (${f2(xa)} − ${muA}) / ${sdA} = ${f2(z(xa))}<br>P(X ≥ ${f2(xa)}) = 1 − Φ(${f2(z(xa))}) = 1 − ${f4(Phi(z(xa)))} = <b>${f4(p)}</b>`; }
       else { p = pIn; const zq = PhiInv(pIn); calc = `Find z with Φ(z) = ${f2(pIn)}: z = ${f3(zq)} (from the table, read inside-out)<br>x = μ + z·σ = ${muA} + ${f3(zq)} × ${sdA} = <b>${f2(xa)}</b>`; }
-    } else {
-      const W = hiA - loA, cl = v => Math.min(Math.max(v, loA), hiA);
-      if (mode === "between") { p = (cl(xb) - cl(xa)) / W; calc = `P(${f2(xa)} ≤ X ≤ ${f2(xb)}) = (width of the shaded part inside [α, β]) / (β − α) = (${f2(cl(xb))} − ${f2(cl(xa))}) / (${hiA} − ${loA}) = ${f2(cl(xb) - cl(xa))} / ${W} = <b>${f4(p)}</b>`; }
-      else if (mode === "left") { p = (cl(xa) - loA) / W; calc = `P(X ≤ ${f2(xa)}) = (${f2(cl(xa))} − ${loA}) / (${hiA} − ${loA}) = <b>${f4(p)}</b>`; }
-      else if (mode === "right") { p = (hiA - cl(xa)) / W; calc = `P(X ≥ ${f2(xa)}) = (${hiA} − ${f2(cl(xa))}) / (${hiA} − ${loA}) = <b>${f4(p)}</b>`; }
-      else { p = pIn; calc = `Solve (x − α)/(β − α) = ${f2(pIn)}: x = α + p·(β − α) = ${loA} + ${f2(pIn)} × ${W} = <b>${f2(xa)}</b>`; }
     }
     const label = mode === "between" ? `P(${f2(xa)} ≤ X ≤ ${f2(xb)})` : mode === "left" ? `P(X ≤ ${f2(xa)})` : mode === "right" ? `P(X ≥ ${f2(xa)})` : `x with P(X ≤ x) = ${f2(pIn)}`;
     $("probBig").textContent = mode === "inv" ? `${label}  →  x = ${f2(xa)}` : `${label} = ${f4(p)}`;
@@ -391,12 +363,9 @@
     cv.addEventListener("touchmove", e => { move(e.touches[0].clientX); e.preventDefault(); }, { passive: false });
     cv.addEventListener("touchend", () => { drag = null; });
   })();
-  $("dist").addEventListener("change", e => { dist = e.target.value; if (dist === "uniform") { a = loA + 0.25 * (hiA - loA); b = loA + 0.6 * (hiA - loA); } else { a = muA - sdA; b = muA + 1.5 * sdA; } drawA(); });
   $("mode").addEventListener("change", e => { mode = e.target.value; drawA(); });
   $("muA").addEventListener("input", e => { muA = +e.target.value; drawA(); });
   $("sdA").addEventListener("input", e => { sdA = +e.target.value; drawA(); });
-  $("loA").addEventListener("input", e => { loA = +e.target.value; if (hiA <= loA + 2) { hiA = loA + 2; $("hiA").value = hiA; } drawA(); });
-  $("hiA").addEventListener("input", e => { hiA = +e.target.value; if (loA >= hiA - 2) { loA = hiA - 2; $("loA").value = loA; } drawA(); });
   $("a").addEventListener("input", e => { a = +e.target.value; drawA(); });
   $("b").addEventListener("input", e => { b = +e.target.value; drawA(); });
   $("pIn").addEventListener("input", e => { pIn = +e.target.value; drawA(); });
