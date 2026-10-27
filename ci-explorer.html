@@ -236,12 +236,9 @@
           <span>Intervals built</span><b id="count">0</b>
           <span>Intervals containing μ</span><b id="hits">–</b>
           <span>Intervals missing μ</span><b id="misses">–</b>
-          <span>&nbsp;&nbsp;… entirely below μ (too low)</span><b id="missLow">–</b>
-          <span>&nbsp;&nbsp;… entirely above μ (too high)</span><b id="missHigh">–</b>
           <span>Observed share containing μ</span><b id="obsShare">–</b>
-          <span>Average interval width</span><b id="avgWidth">–</b>
         </div>
-        <p class="note" style="margin-top:8px">The observed share is the simulation's version of the confidence level. When x̄ is normal, the misses split evenly: at 95%, about 2.5% too low and 2.5% too high.</p>
+        <p class="note" style="margin-top:8px">The observed share is the simulation's version of the confidence level.</p>
       </div>
     </div>
     <p class="verdict" id="verdict"></p>
@@ -258,9 +255,9 @@
       <li>Change the confidence level to 80%, then 99%. Watch two things: the width of the intervals and the number of gold ones. Explain the trade-off in one sentence.</li>
       <li>Keep 95% and move <em>n</em> from 30 to 120. The intervals get narrower, but does the share containing <em>μ</em> change? What does that tell you about what the confidence level does and does not control?</li>
       <li>Pick one gold (missed) interval and look at where its x̄ is. Could the researcher who drew that sample have known their interval was wrong?</li>
-      <li><strong>When the assumptions fail.</strong> Choose the <strong>heavily right-skewed</strong> population, the <strong><em>t</em> interval</strong> (σ unknown), 95%, and <em>n</em> = 10. Set the number of intervals to 1,000 and draw them all. The population is not normal and the sample is small, so <em>x̄</em> is not normal. What share of the intervals actually contains <em>μ</em>? (Expect something in the mid-80s, not 95.) Look at the miss split: which side are almost all the misses on?</li>
+      <li><strong>When the assumptions fail.</strong> Choose the <strong>heavily right-skewed</strong> population, the <strong><em>t</em> interval</strong> (σ unknown), 95%, and <em>n</em> = 10. Set the number of intervals to 1,000 and draw them all. The population is not normal and the sample is small, so <em>x̄</em> is not normal. What share of the intervals actually contains <em>μ</em>? (Expect something in the mid-80s, not 95.) Look at the gold (missed) intervals in the chart: on which side of <em>μ</em> are almost all of them?</li>
       <li><strong>The Central Limit Theorem to the rescue.</strong> Keep everything the same and raise <em>n</em> to 30, then 100, then 200, then 500, drawing 1,000 intervals each time. Write down the observed share at each size. How quickly does it climb back toward 95%? Is <em>n</em> = 30 enough for <em>this</em> population, and what does that tell you about the "n ≥ 30" rule of thumb?</li>
-      <li>Repeat the last two prompts with the <strong><em>z</em> interval</strong> (σ known). The total share may look close to 95% even at <em>n</em> = 10. Now compare the "too low" and "too high" counts: are they close to 2.5% each? Why is a 95% interval whose misses all fall on one side still not doing what it claims?</li>
+      <li>Repeat the last two prompts with the <strong><em>z</em> interval</strong> (σ known). The total share may look close to 95% even at <em>n</em> = 10. Now look at where the gold (missed) intervals fall, and read the summary under step 4: are the misses split evenly between the two sides of <em>μ</em>? Why is a 95% interval whose misses all fall on one side still not doing what it claims?</li>
       <li>Compare with the <strong>normal</strong> population at <em>n</em> = 10 and the <em>t</em> interval. Why does it deliver 95% even with a tiny sample?</li>
     </ol>
     <p class="tip"><strong>Key point:</strong> a 95% confidence level is a property of the <em>procedure</em>, verified by repeating it. It does not mean "there is a 95% chance μ is in my interval." In practice you get one sample and one interval, and you never find out whether it was one of the maroon ones or one of the gold ones. The confidence level tells you how good the method is in the long run, which is the best anyone can say from a single sample.</p>
@@ -500,9 +497,6 @@
       $("hits").textContent = hits.toLocaleString();
       $("misses").textContent = (N - hits).toLocaleString();
       $("obsShare").textContent = pct(share);
-      $("avgWidth").textContent = fmt(widthSum / N);
-      $("missLow").textContent = `${missLow.toLocaleString()} (${pct(missLow / N)})`;
-      $("missHigh").textContent = `${missHigh.toLocaleString()} (${pct(missHigh / N)})`;
       const mName = method === "z" ? "z interval, σ known" : "t interval, σ unknown";
       $("tally").innerHTML = `<b>${hits.toLocaleString()}</b> of <b>${N.toLocaleString()}</b> intervals contain μ &nbsp;=&nbsp; <b>${pct(share)}</b> &nbsp;(target: ${levelPct()}; ${mName}, n = ${n})`;
       let msg = `After ${N.toLocaleString()} intervals (${mName}, n = ${n}) at the ${levelPct()} level: ${hits.toLocaleString()} contained μ and ${(N - hits).toLocaleString()} missed, an observed share of ${pct(share)}. `;
@@ -523,7 +517,7 @@
       else msg += `That is above ${levelPct()}; run more intervals and the share should settle down toward the target.`;
       $("verdict").textContent = msg; $("chartDesc").textContent = msg;
     } else {
-      $("hits").textContent = "–"; $("misses").textContent = "–"; $("obsShare").textContent = "–"; $("avgWidth").textContent = "–"; $("missLow").textContent = "–"; $("missHigh").textContent = "–";
+      $("hits").textContent = "–"; $("misses").textContent = "–"; $("obsShare").textContent = "–";
       $("tally").textContent = "No intervals yet.";
       $("verdict").textContent = "Run the simulation in step 3 to fill in the observed column.";
       $("chartDesc").textContent = "";
