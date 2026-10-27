@@ -297,7 +297,12 @@
   const seP = () => sdNoise / Math.sqrt(n);
   // The gap x̄_after − x̄_before is the same number for both tests, and on paired data it varies by the PAIRED SE
   // (person effects cancel in the gap). Each test rejects when |gap| exceeds its own critical distance c × SE.
-  function power(seUsed, df) { const c = tCrit(alpha, df), dist = c * seUsed / seP(), d = effect / seP(); return normCdf(-dist - d) + 1 - normCdf(dist - d); }
+  function power(seUsed, df) {
+    const c = tCrit(alpha, df), d = effect / seP();
+    if (seUsed === seP()) return tCdf(-c - d, df) + 1 - tCdf(c - d, df);   // paired test: its own t(n−1) reference, exactly α when the effect is 0
+    const dist = c * seUsed / seP();                                          // independent test on paired data: rejects when |gap| > c × (a much larger SE)
+    return normCdf(-dist - d) + 1 - normCdf(dist - d);
+  }
 
   // ---------- Simulation ----------
   function runStudy() {

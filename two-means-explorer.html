@@ -345,11 +345,13 @@
   const cdfFor = df => (df === Infinity ? normCdf : (x => tCdf(x, df)));
   function critVal(df) { const p = tail === "two" ? 1 - alpha / 2 : 1 - alpha; return invCdf(cdfFor(df), p); }
   function pValue(stat, df) { const F = cdfFor(df); if (tail === "two") return 2 * (1 - F(Math.abs(stat))); if (tail === "right") return 1 - F(stat); return F(stat); }
+  // Theoretical rejection rate using the test's own reference distribution (normal for z, t with the test's df).
+  // Exactly α when H₀ is true; an approximation of power otherwise.
   function theoryRate() {
-    const c = critVal(refDf()), delta = trueDiff() / seTrue();
-    if (tail === "two") return normCdf(-c - delta) + 1 - normCdf(c - delta);
-    if (tail === "right") return 1 - normCdf(c - delta);
-    return normCdf(-c - delta);
+    const df = refDf(), c = critVal(df), delta = trueDiff() / seTrue(), F = cdfFor(df);
+    if (tail === "two") return F(-c - delta) + 1 - F(c - delta);
+    if (tail === "right") return 1 - F(c - delta);
+    return F(-c - delta);
   }
 
   // ---------- Drawing ----------
@@ -472,7 +474,7 @@
     $("v1").textContent = fmt(sd1 * sd1 / n1); $("v2").textContent = fmt(sd2 * sd2 / n2); $("se").textContent = fmt(se);
     $("crit").textContent = (tail === "two" ? "±" : tail === "right" ? "+" : "−") + c.toFixed(3) + (method === "z" ? " (z)" : ` (t, ${df.toFixed(method === "pooled" ? 0 : 1)} df)`);
     $("expLbl").textContent = h0true() ? "Expected rejection rate (= α)" : "Expected rejection rate (= power)";
-    $("expRate").textContent = pct(tr) + (method !== "z" ? " (approx.)" : "");
+    $("expRate").textContent = pct(tr) + (method !== "z" && !h0true() ? " (approx.)" : "");
     $("theoryNote").textContent = h0true()
       ? `With equal means the gaps are centered at 0 with SD ${fmt(se)}, and the shaded tails hold ${pct(alpha)} of them.`
       : `The true gap of ${trueDiff().toFixed(1)} is ${fmt(Math.abs(trueDiff()) / se)} standard errors wide. That pushes about ${pct(tr)} of tests into the rejection region; β ≈ ${pct(1 - tr)}.`;

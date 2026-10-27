@@ -97,6 +97,14 @@
       <p style="margin:0"><strong>The correct interpretation of a 95% confidence level:</strong> if we repeated the sampling process many times and built an interval from each sample, about <strong>95% of those intervals would contain <em>μ</em></strong> and about 5% would miss it. The 95% describes the long-run success rate of the <em>method</em>, not the chance that one particular interval is right. Any single interval either contains <em>μ</em> or it does not; we just do not know which.</p>
     </div>
     <p>That is a statement about repeating the process many times, which is exactly what a computer can do. This page lets you watch it happen.</p>
+    <div class="callout">
+      <p style="margin:0 0 6px"><strong>When can you trust the stated confidence level?</strong> The critical values 1.96 (z) and t<sub>n−1</sub> come from the normal and <em>t</em> distributions, so the promised 95% holds only if the sample mean <em>x̄</em> is normally distributed. That is true in two situations:</p>
+      <ol>
+        <li>The <strong>population itself is normal</strong>. Then <em>x̄</em> is exactly normal for any sample size.</li>
+        <li>The <strong>sample is large</strong>. Then the Central Limit Theorem makes <em>x̄</em> approximately normal whatever the population looks like. The usual rule of thumb is <em>n</em> ≥ 30; the more skewed the population, the larger <em>n</em> needs to be.</li>
+      </ol>
+      <p style="margin:8px 0 0">If <em>neither</em> holds, a non-normal population and a small sample, the interval is still computed the same way, but its real success rate can fall well short of 95%. The "heavily right-skewed" population in step 3 lets you see this happen, and then watch the success rate recover as <em>n</em> grows.</p>
+    </div>
   </section>
 
   <!-- 2. How the simulation works -->
@@ -125,13 +133,14 @@
           <select id="pop">
             <option value="uniform" selected>Uniform (flat, 0 to 10)</option>
             <option value="skewed">Right-skewed (e.g., wait times)</option>
+            <option value="heavy">Heavily right-skewed (e.g., insurance claims)</option>
             <option value="bimodal">Bimodal (two groups)</option>
             <option value="normal">Normal (bell-shaped)</option>
           </select>
           <p class="note" id="popDesc"></p>
 
           <label for="n">Sample size n = <output id="nOut" for="n">30</output> observations per sample</label>
-          <input type="range" id="n" min="2" max="200" value="30" step="1">
+          <input type="range" id="n" min="2" max="500" value="30" step="1">
           <p class="note">How many observations go into each sample, and so into each interval.</p>
 
           <label for="level">Confidence level</label>
@@ -215,9 +224,11 @@
           <span>Confidence level</span><b id="levelShow">–</b>
           <span>Critical value</span><b id="crit">–</b>
           <span>Margin of error (σ known)</span><b id="moe">–</b>
+          <span>Is x̄ normally distributed?</span><b id="normCheck">–</b>
           <span>Expected share of intervals containing μ</span><b id="expShare">–</b>
         </div>
         <p class="note" id="moeCalc" style="margin-top:8px"></p>
+        <p class="note" id="normNote" style="margin-top:6px"></p>
       </div>
       <div class="box observed">
         <h3>What the simulation produced</h3>
@@ -225,14 +236,17 @@
           <span>Intervals built</span><b id="count">0</b>
           <span>Intervals containing μ</span><b id="hits">–</b>
           <span>Intervals missing μ</span><b id="misses">–</b>
+          <span>&nbsp;&nbsp;… entirely below μ (too low)</span><b id="missLow">–</b>
+          <span>&nbsp;&nbsp;… entirely above μ (too high)</span><b id="missHigh">–</b>
           <span>Observed share containing μ</span><b id="obsShare">–</b>
           <span>Average interval width</span><b id="avgWidth">–</b>
         </div>
-        <p class="note" style="margin-top:8px">The observed share is the simulation's version of the confidence level.</p>
+        <p class="note" style="margin-top:8px">The observed share is the simulation's version of the confidence level. When x̄ is normal, the misses split evenly: at 95%, about 2.5% too low and 2.5% too high.</p>
       </div>
     </div>
     <p class="verdict" id="verdict"></p>
     <p>Two things trade off here. A higher confidence level means a larger critical value, so a <em>wider</em> interval: you catch <em>μ</em> more often, but you say less about where it is. A larger sample shrinks σ/√n, so the interval gets <em>narrower</em> while keeping the same success rate. Confidence level controls how often you are right; sample size controls how precise you are.</p>
+    <p>All of this rests on <em>x̄</em> being normal. With a heavily skewed population and a small sample, the sampling distribution of <em>x̄</em> is itself skewed, and two things go wrong. With the <em>t</em> interval, the sample standard deviation <em>s</em> tends to be small exactly when <em>x̄</em> is small, so the intervals that should reach up to <em>μ</em> are too short: the success rate drops well below the stated level, with almost all the misses on one side. With the <em>z</em> interval (σ known), the total can still look close to 95%, but the misses are lopsided, which still means the stated level is not describing the method correctly. As <em>n</em> grows, the Central Limit Theorem straightens <em>x̄</em> out and both problems fade.</p>
   </section>
 
   <!-- 5. Explore -->
@@ -244,7 +258,10 @@
       <li>Change the confidence level to 80%, then 99%. Watch two things: the width of the intervals and the number of gold ones. Explain the trade-off in one sentence.</li>
       <li>Keep 95% and move <em>n</em> from 30 to 120. The intervals get narrower, but does the share containing <em>μ</em> change? What does that tell you about what the confidence level does and does not control?</li>
       <li>Pick one gold (missed) interval and look at where its x̄ is. Could the researcher who drew that sample have known their interval was wrong?</li>
-      <li>Switch to the right-skewed population, the <em>t</em> interval, and <em>n</em> = 5. Does the method still deliver 95%? Try <em>n</em> = 30. This is why we want large samples when the population is far from normal.</li>
+      <li><strong>When the assumptions fail.</strong> Choose the <strong>heavily right-skewed</strong> population, the <strong><em>t</em> interval</strong> (σ unknown), 95%, and <em>n</em> = 10. Set the number of intervals to 1,000 and draw them all. The population is not normal and the sample is small, so <em>x̄</em> is not normal. What share of the intervals actually contains <em>μ</em>? (Expect something in the mid-80s, not 95.) Look at the miss split: which side are almost all the misses on?</li>
+      <li><strong>The Central Limit Theorem to the rescue.</strong> Keep everything the same and raise <em>n</em> to 30, then 100, then 200, then 500, drawing 1,000 intervals each time. Write down the observed share at each size. How quickly does it climb back toward 95%? Is <em>n</em> = 30 enough for <em>this</em> population, and what does that tell you about the "n ≥ 30" rule of thumb?</li>
+      <li>Repeat the last two prompts with the <strong><em>z</em> interval</strong> (σ known). The total share may look close to 95% even at <em>n</em> = 10. Now compare the "too low" and "too high" counts: are they close to 2.5% each? Why is a 95% interval whose misses all fall on one side still not doing what it claims?</li>
+      <li>Compare with the <strong>normal</strong> population at <em>n</em> = 10 and the <em>t</em> interval. Why does it deliver 95% even with a tiny sample?</li>
     </ol>
     <p class="tip"><strong>Key point:</strong> a 95% confidence level is a property of the <em>procedure</em>, verified by repeating it. It does not mean "there is a 95% chance μ is in my interval." In practice you get one sample and one interval, and you never find out whether it was one of the maroon ones or one of the gold ones. The confidence level tells you how good the method is in the long run, which is the best anyone can say from a single sample.</p>
   </section>
@@ -333,6 +350,14 @@
       pdf: x => x >= 0 ? Math.exp(-x / 3) / 3 : 0,
       draw: () => -3 * Math.log(1 - Math.random())
     },
+    heavy: {
+      mean: 3, sd: 3 * Math.SQRT2, xmax: 15, tick: 3, ycap: 0.32,
+      desc: "Most values are close to 0, a few are very large. μ = 3, σ ≈ 4.243. Far more skewed than the wait-time population.",
+      one: "We observe one insurance claim from a population where most claims are tiny but a few are huge (a gamma distribution with shape 1/2; μ = 3 thousand dollars, σ ≈ 4.243). This population is heavily right-skewed: nothing like a normal curve.",
+      sample: (n, lvl, m, c, cn) => `We observe ${n} claims, compute their average x̄, and build the ${lvl} interval x̄ ± ${c} × ${m}/√${n}, where ${c} is the ${cn} and ${m} is ${m === "σ" ? "the population standard deviation" : "the standard deviation of this sample"}.`,
+      pdf: x => x > 0 ? Math.exp(-x / 6) / Math.sqrt(6 * Math.PI * x) : 0,
+      draw: () => { const z = randNormal(); return 3 * z * z; }
+    },
     bimodal: {
       mean: 5, sd: Math.sqrt(10), xmax: 10, tick: 2,
       desc: "Half the population is centered near 2, half near 8. μ = 5, σ ≈ 3.162.",
@@ -342,7 +367,7 @@
       draw: () => (Math.random() < 0.5 ? 2 : 8) + randNormal()
     },
     normal: {
-      mean: 5, sd: 1.5, xmax: 10, tick: 2,
+      mean: 5, sd: 1.5, xmax: 10, tick: 2, isNormal: true,
       desc: "Bell-shaped population. μ = 5, σ = 1.5.",
       one: "We draw one value from a normal (bell-shaped) population with μ = 5 and σ = 1.5.",
       sample: (n, lvl, m, c, cn) => `We draw ${n} values, compute their average x̄, and build the ${lvl} interval x̄ ± ${c} × ${m}/√${n}, where ${c} is the ${cn} and ${m} is ${m === "σ" ? "the population standard deviation" : "the standard deviation of this sample"}.`,
@@ -354,7 +379,7 @@
   // ---------- State ----------
   let pop = POPS.uniform, n = 30, level = 0.95, method = "z";
   let intervals = [];   // {lo, hi, mean, hit}
-  let hits = 0, widthSum = 0;
+  let hits = 0, widthSum = 0, missLow = 0, missHigh = 0, critCache = null;
   let timer = null, ticks = 0;
   const WINDOW = 100;
 
@@ -397,12 +422,14 @@
     const f = frame(cPop), { ctx, w, h, x } = f;
     let maxP = 0;
     for (let i = 0; i <= 300; i++) maxP = Math.max(maxP, pop.pdf(i / 300 * pop.xmax));
+    if (pop.ycap) maxP = pop.ycap;   // the heavy population's density shoots up near 0; cap the drawing
+    ctx.save(); ctx.beginPath(); ctx.rect(PAD.l, 0, w, PAD.t + h); ctx.clip();   // let a spike run off the top instead of flattening it
     ctx.fillStyle = css("--pop");
     ctx.beginPath(); ctx.moveTo(PAD.l, PAD.t + h);
-    for (let i = 0; i <= 300; i++) { const v = i / 300 * pop.xmax; ctx.lineTo(x(v), PAD.t + h - (pop.pdf(v) / maxP) * h * 0.95); }
+    for (let i = 0; i <= 600; i++) { const v = Math.max(1e-4, i / 600 * pop.xmax); ctx.lineTo(x(v), PAD.t + h - Math.min(1.5, pop.pdf(v) / maxP) * h * 0.95); }
     ctx.lineTo(PAD.l + w, PAD.t + h); ctx.closePath();
     ctx.globalAlpha = 0.35; ctx.fill(); ctx.globalAlpha = 1;
-    ctx.strokeStyle = css("--pop"); ctx.lineWidth = 2; ctx.stroke();
+    ctx.strokeStyle = css("--pop"); ctx.lineWidth = 2; ctx.stroke(); ctx.restore();
     vline(f, pop.mean, css("--maroon"), "μ = " + fmt(pop.mean));
   }
 
@@ -456,7 +483,15 @@
     $("levelShow").textContent = levelPct();
     $("crit").textContent = (method === "z" ? "z = " : `t(${n - 1}) = `) + c.toFixed(3);
     $("moe").textContent = fmt(moe);
-    $("expShare").textContent = levelPct();
+    // Is the sampling distribution of x̄ normal?  (population normal, or n large enough for the CLT)
+    const cond = pop.isNormal ? "exact" : n >= 30 ? "approx" : "no";
+    $("normCheck").textContent = cond === "exact" ? "Yes (normal population)" : cond === "approx" ? "Approximately (n ≥ 30)" : "No (non-normal, n < 30)";
+    $("expShare").textContent = cond === "no" ? `${levelPct()} not guaranteed` : levelPct();
+    $("normNote").textContent = cond === "exact"
+      ? "The population is normal, so x̄ is exactly normal for any n and the stated confidence level is exact" + (method === "t" ? " (the t critical value accounts for estimating σ)." : ".")
+      : cond === "approx"
+        ? "The population is not normal, but with n ≥ 30 the Central Limit Theorem makes x̄ approximately normal, so the stated level should be approximately right." + (pop === POPS.heavy ? " For a population this skewed, n = 30 is still on the small side: expect the share to sit a few points short and keep improving as n grows." : "")
+        : "The population is not normal and the sample is small, so neither condition for a normal x̄ holds. The interval is computed the same way, but nothing guarantees it captures μ " + levelPct() + " of the time." + (pop === POPS.heavy ? " With this heavily skewed population the shortfall is large." : " For a symmetric population like this one the damage is usually small, but there is no guarantee.");
     $("moeCalc").textContent = `Margin of error = ${c.toFixed(3)} × ${fmt(pop.sd)} / √${n} = ${fmt(moe)}, so each interval is about ${fmt(2 * moe)} wide` + (method === "t" ? " (a little different for each sample, since s varies)." : ".");
     const N = intervals.length;
     $("count").textContent = N.toLocaleString();
@@ -466,16 +501,23 @@
       $("misses").textContent = (N - hits).toLocaleString();
       $("obsShare").textContent = pct(share);
       $("avgWidth").textContent = fmt(widthSum / N);
+      $("missLow").textContent = `${missLow.toLocaleString()} (${pct(missLow / N)})`;
+      $("missHigh").textContent = `${missHigh.toLocaleString()} (${pct(missHigh / N)})`;
       $("tally").innerHTML = `<b>${hits.toLocaleString()}</b> of <b>${N.toLocaleString()}</b> intervals contain μ &nbsp;=&nbsp; <b>${pct(share)}</b> &nbsp;(target: ${levelPct()})`;
       let msg = `After ${N.toLocaleString()} intervals at the ${levelPct()} level: ${hits.toLocaleString()} contained μ and ${(N - hits).toLocaleString()} missed, an observed share of ${pct(share)}. `;
       const gap = Math.abs(share - level);
       if (N < 50) msg += "With fewer than 50 intervals the share is still noisy; a few more or fewer gold intervals swing the percentage a lot.";
       else if (gap < 0.03) msg += `That is close to the promised ${levelPct()}: the method is delivering what it claims.`;
-      else if (share < level) msg += `That is noticeably below ${levelPct()}. Either run more intervals to let the share settle, or the method's assumptions are strained (small n with a skewed population, for example), so its intervals are too narrow.`;
+      else if (share < level) msg += cond === "no" || pop === POPS.heavy
+        ? `That is well below the promised ${levelPct()}. This is what a wrong assumption costs: x̄ is not normal here (skewed population, ${n < 30 ? "small" : "not yet large enough"} sample), so the intervals are not reliable at the stated level.`
+        : `That is noticeably below ${levelPct()}. Run more intervals to let the share settle.`;
       else msg += `That is above ${levelPct()}; run more intervals and the share should settle down toward the target.`;
+      const tail = (1 - level) / 2, lop = Math.max(missLow, missHigh) / N, lo2 = Math.min(missLow, missHigh) / N;
+      if (N >= 200 && (N - hits) >= 10 && lop > 1.6 * tail && lo2 < 0.6 * tail)
+        msg += ` The misses are also lopsided: ${pct(missLow / N)} of intervals fell entirely below μ and ${pct(missHigh / N)} entirely above, where a correct ${levelPct()} method would put about ${pct(tail)} on each side.`;
       $("verdict").textContent = msg; $("chartDesc").textContent = msg;
     } else {
-      $("hits").textContent = "–"; $("misses").textContent = "–"; $("obsShare").textContent = "–"; $("avgWidth").textContent = "–";
+      $("hits").textContent = "–"; $("misses").textContent = "–"; $("obsShare").textContent = "–"; $("avgWidth").textContent = "–"; $("missLow").textContent = "–"; $("missHigh").textContent = "–";
       $("tally").textContent = "No intervals yet.";
       $("verdict").textContent = "Run the simulation in step 3 to fill in the observed column.";
       $("chartDesc").textContent = "";
@@ -489,13 +531,13 @@
     const mean = sum / n;
     const s = Math.sqrt(Math.max(0, (sumsq - n * mean * mean) / (n - 1)));
     const sdUsed = method === "z" ? pop.sd : s;
-    const moe = crit() * sdUsed / Math.sqrt(n);
+    const moe = (critCache ?? crit()) * sdUsed / Math.sqrt(n);
     const lo = mean - moe, hi = mean + moe, hit = lo <= pop.mean && pop.mean <= hi;
     intervals.push({ lo, hi, mean, hit });
-    if (hit) hits++;
+    if (hit) hits++; else if (hi < pop.mean) missLow++; else missHigh++;
     widthSum += hi - lo;
   }
-  function drawSamples(k) { for (let s = 0; s < k; s++) buildOne(); drawCI(); updateStats(); }
+  function drawSamples(k) { critCache = crit(); for (let s = 0; s < k; s++) buildOne(); critCache = null; drawCI(); updateStats(); }
   function stopAnim() {
     if (timer) { clearInterval(timer); timer = null; }
     const b = $("anim"); b.textContent = "▶ Animate one sample at a time"; b.setAttribute("aria-pressed", "false");
@@ -510,7 +552,7 @@
       if (intervals.length >= target) stopAnim();
     }, +$("speed").value);
   }
-  function clearAll() { stopAnim(); intervals = []; hits = 0; widthSum = 0; ticks = 0; drawPop(); drawCI(); updateExplain(); updateStats(); }
+  function clearAll() { stopAnim(); intervals = []; hits = 0; missLow = 0; missHigh = 0; widthSum = 0; ticks = 0; drawPop(); drawCI(); updateExplain(); updateStats(); }
   function drawAll() { clearAll(); drawSamples(reps()); }
 
   $("draw").addEventListener("click", drawAll);

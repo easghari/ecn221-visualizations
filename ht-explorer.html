@@ -111,6 +111,14 @@
       <p style="margin:0"><strong>What α = 0.05 means:</strong> if <em>H₀</em> is true and we ran the test over and over on fresh samples, we would wrongly reject it about <strong>5% of the time</strong>. We choose α; it is the false-alarm rate we are willing to live with. It is <em>not</em> the probability that <em>H₀</em> is true, and a p-value is not that probability either.</p>
     </div>
     <p>Like the confidence level on the previous page, α is a promise about the long run. This page checks the promise by running the test thousands of times, first when <em>H₀</em> is true and then when it is false.</p>
+    <div class="callout">
+      <p style="margin:0 0 6px"><strong>When can you trust α?</strong> The p-value and the critical value come from the normal (or <em>t</em>) curve, so the false-alarm rate equals α only if the sample mean <em>x̄</em> is normally distributed. That holds when:</p>
+      <ol>
+        <li>the <strong>population is normal</strong> (then <em>x̄</em> is exactly normal for any <em>n</em>), or</li>
+        <li>the <strong>sample is large</strong>, so the Central Limit Theorem makes <em>x̄</em> approximately normal (rule of thumb <em>n</em> ≥ 30; more if the population is very skewed).</li>
+      </ol>
+      <p style="margin:8px 0 0">With a non-normal population <em>and</em> a small sample, the test is computed the same way, but its real false-alarm rate can be far from the α you chose. The "heavily right-skewed" population in step 3 shows this, and shows the problem fading as <em>n</em> grows.</p>
+    </div>
   </section>
 
   <!-- 2. How it works -->
@@ -141,6 +149,7 @@
             <option value="normal" selected>Normal (bell-shaped), σ = 1.5</option>
             <option value="uniform">Uniform (flat), σ ≈ 2.887</option>
             <option value="skewed">Right-skewed (wait times), σ = 3</option>
+            <option value="heavy">Heavily right-skewed (insurance claims), σ ≈ 4.243</option>
             <option value="bimodal">Bimodal (two groups), σ ≈ 3.162</option>
           </select>
           <p class="note" id="popDesc"></p>
@@ -150,7 +159,7 @@
           <p class="note" id="shiftDesc"></p>
 
           <label for="n">Sample size n = <output id="nOut" for="n">30</output></label>
-          <input type="range" id="n" min="2" max="200" value="30" step="1">
+          <input type="range" id="n" min="2" max="500" value="30" step="1">
 
           <label for="alpha">Significance level α</label>
           <select id="alpha">
@@ -249,9 +258,11 @@
           <span>Sample size n</span><b id="nShow">–</b>
           <span>Standard error σ/√n</span><b id="se">–</b>
           <span>Critical value(s)</span><b id="crit">–</b>
+          <span>Is x̄ normally distributed?</span><b id="normCheck">–</b>
           <span id="expLbl">Expected rejection rate</span><b id="expRate">–</b>
         </div>
         <p class="note" id="theoryNote" style="margin-top:8px"></p>
+        <p class="note" id="normNote" style="margin-top:6px"></p>
       </div>
       <div class="box observed">
         <h3>What the simulation produced</h3>
@@ -260,12 +271,15 @@
           <span>Rejected H₀</span><b id="rejects">–</b>
           <span>Failed to reject H₀</span><b id="keeps">–</b>
           <span>Observed rejection rate</span><b id="obsRate">–</b>
+          <span>&nbsp;&nbsp;… rejections with statistic below 0 (left tail)</span><b id="rejLowOut">–</b>
+          <span>&nbsp;&nbsp;… rejections with statistic above 0 (right tail)</span><b id="rejHighOut">–</b>
           <span>Average p-value</span><b id="avgP">–</b>
         </div>
         <p class="note" id="obsNote" style="margin-top:8px"></p>
       </div>
     </div>
     <p class="verdict" id="verdict"></p>
+    <p>Every prediction in the left column assumes <em>x̄</em> is normal. With the heavily skewed population and a small sample, the <em>t</em> statistic is itself skewed: samples with a low <em>x̄</em> also tend to have a small <em>s</em>, which makes their <em>t</em> statistics large and negative. The two-tailed test then rejects a true H₀ far more often than α, almost always in the left tail. As <em>n</em> grows, the Central Limit Theorem pulls the statistic back toward the black curve and the false-alarm rate returns to α.</p>
     <p>Power depends on three things you control in step 3: how far the true mean is from μ₀ (a bigger gap is easier to detect), the sample size (a larger <em>n</em> shrinks the standard error, so the same gap is more standard errors wide), and α (a larger α makes rejecting easier, which raises power but also raises the false-alarm rate). You cannot lower both error rates at once except by collecting more data.</p>
   </section>
 
@@ -278,7 +292,9 @@
       <li>Move the true mean to 5.5 with <em>n</em> = 30. Now H₀ is false, so each rejection is correct and the rejection rate is the power. Roughly what is it? Then raise <em>n</em> to 120. Why did the power jump?</li>
       <li>Keep μ = 5.5 and compare α = 0.01 with α = 0.10. Which gives more power, and what is the price you pay for it?</li>
       <li>Set μ = 5.5 and switch the alternative from two-tailed to right-tailed. Power goes up. Now set μ = 4.5 and keep it right-tailed. What happens, and why is choosing the tail <em>after</em> seeing the data cheating?</li>
-      <li>Set μ back to 5 (H₀ true), choose the right-skewed population, the <em>t</em> test, and <em>n</em> = 5. Does the Type I error rate stay at α? Try <em>n</em> = 40. This is why the <em>t</em> test needs larger samples when the population is skewed.</li>
+      <li><strong>When the assumptions fail.</strong> Choose the <strong>heavily right-skewed</strong> population and leave the true mean equal to μ₀ (H₀ true). Use the <strong><em>t</em> test</strong>, two-tailed, α = 0.05, <em>n</em> = 10, and run 1,000 tests. Every rejection is a false alarm. Is the false-alarm rate near 5%? (Expect something closer to 14%.) In which tail are almost all the rejections?</li>
+      <li><strong>The Central Limit Theorem to the rescue.</strong> Keep H₀ true and raise <em>n</em> to 30, 100, 200 and 500, running 1,000 tests each time. Write down the false-alarm rate at each size. How fast does it come back to 5%? Is <em>n</em> = 30 enough for <em>this</em> population?</li>
+      <li>Repeat with the <strong><em>z</em> test</strong> (σ known) at <em>n</em> = 10. The two-tailed rate may look close to 5%, but compare the left- and right-tail rejections. Then switch to a right-tailed test: is its false-alarm rate still 5%? Why does a skewed x̄ matter more for one-tailed tests?</li>
     </ol>
     <p class="tip"><strong>Key point:</strong> a p-value tells you how surprising your data would be <em>if H₀ were true</em>; it does not tell you the probability that H₀ is true. "Fail to reject" is not the same as "H₀ is true", and when the true mean is close to μ₀ or the sample is small, a test can miss a real difference most of the time. α controls false alarms; sample size is what buys you power.</p>
   </section>
@@ -339,7 +355,7 @@
 
   // ---------- Populations (base shapes; the slider shifts them) ----------
   const POPS = {
-    normal:  { mu0: 5, sd: 1.5, xmax: 10, tick: 2, desc: "Bell-shaped population with σ = 1.5.",
+    normal:  { mu0: 5, sd: 1.5, xmax: 10, tick: 2, isNormal: true, desc: "Bell-shaped population with σ = 1.5.",
                one: "We draw one value from a normal (bell-shaped) population with standard deviation σ = 1.5.",
                pdf: (x, m) => normPdf(x, m, 1.5), draw: m => m + 1.5 * randNormal() },
     uniform: { mu0: 5, sd: 10 / Math.sqrt(12), xmax: 10, tick: 2, desc: "Flat population 5 units wide on each side of its mean, σ ≈ 2.887.",
@@ -348,6 +364,10 @@
     skewed:  { mu0: 3, sd: 3, xmax: 15, tick: 3, desc: "Exponential shape: many small values, a long right tail, σ = 3.",
                one: "We observe one customer's wait time from a strongly right-skewed population (exponential shape, σ = 3 minutes).",
                pdf: (x, m) => (x >= m - 3) ? Math.exp(-(x - m + 3) / 3) / 3 : 0, draw: m => m - 3 - 3 * Math.log(1 - Math.random()) },
+    heavy:   { mu0: 3, sd: 3 * Math.SQRT2, xmax: 15, tick: 3, ycap: 0.32, desc: "Most values close to its minimum, a few very large (gamma shape 1/2), σ ≈ 4.243. Far more skewed than the wait-time population.",
+               one: "We observe one insurance claim from a heavily right-skewed population: most claims are tiny, a few are huge (gamma distribution with shape 1/2, σ ≈ 4.243). Nothing like a normal curve.",
+               pdf: (x, m) => { const u = x - m + 3; return u > 0 ? Math.exp(-u / 6) / Math.sqrt(6 * Math.PI * u) : 0; },
+               draw: m => { const z = randNormal(); return m - 3 + 3 * z * z; } },
     bimodal: { mu0: 5, sd: Math.sqrt(10), xmax: 10, tick: 2, desc: "Two equal groups, centered 3 units below and above the mean, σ ≈ 3.162.",
                one: "We draw one value from a population made of two equal groups, one centered 3 units below the mean and one 3 units above, with σ ≈ 3.162.",
                pdf: (x, m) => 0.5 * normPdf(x, m - 3, 1) + 0.5 * normPdf(x, m + 3, 1), draw: m => m + (Math.random() < 0.5 ? -3 : 3) + randNormal() }
@@ -355,7 +375,7 @@
 
   // ---------- State ----------
   let pop = POPS.normal, shift = 0, n = 30, alpha = 0.05, tail = "two", method = "z";
-  let stats = [], rejects = 0, pSum = 0, latest = null;
+  let stats = [], rejects = 0, pSum = 0, latest = null, rejLow = 0, rejHigh = 0;
   let timer = null, ticks = 0;
   const XMIN = -2;
 
@@ -386,12 +406,14 @@
     if (tail === "right") return stat >= c;
     return stat <= -c;
   }
-  // Theoretical rejection probability (exact for z; normal approximation for t, with the t critical value)
+  // Theoretical rejection probability, assuming x̄ is normal. Uses the test's own reference distribution
+  // (standard normal for z, t with n − 1 df for t), shifted by the true effect in standard errors.
+  // Exactly α when H₀ is true; for the t test with H₀ false it approximates the noncentral t.
   function theoryRate() {
-    const c = critVal(), delta = shift / (pop.sd / Math.sqrt(n));
-    if (tail === "two") return normCdf(-c - delta) + 1 - normCdf(c - delta);
-    if (tail === "right") return 1 - normCdf(c - delta);
-    return normCdf(-c - delta);
+    const c = critVal(), delta = shift / (pop.sd / Math.sqrt(n)), F = nullCdf;
+    if (tail === "two") return F(-c - delta) + 1 - F(c - delta);
+    if (tail === "right") return 1 - F(c - delta);
+    return F(-c - delta);
   }
 
   // ---------- Drawing ----------
@@ -422,12 +444,14 @@
     const m = muTrue();
     let maxP = 0;
     for (let i = 0; i <= 400; i++) maxP = Math.max(maxP, pop.pdf(XMIN + i / 400 * (pop.xmax - XMIN), m));
+    if (pop.ycap) maxP = pop.ycap;   // the heavy population's density shoots up at its minimum; let the spike run off the top
+    ctx.save(); ctx.beginPath(); ctx.rect(PAD.l, 0, w, PAD.t + h); ctx.clip();
     ctx.fillStyle = css("--pop");
     ctx.beginPath(); ctx.moveTo(PAD.l, PAD.t + h);
-    for (let i = 0; i <= 400; i++) { const v = XMIN + i / 400 * (pop.xmax - XMIN); ctx.lineTo(x(v), PAD.t + h - (pop.pdf(v, m) / maxP) * h * 0.95); }
+    for (let i = 0; i <= 800; i++) { const v = XMIN + i / 800 * (pop.xmax - XMIN); ctx.lineTo(x(v), PAD.t + h - Math.min(1.5, pop.pdf(v, m) / maxP) * h * 0.95); }
     ctx.lineTo(PAD.l + w, PAD.t + h); ctx.closePath();
     ctx.globalAlpha = 0.35; ctx.fill(); ctx.globalAlpha = 1;
-    ctx.strokeStyle = css("--pop"); ctx.lineWidth = 2; ctx.stroke();
+    ctx.strokeStyle = css("--pop"); ctx.lineWidth = 2; ctx.stroke(); ctx.restore();
     vline(f, pop.mu0, css("--asu-black"), "μ₀ = " + pop.mu0, 14);
     vline(f, m, css("--maroon"), "true μ = " + m.toFixed(1), h0true() ? 30 : 14);
   }
@@ -543,7 +567,14 @@
     $("se").textContent = fmt(se);
     $("crit").textContent = (tail === "two" ? "±" : tail === "right" ? "+" : "−") + c.toFixed(3) + (method === "t" ? ` (t, ${df()} df)` : " (z)");
     $("expLbl").textContent = h0true() ? "Expected rejection rate (= α, Type I error rate)" : "Expected rejection rate (= power)";
-    $("expRate").textContent = pct(tr) + (method === "t" && !h0true() ? " (approx.)" : "");
+    const cond = pop.isNormal ? "exact" : n >= 30 ? "approx" : "no";
+    $("normCheck").textContent = cond === "exact" ? "Yes (normal population)" : cond === "approx" ? "Approximately (n ≥ 30)" : "No (non-normal, n < 30)";
+    $("expRate").textContent = pct(tr) + (cond === "no" ? " not guaranteed" : (method === "t" && !h0true() ? " (approx.)" : ""));
+    $("normNote").textContent = cond === "exact"
+      ? "The population is normal, so x̄ is exactly normal and the black curve is exactly right for any n."
+      : cond === "approx"
+        ? "The population is not normal, but with n ≥ 30 the Central Limit Theorem makes x̄ approximately normal, so these predictions should be approximately right." + (pop === POPS.heavy ? " For a population this skewed, n = 30 is still on the small side; expect some error that shrinks as n grows." : "")
+        : "The population is not normal and the sample is small, so x̄ is not normal and the black curve is not the true distribution of the statistic. The predictions in this column may be badly off." + (pop === POPS.heavy ? " With this heavily skewed population, they are." : " For a symmetric population like this one the damage is usually small, but there is no guarantee.");
     $("theoryNote").textContent = h0true()
       ? `When H₀ is true the statistic follows the black curve, and the shaded tail area is exactly α = ${alpha}, so ${pct(alpha)} of tests should land there by bad luck alone.`
       : `The true mean is ${Math.abs(shift).toFixed(1)} units, or ${fmt(Math.abs(shift) / se)} standard errors, away from μ₀. The statistic is centered there instead of at 0, which pushes ${pct(tr)} of tests into the rejection region. Type II error rate β ≈ ${pct(1 - tr)}.`;
@@ -555,6 +586,8 @@
       $("keeps").textContent = (N - rejects).toLocaleString();
       $("obsRate").textContent = pct(rate);
       $("avgP").textContent = fmt(pSum / N);
+      $("rejLowOut").textContent = `${rejLow.toLocaleString()} (${pct(rejLow / N)})`;
+      $("rejHighOut").textContent = `${rejHigh.toLocaleString()} (${pct(rejHigh / N)})`;
       $("obsNote").textContent = h0true() ? "Every one of the rejections above is a Type I error." : `Every one of the ${(N - rejects).toLocaleString()} failures to reject is a Type II error.`;
       $("tally").innerHTML = h0true()
         ? `Rejected H₀ in <b>${rejects.toLocaleString()}</b> of <b>${N.toLocaleString()}</b> tests = <b>${pct(rate)}</b> &nbsp;(α = ${pct(alpha)}; H₀ is true, so these are false alarms)`
@@ -562,11 +595,13 @@
       let msg = `After ${N.toLocaleString()} tests: rejected ${rejects.toLocaleString()} times, an observed rate of ${pct(rate)} against a predicted ${pct(tr)}. `;
       if (N < 100) msg += "With fewer than 100 tests the rate is still noisy; keep going.";
       else if (Math.abs(rate - tr) < 0.03) msg += h0true() ? "The false-alarm rate matches α: the test is keeping its promise." : "The power matches the prediction.";
-      else if (h0true() && rate > tr) msg += "The false-alarm rate is above α. With a skewed population and a small sample the statistic does not follow the null curve well, so the test rejects too often.";
+      else if (h0true() && rate > tr) msg += `The false-alarm rate is well above α = ${alpha}. This is what a wrong assumption costs: the population is skewed and the sample is ${n < 30 ? "small" : "not yet large enough for this much skew"}, so x̄ is not normal, the statistic does not follow the black curve, and the test cries wolf too often.`;
       else msg += "The observed rate differs from the prediction more than usual; run more tests, or note that the normal approximation is rough for a t test with small n.";
+      if (h0true() && tail === "two" && N >= 200 && rejects >= 10 && Math.max(rejLow, rejHigh) > 3 * Math.max(1, Math.min(rejLow, rejHigh)))
+        msg += ` The rejections are also lopsided: ${pct(rejLow / N)} in the left tail and ${pct(rejHigh / N)} in the right, where a correct test would put about ${pct(alpha / 2)} in each.`;
       $("verdict").textContent = msg; $("chartDesc").textContent = msg;
     } else {
-      $("rejects").textContent = $("keeps").textContent = $("obsRate").textContent = $("avgP").textContent = "–";
+      $("rejects").textContent = $("keeps").textContent = $("obsRate").textContent = $("avgP").textContent = $("rejLowOut").textContent = $("rejHighOut").textContent = "–";
       $("obsNote").textContent = "";
       $("tally").textContent = "No tests yet.";
       $("verdict").textContent = "Run the simulation in step 3 to fill in the observed column.";
@@ -585,7 +620,7 @@
     const stat = se > 0 ? (mean - pop.mu0) / se : 0;
     const p = pValue(stat), reject = p < alpha;
     latest = { mean, se, stat, p, reject };
-    stats.push(stat); if (reject) rejects++; pSum += p;
+    stats.push(stat); if (reject) { rejects++; if (stat < 0) rejLow++; else rejHigh++; } pSum += p;
   }
   function runMany(k) { for (let i = 0; i < k; i++) runOne(); drawStat(); updateLatest(); updateStats(); }
   function stopAnim() {
@@ -602,7 +637,7 @@
       if (stats.length >= target) stopAnim();
     }, +$("speed").value);
   }
-  function clearAll() { stopAnim(); stats = []; rejects = 0; pSum = 0; latest = null; ticks = 0; drawPop(); drawStat(); updateExplain(); updateLatest(); updateStats(); }
+  function clearAll() { stopAnim(); stats = []; rejects = 0; rejLow = 0; rejHigh = 0; pSum = 0; latest = null; ticks = 0; drawPop(); drawStat(); updateExplain(); updateLatest(); updateStats(); }
   function runAll() { clearAll(); runMany(reps()); }
 
   $("draw").addEventListener("click", runAll);
